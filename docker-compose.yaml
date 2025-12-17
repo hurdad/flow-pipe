@@ -17,7 +17,25 @@ services:
       etcd:
         condition: service_healthy
     environment:
-      # Future-proofing (controller / persistence)
+      ETCD_ENDPOINTS: "http://etcd:2379"
+      FLOW_ENV: "local"
+    restart: unless-stopped
+
+  # --------------------------------------------------
+  # Flow Controller
+  # --------------------------------------------------
+  flow-controller:
+    image: flow-pipe-controller:latest
+    build:
+      context: .
+      dockerfile: controller/Dockerfile
+    container_name: flow-controller
+    depends_on:
+      etcd:
+        condition: service_healthy
+      flow-api:
+        condition: service_started
+    environment:
       ETCD_ENDPOINTS: "http://etcd:2379"
       FLOW_ENV: "local"
     restart: unless-stopped
