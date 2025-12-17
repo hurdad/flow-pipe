@@ -1,0 +1,609 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "FlowService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/flows": {
+      "get": {
+        "summary": "List all flows.",
+        "operationId": "FlowService_ListFlows",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListFlowsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "FlowService"
+        ]
+      },
+      "post": {
+        "summary": "Create a new flow (version starts at 1).",
+        "operationId": "FlowService_CreateFlow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Flow"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "spec",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1FlowSpec"
+            }
+          }
+        ],
+        "tags": [
+          "FlowService"
+        ]
+      }
+    },
+    "/v1/flows/{name}": {
+      "get": {
+        "summary": "Get the active version of a flow.",
+        "operationId": "FlowService_GetFlow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Flow"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FlowService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a flow and tear down its runtime.",
+        "operationId": "FlowService_DeleteFlow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FlowService"
+        ]
+      },
+      "put": {
+        "summary": "Update an existing flow (creates a new version).",
+        "operationId": "FlowService_UpdateFlow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Flow"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "spec",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1FlowSpec"
+            }
+          }
+        ],
+        "tags": [
+          "FlowService"
+        ]
+      }
+    },
+    "/v1/flows/{name}/rollback/{version}": {
+      "post": {
+        "summary": "Roll back to a previous immutable version.",
+        "operationId": "FlowService_RollbackFlow",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Flow"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "FlowService"
+        ]
+      }
+    },
+    "/v1/flows/{name}/status": {
+      "get": {
+        "summary": "Get status only (fast path, no spec mutation).",
+        "operationId": "FlowService_GetFlowStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1FlowStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FlowService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1BoolList": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "v1CpuSet": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": "CPU core IDs"
+        }
+      }
+    },
+    "v1DoubleList": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    },
+    "v1Execution": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "$ref": "#/definitions/v1ExecutionMode"
+        }
+      }
+    },
+    "v1ExecutionMode": {
+      "type": "string",
+      "enum": [
+        "EXECUTION_MODE_UNSPECIFIED",
+        "EXECUTION_MODE_STREAMING",
+        "EXECUTION_MODE_JOB"
+      ],
+      "default": "EXECUTION_MODE_UNSPECIFIED",
+      "title": "- EXECUTION_MODE_STREAMING: Long-running, continuous pipeline (Kubernetes Deployment)\n - EXECUTION_MODE_JOB: Run-to-completion pipeline (Kubernetes Job)"
+    },
+    "v1Flow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "spec": {
+          "$ref": "#/definitions/v1FlowSpec"
+        },
+        "status": {
+          "$ref": "#/definitions/v1FlowStatus"
+        }
+      }
+    },
+    "v1FlowSpec": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Logical flow name (identifier and K8s resource prefix)"
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Immutable version assigned by the Flow API"
+        },
+        "execution": {
+          "$ref": "#/definitions/v1Execution",
+          "title": "Execution model for the flow"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1StageSpec"
+          },
+          "title": "Pipeline definition"
+        },
+        "queues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1QueueSpec"
+          }
+        },
+        "cpuPinning": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1CpuSet"
+          },
+          "title": "Optional CPU pinning hints per stage (best-effort)"
+        },
+        "resources": {
+          "$ref": "#/definitions/v1Resources",
+          "title": "Optional resource intent for the whole flow"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Optional metadata (team, env, cost-center, etc.)"
+        }
+      }
+    },
+    "v1FlowState": {
+      "type": "string",
+      "enum": [
+        "FLOW_STATE_UNSPECIFIED",
+        "FLOW_STATE_PENDING",
+        "FLOW_STATE_DEPLOYING",
+        "FLOW_STATE_RUNNING",
+        "FLOW_STATE_SUCCEEDED",
+        "FLOW_STATE_FAILED",
+        "FLOW_STATE_STOPPED"
+      ],
+      "default": "FLOW_STATE_UNSPECIFIED",
+      "title": "- FLOW_STATE_SUCCEEDED: Jobs only"
+    },
+    "v1FlowStatus": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/v1FlowState"
+        },
+        "message": {
+          "type": "string",
+          "title": "Human-readable message (optional)"
+        },
+        "activeVersion": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Currently active version"
+        },
+        "workload": {
+          "type": "string",
+          "title": "Kubernetes workload name (Deployment or Job)"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Last controller update time"
+        }
+      }
+    },
+    "v1IntList": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "v1ListFlowsResponse": {
+      "type": "object",
+      "properties": {
+        "flows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Flow"
+          }
+        }
+      }
+    },
+    "v1QueueSpec": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1QueueType"
+        },
+        "capacity": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1QueueType": {
+      "type": "string",
+      "enum": [
+        "QUEUE_TYPE_UNSPECIFIED",
+        "QUEUE_TYPE_MPSC",
+        "QUEUE_TYPE_MPMC"
+      ],
+      "default": "QUEUE_TYPE_UNSPECIFIED"
+    },
+    "v1Resources": {
+      "type": "object",
+      "properties": {
+        "cpuCores": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Preferred total CPU cores"
+        },
+        "memoryMb": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Preferred memory in MB"
+        },
+        "profile": {
+          "type": "string",
+          "title": "Optional named profile (e.g. \"high-throughput\")"
+        }
+      }
+    },
+    "v1StageSpec": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Unique stage name"
+        },
+        "type": {
+          "type": "string",
+          "title": "Stage type (resolved via registry in runtime)"
+        },
+        "threads": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Number of worker threads for this stage"
+        },
+        "inputQueue": {
+          "type": "string",
+          "title": "Optional input queue\n- unset =\u003e source or side-effect stage"
+        },
+        "outputQueue": {
+          "type": "string",
+          "title": "Optional output queue\n- unset =\u003e sink or side-effect stage"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1Value"
+          },
+          "title": "Stage-specific parameters"
+        }
+      }
+    },
+    "v1StringList": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Struct": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1Value"
+          }
+        }
+      }
+    },
+    "v1UIntList": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "v1Value": {
+      "type": "object",
+      "properties": {
+        "stringValue": {
+          "type": "string"
+        },
+        "intValue": {
+          "type": "string",
+          "format": "int64"
+        },
+        "uintValue": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "doubleValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "boolValue": {
+          "type": "boolean"
+        },
+        "stringList": {
+          "$ref": "#/definitions/v1StringList"
+        },
+        "intList": {
+          "$ref": "#/definitions/v1IntList"
+        },
+        "uintList": {
+          "$ref": "#/definitions/v1UIntList"
+        },
+        "doubleList": {
+          "$ref": "#/definitions/v1DoubleList"
+        },
+        "boolList": {
+          "$ref": "#/definitions/v1BoolList"
+        },
+        "structValue": {
+          "$ref": "#/definitions/v1Struct"
+        }
+      }
+    }
+  }
+}

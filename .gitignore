@@ -1,64 +1,55 @@
 # =====================================================
-# Build outputs
+# CMake / C++ build artifacts
 # =====================================================
 
-# CMake
 build/
-cmake-build-*/
+cmake-build*/
 CMakeFiles/
 CMakeCache.txt
+CTestTestfile.cmake
 Makefile
-*.cmake
 compile_commands.json
+*.cmake
 
-# Binaries & libraries
-*.exe
-*.out
-*.app
+# Binaries / libraries
+*.o
+*.a
 *.so
 *.dylib
-*.a
+*.exe
+*.out
 
 # =====================================================
-# Protobuf generated files
+# Generated C++ protobuf / gRPC (DO NOT COMMIT)
 # =====================================================
 
-# Generated C++ protobuf / gRPC
-proto/*.pb.cc
-proto/*.pb.h
 proto/**/*.pb.cc
 proto/**/*.pb.h
 
-# Generated Go protobuf
-gen/go/
-gen/openapi/
-
 # =====================================================
-# Go
+# Go build artifacts
 # =====================================================
 
-# Binaries
-api/api
-controller/controller
+# Go binaries
+api/flow-api
+controller/flow-controller
 *.test
 
-# Modules
-go.sum
-/vendor/
+# Go build cache (usually not in repo, but safe)
+.go-build/
+
+# Vendor (only if you ever enable it)
+vendor/
 
 # =====================================================
 # IDEs / Editors
 # =====================================================
 
-# IntelliJ / CLion / GoLand
+# IntelliJ / GoLand / CLion
 .idea/
 
 # VS Code
 .vscode/
-
-# CLion build dirs
-cmake-build-debug/
-cmake-build-release/
 
 # Vim / Emacs
 *.swp
