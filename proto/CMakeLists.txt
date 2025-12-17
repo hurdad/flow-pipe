@@ -1,22 +1,35 @@
-# proto/CMakeLists.txt
+# Generates C++ protobuf + gRPC sources for flow-pipe
 
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 
 # --------------------------------------------------
-# Proto roots
+# Paths
 # --------------------------------------------------
 
-set(PROTO_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROTO_ROOT ${CMAKE_SOURCE_DIR}/proto)
+set(PROTO_V1 ${PROTO_ROOT}/flowpipe/v1)
 set(GOOGLEAPIS_DIR ${CMAKE_SOURCE_DIR}/third_party/googleapis)
 
 # --------------------------------------------------
-# Proto files (compiled TOGETHER)
+# Sanity check: googleapis
+# --------------------------------------------------
+
+if(NOT EXISTS ${GOOGLEAPIS_DIR}/google/api/annotations.proto)
+    message(FATAL_ERROR
+            "google/api/annotations.proto not found.\n"
+            "Run:\n"
+            "  git submodule update --init --recursive"
+    )
+endif()
+
+# --------------------------------------------------
+# Proto files (compile together)
 # --------------------------------------------------
 
 set(PROTO_FILES
-        ${PROTO_ROOT}/flow.proto
-        ${PROTO_ROOT}/service.proto
+        ${PROTO_V1}/flow.proto
+        ${PROTO_V1}/service.proto
         ${GOOGLEAPIS_DIR}/google/api/annotations.proto
         ${GOOGLEAPIS_DIR}/google/api/http.proto
 )
@@ -26,23 +39,26 @@ set(PROTO_FILES
 # --------------------------------------------------
 
 set(GENERATED_SRCS
-        ${CMAKE_CURRENT_BINARY_DIR}/flow.pb.cc
-        ${CMAKE_CURRENT_BINARY_DIR}/flow.pb.h
-        ${CMAKE_CURRENT_BINARY_DIR}/service.pb.cc
-        ${CMAKE_CURRENT_BINARY_DIR}/service.pb.h
-        ${CMAKE_CURRENT_BINARY_DIR}/service.grpc.pb.cc
-        ${CMAKE_CURRENT_BINARY_DIR}/service.grpc.pb.h
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/flow.pb.cc
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/flow.pb.h
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/service.pb.cc
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/service.pb.h
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/service.grpc.pb.cc
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/service.grpc.pb.h
         ${CMAKE_CURRENT_BINARY_DIR}/google/api/annotations.pb.cc
         ${CMAKE_CURRENT_BINARY_DIR}/google/api/annotations.pb.h
         ${CMAKE_CURRENT_BINARY_DIR}/google/api/http.pb.cc
         ${CMAKE_CURRENT_BINARY_DIR}/google/api/http.pb.h
 )
 
-# Ensure output dirs exist
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/google/api)
+# Ensure output directories exist
+file(MAKE_DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1
+        ${CMAKE_CURRENT_BINARY_DIR}/google/api
+)
 
 # --------------------------------------------------
-# Protobuf + gRPC code generation
+# Protobuf + gRPC generation
 # --------------------------------------------------
 
 add_custom_command(
@@ -57,7 +73,7 @@ add_custom_command(
         -I ${Protobuf_INCLUDE_DIRS}
         ${PROTO_FILES}
         DEPENDS ${PROTO_FILES}
-        COMMENT "Generating C++ protobuf and gRPC sources"
+        COMMENT "Generating C++ protobuf and gRPC sources (flowpipe v1)"
         VERBATIM
 )
 
