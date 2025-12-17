@@ -160,6 +160,7 @@ These exclusions are deliberate.
 ```
 flow-pipe/
 ├── runtime/        # C++ data plane
+├── examples/       # Standalone runtime examples and custom stages
 ├── controller/     # Go Kubernetes controller
 ├── api/            # Go Flow API
 ├── proto/          # Protobuf schemas
@@ -169,7 +170,19 @@ flow-pipe/
 
 ---
 
-## License
+## Examples
 
-Apache License 2.0
+The `examples/` directory contains **standalone, buildable C++ programs** that demonstrate how to use and extend the flow-pipe runtime.
 
+Examples:
+- Register custom stages
+- Build pipelines programmatically
+- Demonstrate queue and concurrency semantics
+- Run without Kubernetes or the control plane
+
+These examples:
+- Link directly against the C++ runtime
+- Do not depend on the controller or API
+- Reflect how real runtime integrations are expected to work
+
+They are intended as **reference implementations
