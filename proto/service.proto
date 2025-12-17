@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package flowpipe.v1;
+
+option go_package = "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "flow.proto";
+
+// ============================================================
+// Flow Control Plane API
+// ============================================================
+//
+// This service is declarative and idempotent.
+// gRPC is the source of truth.
+// REST is provided via grpc-gateway annotations.
+//
+
+service FlowService {
+
+  // Create a new flow (version starts at 1).
+  rpc CreateFlow(CreateFlowRequest) returns (Flow) {
+    option (google.api.http) = {
+      post: "/v1/flows"
+      body: "spec"
+    };
+  }
+
+  // Update an existing flow (creates a new version).
+  rpc UpdateFlow(UpdateFlowRequest) returns (Flow) {
+    option (google.api.http) = {
+      put: "/v1/flows/{name}"
+      body: "spec"
+    };
+  }
+
+  // Delete a flow and tear down its runtime.
+  rpc DeleteFlow(DeleteFlowRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/flows/{name}"
+    };
+  }
+
+  // Get the active version of a flow.
+  rpc GetFlow(GetFlowRequest) returns (Flow) {
+    option (google.api.http) = {
+      get: "/v1/flows/{name}"
+    };
+  }
+
+  // List all flows.
+  rpc ListFlows(ListFlowsRequest) returns (ListFlowsResponse) {
+    option (google.api.http) = {
+      get: "/v1/flows"
+    };
+  }
+
+  // Get status only (fast path, no spec mutation).
+  rpc GetFlowStatus(GetFlowStatusRequest) returns (FlowStatus) {
+    option (google.api.http) = {
+      get: "/v1/flows/{name}/status"
+    };
+  }
+
+  // Roll back to a previous immutable version.
+  rpc RollbackFlow(RollbackFlowRequest) returns (Flow) {
+    option (google.api.http) = {
+      post: "/v1/flows/{name}/rollback/{version}"
+    };
+  }
+}
+
+
+// ============================================================
+// Requests / Responses
+// ============================================================
+
+message CreateFlowRequest {
+  FlowSpec spec = 1;
+}
+
+message UpdateFlowRequest {
+  string name = 1;
+  FlowSpec spec = 2;
+}
+
+message DeleteFlowRequest {
+  string name = 1;
+}
+
+message GetFlowRequest {
+  string name = 1;
+}
+
+message ListFlowsRequest {}
+
+message ListFlowsResponse {
+  repeated Flow flows = 1;
+}
+
+message GetFlowStatusRequest {
+  string name = 1;
+}
+
+message RollbackFlowRequest {
+  string name = 1;
+  uint64 version = 2;
+}

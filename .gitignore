@@ -1,0 +1,80 @@
+# =====================================================
+# Build outputs
+# =====================================================
+
+# CMake
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+compile_commands.json
+
+# Binaries & libraries
+*.exe
+*.out
+*.app
+*.so
+*.dylib
+*.a
+
+# =====================================================
+# Protobuf generated files
+# =====================================================
+
+# Generated C++ protobuf / gRPC
+proto/*.pb.cc
+proto/*.pb.h
+proto/**/*.pb.cc
+proto/**/*.pb.h
+
+# Generated Go protobuf
+gen/go/
+gen/openapi/
+
+# =====================================================
+# Go
+# =====================================================
+
+# Binaries
+api/api
+controller/controller
+*.test
+
+# Modules
+go.sum
+/vendor/
+
+# =====================================================
+# IDEs / Editors
+# =====================================================
+
+# IntelliJ / CLion / GoLand
+.idea/
+
+# VS Code
+.vscode/
+
+# CLion build dirs
+cmake-build-debug/
+cmake-build-release/
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+.#*
+
+# =====================================================
+# OS junk
+# =====================================================
+
+.DS_Store
+Thumbs.db
+
+# =====================================================
+# Logs
+# =====================================================
+
+*.log

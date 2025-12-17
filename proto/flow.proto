@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package flowpipe.v1;
+
+option go_package = "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1";
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================
+// Top-level Flow specification
+// ============================================================
+
+message FlowSpec {
+  // Logical flow name (identifier and K8s resource prefix)
+  string name = 1;
+
+  // Immutable version assigned by the Flow API
+  uint64 version = 2;
+
+  // Execution model for the flow
+  Execution execution = 3;
+
+  // Pipeline definition
+  repeated StageSpec stages = 4;
+  repeated QueueSpec queues = 5;
+
+  // Optional CPU pinning hints per stage (best-effort)
+  map<string, CpuSet> cpu_pinning = 6;
+
+  // Optional resource intent for the whole flow
+  Resources resources = 7;
+
+  // Optional metadata (team, env, cost-center, etc.)
+  map<string, string> labels = 8;
+}
+
+// ============================================================
+// Execution model
+// ============================================================
+
+message Execution {
+  ExecutionMode mode = 1;
+}
+
+enum ExecutionMode {
+  EXECUTION_MODE_UNSPECIFIED = 0;
+
+  // Long-running, continuous pipeline (Kubernetes Deployment)
+  EXECUTION_MODE_STREAMING = 1;
+
+  // Run-to-completion pipeline (Kubernetes Job)
+  EXECUTION_MODE_JOB = 2;
+}
+
+// ============================================================
+// Stage definition
+// ============================================================
+
+message StageSpec {
+  // Unique stage name
+  string name = 1;
+
+  // Stage type (resolved via registry in runtime)
+  string type = 2;
+
+  // Number of worker threads for this stage
+  uint32 threads = 3;
+
+  // Optional input queue
+  // - unset => source or side-effect stage
+  optional string input_queue = 4;
+
+  // Optional output queue
+  // - unset => sink or side-effect stage
+  optional string output_queue = 5;
+
+  // Stage-specific parameters
+  map<string, Value> params = 6;
+}
+
+// ============================================================
+// Queue definition
+// ============================================================
+
+message QueueSpec {
+  string name = 1;
+  QueueType type = 2;
+  uint32 capacity = 3;
+}
+
+enum QueueType {
+  QUEUE_TYPE_UNSPECIFIED = 0;
+  QUEUE_TYPE_MPSC = 1;
+  QUEUE_TYPE_MPMC = 2;
+}
+
+// ============================================================
+// Resource intent (controller maps to Kubernetes)
+// ============================================================
+
+message Resources {
+  // Preferred total CPU cores
+  optional uint32 cpu_cores = 1;
+
+  // Preferred memory in MB
+  optional uint32 memory_mb = 2;
+
+  // Optional named profile (e.g. "high-throughput")
+  optional string profile = 3;
+}
+
+// ============================================================
+// CPU pinning hint
+// ============================================================
+
+message CpuSet {
+  // CPU core IDs
+  repeated uint32 cpu = 1;
+}
+
+// ============================================================
+// Flow wrapper and derived status
+// ============================================================
+
+message Flow {
+  string name = 1;
+  uint64 version = 2;
+  FlowSpec spec = 3;
+  FlowStatus status = 4;
+}
+
+message FlowStatus {
+  FlowState state = 1;
+
+  // Human-readable message (optional)
+  string message = 2;
+
+  // Currently active version
+  uint64 active_version = 3;
+
+  // Kubernetes workload name (Deployment or Job)
+  string workload = 4;
+
+  // Last controller update time
+  google.protobuf.Timestamp last_updated = 5;
+}
+
+enum FlowState {
+  FLOW_STATE_UNSPECIFIED = 0;
+  FLOW_STATE_PENDING = 1;
+  FLOW_STATE_DEPLOYING = 2;
+  FLOW_STATE_RUNNING = 3;
+  FLOW_STATE_SUCCEEDED = 4; // Jobs only
+  FLOW_STATE_FAILED = 5;
+  FLOW_STATE_STOPPED = 6;
+}
+
+// ============================================================
+// Generic Value type for stage parameters
+// ============================================================
+
+message Value {
+  oneof kind {
+    string string_value = 1;
+    int64 int_value = 2;
+    uint64 uint_value = 3;
+    double double_value = 4;
+    bool bool_value = 5;
+
+    StringList string_list = 6;
+    IntList int_list = 7;
+    UIntList uint_list = 8;
+    DoubleList double_list = 9;
+    BoolList bool_list = 10;
+
+    Struct struct_value = 11;
+  }
+}
+
+message Struct {
+  map<string, Value> fields = 1;
+}
+
+message StringList { repeated string values = 1; }
+message IntList    { repeated int64 values = 1; }
+message UIntList   { repeated uint64 values = 1; }
+message DoubleList { repeated double values = 1; }
+message BoolList   { repeated bool values = 1; }
