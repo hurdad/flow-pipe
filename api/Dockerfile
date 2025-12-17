@@ -32,7 +32,7 @@ COPY api ./api
 # Build binary
 # --------------------------------------------------
 RUN cd api && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+    CGO_ENABLED=0 \
     go build -o /flow-api ./cmd/flow-api
 
 # --------------------------------------------------
