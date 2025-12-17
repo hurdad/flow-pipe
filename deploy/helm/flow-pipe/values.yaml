@@ -9,7 +9,7 @@ etcd:
   port: 2379
 
 controller:
-  image: ghcr.io/yourorg/flow-pipe-controller:latest
+  image: ghcr.io/hurdad/flow-pipe-controller:main
   replicas: 1
   port: 8080
   resources:
@@ -22,7 +22,7 @@ controller:
 
 api:
   enabled: true
-  image: ghcr.io/yourorg/flow-pipe-api:latest
+  image: ghcr.io/hurdad/flow-pipe-api:main
   replicas: 2
   port: 8080
   ingress:
