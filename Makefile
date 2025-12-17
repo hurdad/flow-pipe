@@ -57,7 +57,7 @@ runtime:
 # Go API
 # -----------------------------------------------------
 
-api:
+api: proto
 	@echo "==> Building Flow API"
 	@cd $(API_DIR) && go build ./...
 
@@ -65,8 +65,8 @@ api:
 # Go Controller
 # -----------------------------------------------------
 
-controller:
-	@echo "==> Building Controller"
+controller: proto
+	@echo "==> Building Flow Controller"
 	@cd $(CONTROLLER_DIR) && go build ./...
 
 # -----------------------------------------------------

@@ -29,9 +29,9 @@ func (s *FlowServer) CreateFlow(
 		Version: spec.Version,
 		Spec:    spec,
 		Status: &flowpipev1.FlowStatus{
-			State:        flowpipev1.FlowState_FLOW_STATE_PENDING,
+			State:         flowpipev1.FlowState_FLOW_STATE_PENDING,
 			ActiveVersion: spec.Version,
-			LastUpdated:  timestamppb.Now(),
+			LastUpdated:   timestamppb.Now(),
 		},
 	}
 

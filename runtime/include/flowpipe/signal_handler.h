@@ -4,9 +4,9 @@
 
 namespace flowpipe {
 
-    class SignalHandler {
-    public:
-        static void install(std::atomic<bool>& stop_flag);
-    };
+class SignalHandler {
+public:
+  static void install(std::atomic<bool> &stop_flag);
+};
 
-}  // namespace flowpipe
+} // namespace flowpipe

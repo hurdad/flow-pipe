@@ -9,8 +9,8 @@ import "time"
 // Flow represents a declarative pipeline definition
 // stored in etcd and reconciled by the controller.
 type Flow struct {
-	Metadata Metadata `json:"metadata"`
-	Spec     FlowSpec `json:"spec"`
+	Metadata Metadata   `json:"metadata"`
+	Spec     FlowSpec   `json:"spec"`
 	Status   FlowStatus `json:"status,omitempty"`
 }
 

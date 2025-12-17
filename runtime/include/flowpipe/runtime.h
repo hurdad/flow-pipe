@@ -5,14 +5,14 @@
 
 namespace flowpipe {
 
-    class Runtime {
-    public:
-        explicit Runtime(StageRegistry registry);
+class Runtime {
+public:
+  explicit Runtime(StageRegistry registry);
 
-        int run(const FlowSpec& spec);
+  int run(const FlowSpec &spec);
 
-    private:
-        StageRegistry registry_;
-    };
+private:
+  StageRegistry registry_;
+};
 
-}  // namespace flowpipe
+} // namespace flowpipe

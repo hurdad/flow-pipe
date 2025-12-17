@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"github.com/hurdad/flow-pipe/api/server"
+	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/grpc"
 )
 
