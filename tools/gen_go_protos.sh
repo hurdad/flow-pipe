@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROTO_DIR="${ROOT_DIR}/proto"
 GOOGLEAPIS_DIR="${ROOT_DIR}/third_party/googleapis"
-OUT_GO="${ROOT_DIR}/gen/go"
+OUT_GO="${ROOT_DIR}/gen/go/v1"
 OUT_OPENAPI="${ROOT_DIR}/gen/openapi"
 
 # --------------------------------------------------
