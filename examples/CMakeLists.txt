@@ -1,0 +1,3 @@
+add_subdirectory(custom_stage)
+add_subdirectory(csv_pipeline)
+add_subdirectory(fanout_fanin)
