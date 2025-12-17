@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  # --------------------------------------------------
+  # Flow API (gRPC + REST gateway)
+  # --------------------------------------------------
+  flow-api:
+    image: flow-pipe-api:latest
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: flow-api
+    ports:
+      - "8080:8080" # REST / grpc-gateway
+      - "9090:9090" # gRPC
+    depends_on:
+      etcd:
+        condition: service_healthy
+    environment:
+      # Future-proofing (controller / persistence)
+      ETCD_ENDPOINTS: "http://etcd:2379"
+      FLOW_ENV: "local"
+    restart: unless-stopped
+
+  # --------------------------------------------------
+  # etcd (metadata / coordination)
+  # --------------------------------------------------
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.13
+    container_name: flow-etcd
+    command:
+      - /usr/local/bin/etcd
+      - --name=etcd
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://etcd:2380
+      - --initial-cluster=etcd=http://etcd:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=flow-pipe
+    ports:
+      - "2379:2379"
+    volumes:
+      - etcd-data:/etcd-data
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  etcd-data:

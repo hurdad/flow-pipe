@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	//"time"
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"

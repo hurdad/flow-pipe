@@ -5,19 +5,34 @@ FROM golang:1.22-alpine AS build
 
 WORKDIR /src
 
-# System deps
 RUN apk add --no-cache git
 
-# Copy go modules
+# --------------------------------------------------
+# Copy ROOT go.mod (required for replace ../)
+# --------------------------------------------------
+COPY go.mod ./go.mod
+
+# --------------------------------------------------
+# Copy API module files
+# --------------------------------------------------
 COPY api/go.mod api/go.sum ./api/
+
+# --------------------------------------------------
+# Download deps (replace ../ now works)
+# --------------------------------------------------
 RUN cd api && go mod download
 
+# --------------------------------------------------
 # Copy source
+# --------------------------------------------------
 COPY gen ./gen
 COPY api ./api
 
-# Build
-RUN cd api && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+# --------------------------------------------------
+# Build binary
+# --------------------------------------------------
+RUN cd api && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
     go build -o /flow-api ./cmd/flow-api
 
 # --------------------------------------------------
