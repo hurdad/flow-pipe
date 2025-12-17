@@ -1,4 +1,3 @@
-```markdown
 # Non-Goals
 
 flow-pipe explicitly does NOT aim to be:

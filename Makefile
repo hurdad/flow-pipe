@@ -1,63 +1,97 @@
-# ----------------------------
-# Configuration
-# ----------------------------
-BUILD_DIR := build
-PROTO_SCRIPT := tools/gen_protos.sh
+# =====================================================
+# flow-pipe Makefile
+# =====================================================
 
-.PHONY: all clean proto runtime api controller fmt lint
+# Directories
+BUILD_DIR := cmake-build
+PROTO_GO_SCRIPT := tools/gen_go_protos.sh
 
-# ----------------------------
+# Go binaries
+API_DIR := api
+CONTROLLER_DIR := controller
+
+# -----------------------------------------------------
+# Phony targets
+# -----------------------------------------------------
+
+.PHONY: all proto proto-go proto-cpp runtime api controller clean fmt lint submodules
+
+# -----------------------------------------------------
 # Default target
-# ----------------------------
-all: proto runtime api controller
+# -----------------------------------------------------
 
-# ----------------------------
-# Protobuf generation
-# ----------------------------
-proto:
-	@echo "==> Generating protobufs"
-	$(PROTO_SCRIPT)
+all: submodules proto runtime api controller
 
-# ----------------------------
-# C++ runtime build
-# ----------------------------
+# -----------------------------------------------------
+# Submodules
+# -----------------------------------------------------
+
+submodules:
+	@git submodule update --init --recursive
+
+# -----------------------------------------------------
+# Protobuf
+# -----------------------------------------------------
+
+proto: proto-go proto-cpp
+
+proto-go:
+	@echo "==> Generating Go protobufs"
+	@$(PROTO_GO_SCRIPT)
+
+proto-cpp:
+	@echo "==> Generating C++ protobufs and building runtime deps"
+	@cmake -S . -B $(BUILD_DIR)
+	@cmake --build $(BUILD_DIR) --target flowpipe_proto
+
+# -----------------------------------------------------
+# Runtime (C++)
+# -----------------------------------------------------
+
 runtime:
 	@echo "==> Building C++ runtime"
-	cmake -S . -B $(BUILD_DIR)
-	cmake --build $(BUILD_DIR)
+	@cmake -S . -B $(BUILD_DIR)
+	@cmake --build $(BUILD_DIR)
 
-# ----------------------------
+# -----------------------------------------------------
 # Go API
-# ----------------------------
+# -----------------------------------------------------
+
 api:
 	@echo "==> Building Flow API"
-	cd api && go build ./...
+	@cd $(API_DIR) && go build ./...
 
-# ----------------------------
+# -----------------------------------------------------
 # Go Controller
-# ----------------------------
+# -----------------------------------------------------
+
 controller:
 	@echo "==> Building Controller"
-	cd controller && go build ./...
+	@cd $(CONTROLLER_DIR) && go build ./...
 
-# ----------------------------
-# Formatting (optional)
-# ----------------------------
+# -----------------------------------------------------
+# Formatting
+# -----------------------------------------------------
+
 fmt:
 	@echo "==> Formatting code"
-	cd api && gofmt -w .
-	cd controller && gofmt -w .
-	find runtime -name '*.cc' -o -name '*.h' | xargs clang-format -i
+	@cd $(API_DIR) && gofmt -w .
+	@cd $(CONTROLLER_DIR) && gofmt -w .
+	@find runtime -name '*.cc' -o -name '*.h' | xargs clang-format -i
 
-# ----------------------------
-# Lint (optional)
-# ----------------------------
+# -----------------------------------------------------
+# Linting
+# -----------------------------------------------------
+
 lint:
-	cd api && go vet ./...
-	cd controller && go vet ./...
+	@echo "==> Linting Go code"
+	@cd $(API_DIR) && go vet ./...
+	@cd $(CONTROLLER_DIR) && go vet ./...
 
-# ----------------------------
+# -----------------------------------------------------
 # Clean
-# ----------------------------
+# -----------------------------------------------------
+
 clean:
-	rm -rf $(BUILD_DIR)
+	@echo "==> Cleaning build artifacts"
+	@rm -rf $(BUILD_DIR)
