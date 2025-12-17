@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flow-pipe-controller
+  namespace: {{ include "flowpipe.namespace" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: flow-pipe-controller
+  namespace: {{ include "flowpipe.namespace" . }}
+rules:
+  - apiGroups: ["", "apps", "batch"]
+    resources: ["pods", "services", "configmaps", "deployments", "jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: flow-pipe-controller
+  namespace: {{ include "flowpipe.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: flow-pipe-controller
+roleRef:
+  kind: Role
+  name: flow-pipe-controller
+  apiGroup: rbac.authorization.k8s.io

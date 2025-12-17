@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flow-pipe-controller-config
+  namespace: {{ include "flowpipe.namespace" . }}
+data:
+  config.yaml: |
+    controller:
+      listen_addr: ":{{ .Values.controller.port }}"
+    storage:
+      type: etcd
+      endpoints:
+        - http://flow-pipe-etcd:{{ .Values.etcd.port }}

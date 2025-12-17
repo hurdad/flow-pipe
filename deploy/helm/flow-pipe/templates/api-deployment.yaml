@@ -1,0 +1,31 @@
+{{- if .Values.api.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flow-pipe-api
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app: flow-pipe-api
+  template:
+    metadata:
+      labels:
+        app: flow-pipe-api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.api.image }}
+          args:
+            - --config=/etc/flow-pipe/config.yaml
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/flow-pipe
+      volumes:
+        - name: config
+          configMap:
+            name: flow-pipe-api-config
+{{- end }}

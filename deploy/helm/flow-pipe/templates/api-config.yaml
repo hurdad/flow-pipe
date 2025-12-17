@@ -1,0 +1,13 @@
+{{- if .Values.api.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flow-pipe-api-config
+  namespace: {{ include "flowpipe.namespace" . }}
+data:
+  config.yaml: |
+    api:
+      listen_addr: ":{{ .Values.api.port }}"
+    controller:
+      endpoint: http://flow-pipe-controller:{{ .Values.controller.port }}
+{{- end }}

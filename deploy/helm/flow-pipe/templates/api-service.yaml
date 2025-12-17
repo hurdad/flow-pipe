@@ -1,0 +1,12 @@
+{{- if .Values.api.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-pipe-api
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  selector:
+    app: flow-pipe-api
+  ports:
+    - port: {{ .Values.api.port }}
+{{- end }}

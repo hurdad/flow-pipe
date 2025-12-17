@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flow-pipe-controller
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  replicas: {{ .Values.controller.replicas }}
+  selector:
+    matchLabels:
+      app: flow-pipe-controller
+  template:
+    metadata:
+      labels:
+        app: flow-pipe-controller
+    spec:
+      serviceAccountName: flow-pipe-controller
+      containers:
+        - name: controller
+          image: {{ .Values.controller.image }}
+          args:
+            - --config=/etc/flow-pipe/config.yaml
+          ports:
+            - containerPort: {{ .Values.controller.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/flow-pipe
+          resources:
+            {{- toYaml .Values.controller.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: flow-pipe-controller-config

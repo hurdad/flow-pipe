@@ -1,0 +1,30 @@
+namespace:
+  create: true
+  name: flow-pipe
+
+etcd:
+  enabled: true
+  image: quay.io/coreos/etcd:v3.5.12
+  replicas: 1
+  port: 2379
+
+controller:
+  image: ghcr.io/yourorg/flow-pipe-controller:latest
+  replicas: 1
+  port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+api:
+  enabled: true
+  image: ghcr.io/yourorg/flow-pipe-api:latest
+  replicas: 2
+  port: 8080
+  ingress:
+    enabled: false
+    host: flow-pipe.local

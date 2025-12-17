@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-pipe-controller
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  selector:
+    app: flow-pipe-controller
+  ports:
+    - port: {{ .Values.controller.port }}

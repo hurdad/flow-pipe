@@ -1,0 +1,37 @@
+{{- if .Values.etcd.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flow-pipe-etcd
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  replicas: {{ .Values.etcd.replicas }}
+  selector:
+    matchLabels:
+      app: flow-pipe-etcd
+  template:
+    metadata:
+      labels:
+        app: flow-pipe-etcd
+    spec:
+      containers:
+        - name: etcd
+          image: {{ .Values.etcd.image }}
+          command:
+            - etcd
+            - --listen-client-urls=http://0.0.0.0:{{ .Values.etcd.port }}
+            - --advertise-client-urls=http://flow-pipe-etcd:{{ .Values.etcd.port }}
+          ports:
+            - containerPort: {{ .Values.etcd.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-pipe-etcd
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  selector:
+    app: flow-pipe-etcd
+  ports:
+    - port: {{ .Values.etcd.port }}
+{{- end }}

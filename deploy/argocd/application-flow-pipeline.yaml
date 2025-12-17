@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flow-pipe
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/hurdad/flow-pipe.git
+    targetRevision: main
+    path: deploy/helm/flow-pipe
+    helm:
+      releaseName: flow-pipe
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: flow-pipe
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
