@@ -6,7 +6,7 @@ option go_package = "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1";
 
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
-import "flow.proto";
+import "flowpipe/v1/flow.proto";
 
 // ============================================================
 // Flow Control Plane API

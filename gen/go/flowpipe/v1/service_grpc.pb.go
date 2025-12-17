@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v3.21.12
-// source: service.proto
+// source: flowpipe/v1/service.proto
 
 package flowpipev1
 
@@ -360,5 +360,5 @@ var FlowService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "service.proto",
+	Metadata: "flowpipe/v1/service.proto",
 }

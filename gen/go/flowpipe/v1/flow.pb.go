@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v3.21.12
-// source: flow.proto
+// source: flowpipe/v1/flow.proto
 
 package flowpipev1
 
@@ -57,11 +57,11 @@ func (x ExecutionMode) String() string {
 }
 
 func (ExecutionMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_flow_proto_enumTypes[0].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[0].Descriptor()
 }
 
 func (ExecutionMode) Type() protoreflect.EnumType {
-	return &file_flow_proto_enumTypes[0]
+	return &file_flowpipe_v1_flow_proto_enumTypes[0]
 }
 
 func (x ExecutionMode) Number() protoreflect.EnumNumber {
@@ -70,7 +70,7 @@ func (x ExecutionMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionMode.Descriptor instead.
 func (ExecutionMode) EnumDescriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{0}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
 }
 
 type QueueType int32
@@ -106,11 +106,11 @@ func (x QueueType) String() string {
 }
 
 func (QueueType) Descriptor() protoreflect.EnumDescriptor {
-	return file_flow_proto_enumTypes[1].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
 }
 
 func (QueueType) Type() protoreflect.EnumType {
-	return &file_flow_proto_enumTypes[1]
+	return &file_flowpipe_v1_flow_proto_enumTypes[1]
 }
 
 func (x QueueType) Number() protoreflect.EnumNumber {
@@ -119,7 +119,7 @@ func (x QueueType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use QueueType.Descriptor instead.
 func (QueueType) EnumDescriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{1}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
 }
 
 type FlowState int32
@@ -167,11 +167,11 @@ func (x FlowState) String() string {
 }
 
 func (FlowState) Descriptor() protoreflect.EnumDescriptor {
-	return file_flow_proto_enumTypes[2].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
 }
 
 func (FlowState) Type() protoreflect.EnumType {
-	return &file_flow_proto_enumTypes[2]
+	return &file_flowpipe_v1_flow_proto_enumTypes[2]
 }
 
 func (x FlowState) Number() protoreflect.EnumNumber {
@@ -180,7 +180,7 @@ func (x FlowState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FlowState.Descriptor instead.
 func (FlowState) EnumDescriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{2}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
 }
 
 type FlowSpec struct {
@@ -206,7 +206,7 @@ type FlowSpec struct {
 
 func (x *FlowSpec) Reset() {
 	*x = FlowSpec{}
-	mi := &file_flow_proto_msgTypes[0]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -218,7 +218,7 @@ func (x *FlowSpec) String() string {
 func (*FlowSpec) ProtoMessage() {}
 
 func (x *FlowSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[0]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -231,7 +231,7 @@ func (x *FlowSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlowSpec.ProtoReflect.Descriptor instead.
 func (*FlowSpec) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{0}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *FlowSpec) GetName() string {
@@ -299,7 +299,7 @@ type Execution struct {
 
 func (x *Execution) Reset() {
 	*x = Execution{}
-	mi := &file_flow_proto_msgTypes[1]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -311,7 +311,7 @@ func (x *Execution) String() string {
 func (*Execution) ProtoMessage() {}
 
 func (x *Execution) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[1]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +324,7 @@ func (x *Execution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Execution.ProtoReflect.Descriptor instead.
 func (*Execution) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{1}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Execution) GetMode() ExecutionMode {
@@ -356,7 +356,7 @@ type StageSpec struct {
 
 func (x *StageSpec) Reset() {
 	*x = StageSpec{}
-	mi := &file_flow_proto_msgTypes[2]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -368,7 +368,7 @@ func (x *StageSpec) String() string {
 func (*StageSpec) ProtoMessage() {}
 
 func (x *StageSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[2]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -381,7 +381,7 @@ func (x *StageSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StageSpec.ProtoReflect.Descriptor instead.
 func (*StageSpec) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{2}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *StageSpec) GetName() string {
@@ -437,7 +437,7 @@ type QueueSpec struct {
 
 func (x *QueueSpec) Reset() {
 	*x = QueueSpec{}
-	mi := &file_flow_proto_msgTypes[3]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -449,7 +449,7 @@ func (x *QueueSpec) String() string {
 func (*QueueSpec) ProtoMessage() {}
 
 func (x *QueueSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[3]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -462,7 +462,7 @@ func (x *QueueSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueueSpec.ProtoReflect.Descriptor instead.
 func (*QueueSpec) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{3}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *QueueSpec) GetName() string {
@@ -500,7 +500,7 @@ type Resources struct {
 
 func (x *Resources) Reset() {
 	*x = Resources{}
-	mi := &file_flow_proto_msgTypes[4]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -512,7 +512,7 @@ func (x *Resources) String() string {
 func (*Resources) ProtoMessage() {}
 
 func (x *Resources) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[4]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +525,7 @@ func (x *Resources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resources.ProtoReflect.Descriptor instead.
 func (*Resources) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{4}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Resources) GetCpuCores() uint32 {
@@ -559,7 +559,7 @@ type CpuSet struct {
 
 func (x *CpuSet) Reset() {
 	*x = CpuSet{}
-	mi := &file_flow_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -571,7 +571,7 @@ func (x *CpuSet) String() string {
 func (*CpuSet) ProtoMessage() {}
 
 func (x *CpuSet) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -584,7 +584,7 @@ func (x *CpuSet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CpuSet.ProtoReflect.Descriptor instead.
 func (*CpuSet) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{5}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CpuSet) GetCpu() []uint32 {
@@ -606,7 +606,7 @@ type Flow struct {
 
 func (x *Flow) Reset() {
 	*x = Flow{}
-	mi := &file_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -618,7 +618,7 @@ func (x *Flow) String() string {
 func (*Flow) ProtoMessage() {}
 
 func (x *Flow) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -631,7 +631,7 @@ func (x *Flow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Flow.ProtoReflect.Descriptor instead.
 func (*Flow) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{6}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Flow) GetName() string {
@@ -679,7 +679,7 @@ type FlowStatus struct {
 
 func (x *FlowStatus) Reset() {
 	*x = FlowStatus{}
-	mi := &file_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -691,7 +691,7 @@ func (x *FlowStatus) String() string {
 func (*FlowStatus) ProtoMessage() {}
 
 func (x *FlowStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -704,7 +704,7 @@ func (x *FlowStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlowStatus.ProtoReflect.Descriptor instead.
 func (*FlowStatus) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{7}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *FlowStatus) GetState() FlowState {
@@ -764,7 +764,7 @@ type Value struct {
 
 func (x *Value) Reset() {
 	*x = Value{}
-	mi := &file_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -776,7 +776,7 @@ func (x *Value) String() string {
 func (*Value) ProtoMessage() {}
 
 func (x *Value) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -789,7 +789,7 @@ func (x *Value) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Value.ProtoReflect.Descriptor instead.
 func (*Value) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{8}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Value) GetKind() isValue_Kind {
@@ -977,7 +977,7 @@ type Struct struct {
 
 func (x *Struct) Reset() {
 	*x = Struct{}
-	mi := &file_flow_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -989,7 +989,7 @@ func (x *Struct) String() string {
 func (*Struct) ProtoMessage() {}
 
 func (x *Struct) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1002,7 +1002,7 @@ func (x *Struct) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Struct.ProtoReflect.Descriptor instead.
 func (*Struct) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{9}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Struct) GetFields() map[string]*Value {
@@ -1021,7 +1021,7 @@ type StringList struct {
 
 func (x *StringList) Reset() {
 	*x = StringList{}
-	mi := &file_flow_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1033,7 +1033,7 @@ func (x *StringList) String() string {
 func (*StringList) ProtoMessage() {}
 
 func (x *StringList) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1046,7 +1046,7 @@ func (x *StringList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StringList.ProtoReflect.Descriptor instead.
 func (*StringList) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{10}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StringList) GetValues() []string {
@@ -1065,7 +1065,7 @@ type IntList struct {
 
 func (x *IntList) Reset() {
 	*x = IntList{}
-	mi := &file_flow_proto_msgTypes[11]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1077,7 +1077,7 @@ func (x *IntList) String() string {
 func (*IntList) ProtoMessage() {}
 
 func (x *IntList) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[11]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1090,7 +1090,7 @@ func (x *IntList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IntList.ProtoReflect.Descriptor instead.
 func (*IntList) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{11}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *IntList) GetValues() []int64 {
@@ -1109,7 +1109,7 @@ type UIntList struct {
 
 func (x *UIntList) Reset() {
 	*x = UIntList{}
-	mi := &file_flow_proto_msgTypes[12]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1121,7 +1121,7 @@ func (x *UIntList) String() string {
 func (*UIntList) ProtoMessage() {}
 
 func (x *UIntList) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[12]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1134,7 +1134,7 @@ func (x *UIntList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UIntList.ProtoReflect.Descriptor instead.
 func (*UIntList) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{12}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UIntList) GetValues() []uint64 {
@@ -1153,7 +1153,7 @@ type DoubleList struct {
 
 func (x *DoubleList) Reset() {
 	*x = DoubleList{}
-	mi := &file_flow_proto_msgTypes[13]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1165,7 +1165,7 @@ func (x *DoubleList) String() string {
 func (*DoubleList) ProtoMessage() {}
 
 func (x *DoubleList) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[13]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1178,7 +1178,7 @@ func (x *DoubleList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DoubleList.ProtoReflect.Descriptor instead.
 func (*DoubleList) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{13}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DoubleList) GetValues() []float64 {
@@ -1197,7 +1197,7 @@ type BoolList struct {
 
 func (x *BoolList) Reset() {
 	*x = BoolList{}
-	mi := &file_flow_proto_msgTypes[14]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1209,7 +1209,7 @@ func (x *BoolList) String() string {
 func (*BoolList) ProtoMessage() {}
 
 func (x *BoolList) ProtoReflect() protoreflect.Message {
-	mi := &file_flow_proto_msgTypes[14]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1222,7 +1222,7 @@ func (x *BoolList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BoolList.ProtoReflect.Descriptor instead.
 func (*BoolList) Descriptor() ([]byte, []int) {
-	return file_flow_proto_rawDescGZIP(), []int{14}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BoolList) GetValues() []bool {
@@ -1232,12 +1232,11 @@ func (x *BoolList) GetValues() []bool {
 	return nil
 }
 
-var File_flow_proto protoreflect.FileDescriptor
+var File_flowpipe_v1_flow_proto protoreflect.FileDescriptor
 
-const file_flow_proto_rawDesc = "" +
+const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\n" +
-	"\n" +
-	"flow.proto\x12\vflowpipe.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x04\n" +
+	"\x16flowpipe/v1/flow.proto\x12\vflowpipe.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x04\n" +
 	"\bFlowSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\x04R\aversion\x124\n" +
@@ -1350,20 +1349,20 @@ const file_flow_proto_rawDesc = "" +
 	"\x12FLOW_STATE_STOPPED\x10\x06B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
 
 var (
-	file_flow_proto_rawDescOnce sync.Once
-	file_flow_proto_rawDescData []byte
+	file_flowpipe_v1_flow_proto_rawDescOnce sync.Once
+	file_flowpipe_v1_flow_proto_rawDescData []byte
 )
 
-func file_flow_proto_rawDescGZIP() []byte {
-	file_flow_proto_rawDescOnce.Do(func() {
-		file_flow_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_flow_proto_rawDesc), len(file_flow_proto_rawDesc)))
+func file_flowpipe_v1_flow_proto_rawDescGZIP() []byte {
+	file_flowpipe_v1_flow_proto_rawDescOnce.Do(func() {
+		file_flowpipe_v1_flow_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_flowpipe_v1_flow_proto_rawDesc), len(file_flowpipe_v1_flow_proto_rawDesc)))
 	})
-	return file_flow_proto_rawDescData
+	return file_flowpipe_v1_flow_proto_rawDescData
 }
 
-var file_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
-var file_flow_proto_goTypes = []any{
+var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_flowpipe_v1_flow_proto_goTypes = []any{
 	(ExecutionMode)(0),            // 0: flowpipe.v1.ExecutionMode
 	(QueueType)(0),                // 1: flowpipe.v1.QueueType
 	(FlowState)(0),                // 2: flowpipe.v1.FlowState
@@ -1388,7 +1387,7 @@ var file_flow_proto_goTypes = []any{
 	nil,                           // 21: flowpipe.v1.Struct.FieldsEntry
 	(*timestamppb.Timestamp)(nil), // 22: google.protobuf.Timestamp
 }
-var file_flow_proto_depIdxs = []int32{
+var file_flowpipe_v1_flow_proto_depIdxs = []int32{
 	4,  // 0: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
 	5,  // 1: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
 	6,  // 2: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
@@ -1419,14 +1418,14 @@ var file_flow_proto_depIdxs = []int32{
 	0,  // [0:23] is the sub-list for field type_name
 }
 
-func init() { file_flow_proto_init() }
-func file_flow_proto_init() {
-	if File_flow_proto != nil {
+func init() { file_flowpipe_v1_flow_proto_init() }
+func file_flowpipe_v1_flow_proto_init() {
+	if File_flowpipe_v1_flow_proto != nil {
 		return
 	}
-	file_flow_proto_msgTypes[2].OneofWrappers = []any{}
-	file_flow_proto_msgTypes[4].OneofWrappers = []any{}
-	file_flow_proto_msgTypes[8].OneofWrappers = []any{
+	file_flowpipe_v1_flow_proto_msgTypes[2].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[4].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[8].OneofWrappers = []any{
 		(*Value_StringValue)(nil),
 		(*Value_IntValue)(nil),
 		(*Value_UintValue)(nil),
@@ -1443,18 +1442,18 @@ func file_flow_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flow_proto_rawDesc), len(file_flow_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_flow_proto_rawDesc), len(file_flowpipe_v1_flow_proto_rawDesc)),
 			NumEnums:      3,
 			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_flow_proto_goTypes,
-		DependencyIndexes: file_flow_proto_depIdxs,
-		EnumInfos:         file_flow_proto_enumTypes,
-		MessageInfos:      file_flow_proto_msgTypes,
+		GoTypes:           file_flowpipe_v1_flow_proto_goTypes,
+		DependencyIndexes: file_flowpipe_v1_flow_proto_depIdxs,
+		EnumInfos:         file_flowpipe_v1_flow_proto_enumTypes,
+		MessageInfos:      file_flowpipe_v1_flow_proto_msgTypes,
 	}.Build()
-	File_flow_proto = out.File
-	file_flow_proto_goTypes = nil
-	file_flow_proto_depIdxs = nil
+	File_flowpipe_v1_flow_proto = out.File
+	file_flowpipe_v1_flow_proto_goTypes = nil
+	file_flowpipe_v1_flow_proto_depIdxs = nil
 }
