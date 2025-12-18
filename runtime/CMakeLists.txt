@@ -16,6 +16,12 @@ add_library(flowpipe_runtime
         src/stages/stdout_sink.cc
 )
 
+# This line makes the runtime know about the generated proto includes
+target_link_libraries(flowpipe_runtime
+        PRIVATE
+        flowpipe_proto
+)
+
 # Public headers (build vs install)
 target_include_directories(flowpipe_runtime
         PUBLIC
@@ -44,32 +50,32 @@ add_executable(flow_runtime
 )
 
 target_link_libraries(flow_runtime
-        PRIVATE flowpipe_runtime
+        PRIVATE flowpipe_runtime flowpipe_proto
 )
-
-# =========================
-# Install rules
-# =========================
-include(GNUInstallDirs)
-
-install(
-        TARGETS flowpipe_runtime flow_runtime
-        EXPORT flowpipeRuntimeTargets
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-install(
-        DIRECTORY include/flowpipe
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-# =========================
-# Export targets
-# =========================
-install(
-        EXPORT flowpipeRuntimeTargets
-        NAMESPACE flowpipe::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
-)
+#
+## =========================
+## Install rules
+## =========================
+#include(GNUInstallDirs)
+#
+#install(
+#        TARGETS flowpipe_runtime flow_runtime
+#        EXPORT flowpipeRuntimeTargets
+#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#)
+#
+#install(
+#        DIRECTORY include/flowpipe
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#)
+#
+## =========================
+## Export targets
+## =========================
+#install(
+#        EXPORT flowpipeRuntimeTargets
+#        NAMESPACE flowpipe::
+#        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
+#)

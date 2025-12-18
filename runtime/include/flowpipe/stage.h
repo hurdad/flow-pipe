@@ -1,7 +1,7 @@
 #pragma once
 
 #include "bounded_queue.h"
-#include "flow_spec.h"
+#include "flowpipe/v1/flow.pb.h"
 #include "payload.h"
 #include <memory>
 #include <string>

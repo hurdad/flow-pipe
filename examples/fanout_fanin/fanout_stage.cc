@@ -4,8 +4,8 @@ namespace example {
 
     class FanoutStage final : public flowpipe::ITransformStage {
     public:
-        explicit FanoutStage(const flowpipe::StageSpec& spec)
-            : name_(spec.name) {}
+        explicit FanoutStage(const flowpipe::v1::StageSpec& spec)
+            : name_(spec.name()) {}
 
         std::string name() const override { return name_; }
 
@@ -27,7 +27,7 @@ namespace example {
     };
 
     std::shared_ptr<flowpipe::IStage>
-    make_fanout_stage(const flowpipe::StageSpec& spec) {
+    make_fanout_stage(const flowpipe::v1::StageSpec& spec) {
         return std::make_shared<FanoutStage>(spec);
     }
 

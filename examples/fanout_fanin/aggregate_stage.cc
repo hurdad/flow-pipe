@@ -6,8 +6,8 @@ namespace example {
 
     class AggregateStage final : public flowpipe::ISinkStage {
     public:
-        explicit AggregateStage(const flowpipe::StageSpec& spec)
-            : name_(spec.name) {}
+        explicit AggregateStage(const flowpipe::v1::StageSpec& spec)
+            : name_(spec.name()) {}
 
         std::string name() const override { return name_; }
 
@@ -31,7 +31,7 @@ namespace example {
     };
 
     std::shared_ptr<flowpipe::IStage>
-    make_aggregate_stage(const flowpipe::StageSpec& spec) {
+    make_aggregate_stage(const flowpipe::v1::StageSpec& spec) {
         return std::make_shared<AggregateStage>(spec);
     }
 

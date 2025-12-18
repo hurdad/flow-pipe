@@ -4,7 +4,7 @@ namespace flowpipe {
 
 class NoopTransform final : public ITransformStage {
 public:
-  explicit NoopTransform(const StageSpec &spec) : name_(spec.name) {}
+  explicit NoopTransform(const flowpipe::v1::StageSpec &spec) : name_(spec.name()) {}
 
   std::string name() const override { return name_; }
 
@@ -23,7 +23,7 @@ private:
   std::string name_;
 };
 
-std::shared_ptr<IStage> MakeNoopTransform(const StageSpec &spec) {
+std::shared_ptr<IStage> MakeNoopTransform(const flowpipe::v1::StageSpec &spec) {
   return std::make_shared<NoopTransform>(spec);
 }
 

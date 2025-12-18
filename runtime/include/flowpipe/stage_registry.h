@@ -1,6 +1,6 @@
 #pragma once
 
-#include "flow_spec.h"
+#include "flowpipe/v1/flow.pb.h"
 #include "stage.h"
 #include <functional>
 #include <memory>
@@ -11,16 +11,16 @@ namespace flowpipe {
 
 class StageRegistry {
 public:
-  using Factory = std::function<std::shared_ptr<IStage>(const StageSpec &)>;
+  using Factory = std::function<std::shared_ptr<IStage>(const flowpipe::v1::StageSpec &)>;
 
   void add(const std::string &type, Factory factory) {
     factories_[type] = std::move(factory);
   }
 
-  std::shared_ptr<IStage> create(const StageSpec &spec) const {
-    auto it = factories_.find(spec.type);
+  std::shared_ptr<IStage> create(const flowpipe::v1::StageSpec &spec) const {
+    auto it = factories_.find(spec.type());
     if (it == factories_.end()) {
-      throw std::runtime_error("Unknown stage type: " + spec.type);
+      throw std::runtime_error("Unknown stage type: " + spec.type());
     }
     return it->second(spec);
   }

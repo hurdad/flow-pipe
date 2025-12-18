@@ -6,7 +6,7 @@ namespace example {
 
     class UppercaseStage final : public flowpipe::ITransformStage {
     public:
-        explicit UppercaseStage(const flowpipe::StageSpec& spec);
+        explicit UppercaseStage(const flowpipe::v1::StageSpec& spec);
 
         std::string name() const override;
 
@@ -19,6 +19,6 @@ namespace example {
     };
 
     std::shared_ptr<flowpipe::IStage>
-    make_uppercase_stage(const flowpipe::StageSpec& spec);
+    make_uppercase_stage(const flowpipe::v1::StageSpec& spec);
 
 }  // namespace example

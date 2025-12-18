@@ -5,7 +5,7 @@ namespace flowpipe {
 
 class StdoutSink final : public ISinkStage {
 public:
-  explicit StdoutSink(const StageSpec &spec) : name_(spec.name) {}
+  explicit StdoutSink(const flowpipe::v1::StageSpec &spec) : name_(spec.name()) {}
 
   std::string name() const override { return name_; }
 
@@ -22,7 +22,7 @@ private:
   std::string name_;
 };
 
-std::shared_ptr<IStage> MakeStdoutSink(const StageSpec &spec) {
+std::shared_ptr<IStage> MakeStdoutSink(const flowpipe::v1::StageSpec &spec) {
   return std::make_shared<StdoutSink>(spec);
 }
 

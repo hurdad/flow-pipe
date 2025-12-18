@@ -4,10 +4,10 @@ namespace flowpipe {
 
 class NoopSource final : public ISourceStage {
 public:
-  explicit NoopSource(const StageSpec &spec) : name_(spec.name) {
-    if (auto it = spec.config.find("count"); it != spec.config.end()) {
-      count_ = std::stoll(it->second);
-    }
+  explicit NoopSource(const flowpipe::v1::StageSpec &spec) : name_(spec.name()) {
+    // if (auto it = spec.config.find("count"); it != spec.config.end()) {
+    //   count_ = std::stoll(it->second);
+    // }
   }
 
   std::string name() const override { return name_; }
@@ -24,7 +24,7 @@ private:
   int64_t count_{10};
 };
 
-std::shared_ptr<IStage> MakeNoopSource(const StageSpec &spec) {
+std::shared_ptr<IStage> MakeNoopSource(const flowpipe::v1::StageSpec &spec) {
   return std::make_shared<NoopSource>(spec);
 }
 

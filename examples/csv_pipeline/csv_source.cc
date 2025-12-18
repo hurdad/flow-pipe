@@ -5,9 +5,9 @@ namespace example {
 
     class CsvSource final : public flowpipe::ISourceStage {
     public:
-        explicit CsvSource(const flowpipe::StageSpec& spec)
-            : name_(spec.name),
-              path_(spec.config.at("path")) {}
+        explicit CsvSource(const flowpipe::v1::StageSpec& spec)
+            : name_(spec.name()),
+              path_("/foo" /*spec.params.at("path")*/) {}
 
         std::string name() const override { return name_; }
 
@@ -28,7 +28,7 @@ namespace example {
     };
 
     std::shared_ptr<flowpipe::IStage>
-    make_csv_source(const flowpipe::StageSpec& spec) {
+    make_csv_source(const flowpipe::v1::StageSpec& spec) {
         return std::make_shared<CsvSource>(spec);
     }
 

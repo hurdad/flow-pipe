@@ -5,8 +5,8 @@ namespace example {
 
     class CsvParser final : public flowpipe::ITransformStage {
     public:
-        explicit CsvParser(const flowpipe::StageSpec& spec)
-            : name_(spec.name) {}
+        explicit CsvParser(const flowpipe::v1::StageSpec& spec)
+            : name_(spec.name()) {}
 
         std::string name() const override { return name_; }
 
@@ -35,7 +35,7 @@ namespace example {
     };
 
     std::shared_ptr<flowpipe::IStage>
-    make_csv_parser(const flowpipe::StageSpec& spec) {
+    make_csv_parser(const flowpipe::v1::StageSpec& spec) {
         return std::make_shared<CsvParser>(spec);
     }
 
