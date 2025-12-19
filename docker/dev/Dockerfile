@@ -1,56 +1,64 @@
-# ============================================================
-# flow-pipe dev (SDK) image
-#
-# Purpose:
-# - Build flow-pipe stages and other extensions
-# - Provide headers, CMake config, and full toolchain
-#
-# Contains:
-# - Everything from flow-pipe-base
-# - flow-pipe headers
-# - CMake / Ninja / compiler toolchain
-# - protobuf / gRPC compilers
-#
-# Does NOT:
-# - Run production workloads directly
-#
-# CUDA analogy:
-#   nvidia/cuda:<ver>-devel
-# ============================================================
+# =====================================================
+# flow-pipe SDK / Dev Image
+# =====================================================
 
-# ARGs used in FROM must be declared before FROM
-ARG FLOW_PIPE_BASE_TAG=main-ubuntu24.04
+FROM ubuntu:24.04
 
-FROM ghcr.io/hurdad/flow-pipe-base:${FLOW_PIPE_BASE_TAG}
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install build toolchain + development dependencies
+# -----------------------------------------------------
+# System dependencies
+# -----------------------------------------------------
+
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     ninja-build \
+    clang \
+    git \
     pkg-config \
-    libyaml-cpp-dev \
-    nlohmann-json3-dev \
-    libprotobuf-dev \
-    protobuf-compiler \
-    protobuf-compiler-grpc \
-    libgrpc++-dev \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
-# Install flow-pipe SDK (headers + CMake config)
-# This directory should be produced by your build/install step:
-#   install/opt/flow-pipe/
-#
-# Expected contents:
-#   /opt/flow-pipe/include/flow_pipe/...
-#   /opt/flow-pipe/lib/cmake/flow-pipe/flow-pipeConfig.cmake
-#FIXMECOPY install/opt/flow-pipe /opt/flow-pipe
+# -----------------------------------------------------
+# Workdir
+# -----------------------------------------------------
 
-# Make flow-pipe discoverable by CMake find_package()
+WORKDIR /src
+
+# -----------------------------------------------------
+# Copy source (expects submodules already present)
+# -----------------------------------------------------
+
+COPY . .
+
+# -----------------------------------------------------
+# Configure + build specific target
+# -----------------------------------------------------
+
+RUN cmake -S . -B build -G Ninja \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe \
+ && cmake --build build --target flow_runtime
+
+# -----------------------------------------------------
+# Install SDK (headers + libs)
+# -----------------------------------------------------
+
+RUN cmake --install build
+
+# -----------------------------------------------------
+# Sanity checks (fail fast)
+# -----------------------------------------------------
+
+RUN test -f /opt/flow-pipe/include/flowpipe/stage.h
+RUN test -f /opt/flow-pipe/bin/flow_runtime
+
+# -----------------------------------------------------
+# Environment (nice for dev & downstream plugin builds)
+# -----------------------------------------------------
+
+ENV FLOW_PIPE_ROOT=/opt/flow-pipe
 ENV CMAKE_PREFIX_PATH=/opt/flow-pipe
-
-# No ENTRYPOINT override:
-# - inherited ENTRYPOINT ["flow_runtime"] from runtime/base
-# - acceptable for dev containers
-# - can be overridden by `docker run --entrypoint`
+ENV LD_LIBRARY_PATH=/opt/flow-pipe/lib:${LD_LIBRARY_PATH}
+ENV PATH=/opt/flow-pipe/bin:${PATH}
