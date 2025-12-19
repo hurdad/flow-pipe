@@ -28,7 +28,10 @@ COPY . .
 # (adjust path if your CMake layout differs)
 RUN cmake -S . -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
-  && cmake --build build --target flow_runtime
+  && cmake --build build --target flow_runtime \
+  && cmake --build build --target stage_noop_source \
+  && cmake --build build --target stage_noop_transform \
+  && cmake --build build --target stage_stdout_sink
 
 
 # ============================================================
@@ -47,16 +50,32 @@ RUN apt-get update && apt-get install -y \
 # Create plugin directory
 RUN mkdir -p /opt/flow-pipe/plugins
 
-# Copy ONLY the runtime binary from the builder stage
+# Copy built in stages from the builder stage
+COPY --from=builder \
+    /build/build/stages/noop_source/libstage_noop_source.so \
+    /opt/flow-pipe/plugins/
+
+COPY --from=builder \
+    /build/build/stages/noop_transform/libstage_noop_transform.so \
+    /opt/flow-pipe/plugins/
+
+COPY --from=builder \
+    /build/build/stages/stdout_sink/libstage_stdout_sink.so \
+    /opt/flow-pipe/plugins/
+
+# Create bin directory
+RUN mkdir -p /opt/flow-pipe/bin
+
+# Copy the runtime binary from the builder stage
 COPY --from=builder \
     /build/build/runtime/flow_runtime \
-    /usr/local/bin/flow_runtime
+   /opt/flow-pipe/bin/flow_runtime
 
 # Ensure executable
-RUN chmod +x /usr/local/bin/flow_runtime
+RUN chmod +x /opt/flow-pipe/bin/flow_runtime
 
 # Default plugin path
 ENV FLOW_PIPE_PLUGIN_PATH=/opt/flow-pipe/plugins
 
 # Entrypoint for containers
-ENTRYPOINT ["flow_runtime"]
+ENTRYPOINT ["/opt/flow-pipe/bin/flow_runtime"]
