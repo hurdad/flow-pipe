@@ -1,5 +1,7 @@
 # Generates C++ protobuf sources for flow-pipe
 
+cmake_minimum_required(VERSION 3.20)
+
 find_package(Protobuf REQUIRED)
 
 # --------------------------------------------------
@@ -9,8 +11,11 @@ find_package(Protobuf REQUIRED)
 set(PROTO_ROOT ${CMAKE_SOURCE_DIR}/proto)
 set(PROTO_V1 ${PROTO_ROOT}/flowpipe/v1)
 
+# All generated files live here
+set(PROTO_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
 # --------------------------------------------------
-# Proto files (compile together)
+# Proto files
 # --------------------------------------------------
 
 set(PROTO_FILES
@@ -22,14 +27,11 @@ set(PROTO_FILES
 # --------------------------------------------------
 
 set(GENERATED_SRCS
-        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/flow.pb.cc
-        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1/flow.pb.h
+        ${PROTO_GEN_DIR}/flowpipe/v1/flow.pb.cc
+        ${PROTO_GEN_DIR}/flowpipe/v1/flow.pb.h
 )
 
-# Ensure output directories exist
-file(MAKE_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}/flowpipe/v1
-)
+file(MAKE_DIRECTORY ${PROTO_GEN_DIR}/flowpipe/v1)
 
 # --------------------------------------------------
 # Protobuf generation
@@ -37,11 +39,10 @@ file(MAKE_DIRECTORY
 
 add_custom_command(
         OUTPUT ${GENERATED_SRCS}
-        COMMAND protoc
+        COMMAND ${Protobuf_PROTOC_EXECUTABLE}
         ARGS
-        --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
+        --cpp_out=${PROTO_GEN_DIR}
         -I ${PROTO_ROOT}
-        -I ${Protobuf_INCLUDE_DIRS}
         ${PROTO_FILES}
         DEPENDS ${PROTO_FILES}
         COMMENT "Generating C++ protobuf (flowpipe v1)"
@@ -52,16 +53,32 @@ add_custom_command(
 # Library target
 # --------------------------------------------------
 
-add_library(flowpipe_proto
+add_library(flowpipe_proto STATIC
         ${GENERATED_SRCS}
 )
 
 target_link_libraries(flowpipe_proto
-        PUBLIC
-        protobuf::libprotobuf
+        PUBLIC protobuf::libprotobuf
 )
 
+# ✅ THIS IS THE CRITICAL FIX
 target_include_directories(flowpipe_proto
         PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
+        $<BUILD_INTERFACE:${PROTO_GEN_DIR}>
+        $<INSTALL_INTERFACE:include>
+)
+
+# --------------------------------------------------
+# Install rules
+# --------------------------------------------------
+
+install(TARGETS flowpipe_proto
+        EXPORT flowpipeTargets
+        ARCHIVE DESTINATION lib
+)
+
+install(
+        DIRECTORY ${PROTO_GEN_DIR}/flowpipe/
+        DESTINATION include/flowpipe
+        FILES_MATCHING PATTERN "*.pb.h"
 )
