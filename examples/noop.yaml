@@ -1,0 +1,14 @@
+queues:
+  - name: q1
+    capacity: 128
+
+stages:
+  - name: src
+    type: noop_source
+    threads: 1
+    output_queue: q1
+
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: q1

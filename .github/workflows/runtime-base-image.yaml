@@ -1,11 +1,16 @@
-name: Build & Push Runtime Base Image
+name: Build & Push Runtime Image
 
 on:
   push:
     branches: [ "main" ]
     paths:
       - "runtime/**"
-      - ".github/workflows/runtime-base-image.yaml"
+      - "stages/**"
+      - "proto/**"
+      - "CMakeLists.txt"
+      - "Dockerfile"
+      - ".github/workflows/runtime-image.yaml"
+
   release:
     types: [ published ]
 
@@ -14,7 +19,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: flow-pipe-runtime-base
+  IMAGE_NAME: flow-pipe-runtime
 
 jobs:
   build:
@@ -51,7 +56,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: runtime/Dockerfile
+          file: Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}

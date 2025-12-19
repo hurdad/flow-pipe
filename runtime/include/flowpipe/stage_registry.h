@@ -1,32 +1,35 @@
 #pragma once
 
-#include "flowpipe/v1/flow.pb.h"
-#include "stage.h"
-#include <functional>
-#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+#include "flowpipe/stage_factory.h"
+#include "flowpipe/stage.h"
 
 namespace flowpipe {
 
-class StageRegistry {
-public:
-  using Factory = std::function<std::shared_ptr<IStage>(const flowpipe::v1::StageSpec &)>;
+    class StageRegistry {
+    public:
+        StageRegistry() = default;
+        ~StageRegistry();
 
-  void add(const std::string &type, Factory factory) {
-    factories_[type] = std::move(factory);
-  }
+        StageRegistry(const StageRegistry&) = delete;
+        StageRegistry& operator=(const StageRegistry&) = delete;
 
-  std::shared_ptr<IStage> create(const flowpipe::v1::StageSpec &spec) const {
-    auto it = factories_.find(spec.type());
-    if (it == factories_.end()) {
-      throw std::runtime_error("Unknown stage type: " + spec.type());
-    }
-    return it->second(spec);
-  }
+        IStage* create_stage(const std::string& plugin_name);
+        void destroy_stage(IStage* stage);
+        void shutdown();
 
-private:
-  std::unordered_map<std::string, Factory> factories_;
-};
+    private:
+        struct StageInstance {
+            std::string plugin_name;
+            IStage* stage = nullptr;
+        };
+
+        StageFactory factory_;
+        std::unordered_map<std::string, LoadedPlugin> plugins_;
+        std::vector<StageInstance> instances_;
+    };
 
 } // namespace flowpipe

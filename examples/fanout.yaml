@@ -1,0 +1,35 @@
+queues:
+  - name: q_in
+    capacity: 512
+  - name: q_a
+    capacity: 256
+  - name: q_b
+    capacity: 256
+
+stages:
+  - name: source
+    type: noop_source
+    threads: 1
+    output_queue: q_in
+
+  - name: transform_a
+    type: noop_transform
+    threads: 1
+    input_queue: q_in
+    output_queue: q_a
+
+  - name: transform_b
+    type: noop_transform
+    threads: 1
+    input_queue: q_in
+    output_queue: q_b
+
+  - name: sink_a
+    type: stdout_sink
+    threads: 1
+    input_queue: q_a
+
+  - name: sink_b
+    type: stdout_sink
+    threads: 1
+    input_queue: q_b

@@ -1,9 +1,7 @@
 #pragma once
 
 #include "bounded_queue.h"
-#include "flowpipe/v1/flow.pb.h"
 #include "payload.h"
-#include <memory>
 #include <string>
 
 namespace flowpipe {

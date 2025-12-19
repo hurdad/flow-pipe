@@ -51,4 +51,6 @@ find_package(gRPC REQUIRED)
 
 add_subdirectory(proto)
 add_subdirectory(runtime)
-add_subdirectory(examples)
+add_subdirectory(stages/noop_source)
+add_subdirectory(stages/noop_transform)
+add_subdirectory(stages/stdout_sink)

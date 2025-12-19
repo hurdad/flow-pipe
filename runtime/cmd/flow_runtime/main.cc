@@ -1,100 +1,121 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
+#include <yaml-cpp/yaml.h>
+#include <nlohmann/json.hpp>
+
 #include "flowpipe/runtime.h"
-#include "flowpipe/stage_registry.h"
+#include "flowpipe/v1/flow.pb.h"
 
-namespace flowpipe {
-    std::shared_ptr<IStage> MakeNoopSource(const flowpipe::v1::StageSpec &);
+using json = nlohmann::json;
 
-    std::shared_ptr<IStage> MakeNoopTransform(const flowpipe::v1::StageSpec &);
+static bool load_from_yaml(const std::string& path,
+                           flowpipe::v1::FlowSpec& flow) {
+  YAML::Node root = YAML::LoadFile(path);
 
-    std::shared_ptr<IStage> MakeStdoutSink(const flowpipe::v1::StageSpec &);
-} // namespace flowpipe
+  if (!root["queues"] || !root["stages"]) {
+    std::cerr << "yaml: missing queues or stages\n";
+    return false;
+  }
 
-int main() {
-    using namespace flowpipe;
+  for (const auto& q : root["queues"]) {
+    auto* queue = flow.add_queues();
+    queue->set_name(q["name"].as<std::string>());
+    queue->set_capacity(q["capacity"].as<uint32_t>());
+  }
 
-    StageRegistry registry;
-    registry.add("noop_source", MakeNoopSource);
-    registry.add("noop_transform", MakeNoopTransform);
-    registry.add("stdout_sink", MakeStdoutSink);
+  for (const auto& s : root["stages"]) {
+    auto* stage = flow.add_stages();
+    stage->set_name(s["name"].as<std::string>());
+    stage->set_type(s["type"].as<std::string>());
+    stage->set_threads(s["threads"].as<uint32_t>());
 
-    flowpipe::v1::FlowSpec spec;
+    if (s["plugin"])
+      stage->set_plugin(s["plugin"].as<std::string>());
+    if (s["input_queue"])
+      stage->set_input_queue(s["input_queue"].as<std::string>());
+    if (s["output_queue"])
+      stage->set_output_queue(s["output_queue"].as<std::string>());
 
-    // --------------------------------------------------
-    // Flow metadata
-    // --------------------------------------------------
-
-    spec.set_name("demo");
-    spec.set_version(1);
-
-    // Execution mode (job)
-    auto *exec = spec.mutable_execution();
-    exec->set_mode(flowpipe::v1::EXECUTION_MODE_JOB);
-
-    // Runtime type (builtin stages)
-    spec.set_runtime(flowpipe::v1::FLOW_RUNTIME_BUILTIN);
-
-    // --------------------------------------------------
-    // Queues
-    // --------------------------------------------------
-
-    // q1: MPSC, capacity 256
-    {
-        auto *q = spec.add_queues();
-        q->set_name("q1");
-        q->set_type(flowpipe::v1::QUEUE_TYPE_MPSC);
-        q->set_capacity(256);
+    if (s["params"]) {
+      for (const auto& it : s["params"]) {
+        (*stage->mutable_params())[it.first.as<std::string>()]
+            .set_string_value(it.second.as<std::string>());
+      }
     }
+  }
 
-    // q2: MPMC, capacity 256
-    {
-        auto *q = spec.add_queues();
-        q->set_name("q2");
-        q->set_type(flowpipe::v1::QUEUE_TYPE_MPMC);
-        q->set_capacity(256);
+  return true;
+}
+
+static bool load_from_json(const std::string& path,
+                           flowpipe::v1::FlowSpec& flow) {
+  std::ifstream in(path);
+  if (!in) return false;
+
+  json root;
+  in >> root;
+
+  if (!root.contains("queues") || !root.contains("stages")) {
+    std::cerr << "json: missing queues or stages\n";
+    return false;
+  }
+
+  for (const auto& q : root["queues"]) {
+    auto* queue = flow.add_queues();
+    queue->set_name(q.at("name").get<std::string>());
+    queue->set_capacity(q.at("capacity").get<uint32_t>());
+  }
+
+  for (const auto& s : root["stages"]) {
+    auto* stage = flow.add_stages();
+    stage->set_name(s.at("name").get<std::string>());
+    stage->set_type(s.at("type").get<std::string>());
+    stage->set_threads(s.at("threads").get<uint32_t>());
+
+    if (s.contains("plugin"))
+      stage->set_plugin(s.at("plugin").get<std::string>());
+    if (s.contains("input_queue"))
+      stage->set_input_queue(s.at("input_queue").get<std::string>());
+    if (s.contains("output_queue"))
+      stage->set_output_queue(s.at("output_queue").get<std::string>());
+
+    if (s.contains("params")) {
+      for (auto it = s["params"].begin(); it != s["params"].end(); ++it) {
+        (*stage->mutable_params())[it.key()]
+            .set_string_value(it.value().get<std::string>());
+      }
     }
+  }
 
-    // --------------------------------------------------
-    // Stage: src (noop_source)
-    // --------------------------------------------------
+  return true;
+}
 
-    {
-        auto *s = spec.add_stages();
-        s->set_name("src");
-        s->set_type("noop_source");
-        s->set_threads(1);
-        s->set_output_queue("q1");
+int main(int argc, char** argv) {
+  if (argc != 2) {
+    std::cerr << "usage: flow_runtime <flow.yaml|flow.json>\n";
+    return 1;
+  }
 
-        // params: { count = 5 }
-        flowpipe::v1::Value v;
-        v.set_int_value(5);
-        (*s->mutable_params())["count"] = v;
-    }
+  const std::string path = argv[1];
+  flowpipe::v1::FlowSpec flow;
 
-    // --------------------------------------------------
-    // Stage: xf (noop_transform)
-    // --------------------------------------------------
+  bool ok = false;
+  if (path.ends_with(".yaml") || path.ends_with(".yml")) {
+    ok = load_from_yaml(path, flow);
+  } else if (path.ends_with(".json")) {
+    ok = load_from_json(path, flow);
+  } else {
+    std::cerr << "unsupported file type (use yaml or json)\n";
+    return 1;
+  }
 
-    {
-        auto *s = spec.add_stages();
-        s->set_name("xf");
-        s->set_type("noop_transform");
-        s->set_threads(2);
-        s->set_input_queue("q1");
-        s->set_output_queue("q2");
-    }
+  if (!ok) {
+    std::cerr << "failed to load flow config\n";
+    return 1;
+  }
 
-    // --------------------------------------------------
-    // Stage: out (stdout_sink)
-    // --------------------------------------------------
-
-    {
-        auto *s = spec.add_stages();
-        s->set_name("out");
-        s->set_type("stdout_sink");
-        s->set_threads(1);
-        s->set_input_queue("q2");
-    }
-
-    Runtime rt(std::move(registry));
-    return rt.run(spec);
+  flowpipe::Runtime runtime;
+  return runtime.run(flow);
 }

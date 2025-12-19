@@ -102,6 +102,9 @@ message StageSpec {
 
   // Stage-specific parameters.
   map<string, Value> params = 6;
+
+  // Optional implementation override
+  optional string plugin = 7;
 }
 
 

@@ -1,18 +1,18 @@
 #pragma once
 
+#include "flowpipe/stage_registry.h"
 #include "flowpipe/v1/flow.pb.h"
-#include "stage_registry.h"
 
 namespace flowpipe {
 
-class Runtime {
-public:
-  explicit Runtime(StageRegistry registry);
+  class Runtime {
+  public:
+    Runtime();
 
-  int run(const flowpipe::v1::FlowSpec &spec);
+    int run(const flowpipe::v1::FlowSpec& spec);
 
-private:
-  StageRegistry registry_;
-};
+  private:
+    StageRegistry registry_;
+  };
 
 } // namespace flowpipe

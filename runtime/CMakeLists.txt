@@ -5,21 +5,27 @@ project(flowpipe_runtime
         LANGUAGES CXX
 )
 
+find_package(nlohmann_json REQUIRED)
+
 # =========================
-# Library target
+# Runtime library
 # =========================
 add_library(flowpipe_runtime
         src/runtime.cc
         src/signal_handler.cc
-        src/stages/noop_source.cc
-        src/stages/noop_transform.cc
-        src/stages/stdout_sink.cc
+
+        # Plugin infrastructure
+        src/stage_factory.cc
+        src/stage_registry.cc
 )
 
-# This line makes the runtime know about the generated proto includes
+# Runtime depends on:
+# - flowpipe_proto (for FlowSpec, StageSpec, etc.)
+# - dl (for dlopen/dlsym)
 target_link_libraries(flowpipe_runtime
         PRIVATE
         flowpipe_proto
+        dl
 )
 
 # Public headers (build vs install)
@@ -50,32 +56,6 @@ add_executable(flow_runtime
 )
 
 target_link_libraries(flow_runtime
-        PRIVATE flowpipe_runtime flowpipe_proto
+        PUBLIC flowpipe_runtime
+        PRIVATE flowpipe_proto yaml-cpp nlohmann_json::nlohmann_json
 )
-#
-## =========================
-## Install rules
-## =========================
-#include(GNUInstallDirs)
-#
-#install(
-#        TARGETS flowpipe_runtime flow_runtime
-#        EXPORT flowpipeRuntimeTargets
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#)
-#
-#install(
-#        DIRECTORY include/flowpipe
-#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#)
-#
-## =========================
-## Export targets
-## =========================
-#install(
-#        EXPORT flowpipeRuntimeTargets
-#        NAMESPACE flowpipe::
-#        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
-#)
