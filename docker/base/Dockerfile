@@ -30,7 +30,6 @@ FROM ghcr.io/hurdad/flow-pipe-runtime:${FLOW_PIPE_RUNTIME_TAG}
 RUN apt-get update && apt-get install -y \
     libyaml-cpp0.8 \
     libprotobuf32 \
-    libgrpc++1.51 \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 

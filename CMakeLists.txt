@@ -38,14 +38,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 endif()
 
 # --------------------------------------------------
-# Dependencies
-# --------------------------------------------------
-
-# Protobuf + gRPC are required by proto/ and runtime/
-find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
-
-# --------------------------------------------------
 # Subdirectories
 # --------------------------------------------------
 

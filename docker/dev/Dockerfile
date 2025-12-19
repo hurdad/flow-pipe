@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y \
     git \
     pkg-config \
     ca-certificates \
+    libyaml-cpp-dev \
+    nlohmann-json3-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
  && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------
