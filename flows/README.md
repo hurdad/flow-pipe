@@ -1,8 +1,8 @@
-# Examples
+# Flows
 
-This directory contains **example flow configurations** for **flow-pipe**.
+This directory contains **flow definitions** for **flow-pipe**.
 
-Examples are written in **YAML** and describe:
+Flows are written in **YAML** and describe:
 - queues
 - stages
 - wiring between stages
@@ -11,15 +11,15 @@ There is **no code** in this directory.
 
 ---
 
-## Running an Example
+## Running a Flow
 
 From the project root:
 
 ```bash
-flow_runtime examples/noop.yaml
+flow_runtime flows/noop.yaml
 ```
 
-Examples assume that the required **stage plugins** are available on the system.
+Flows assume that the required **stage plugins** are available on the system.
 
 By default, the runtime loads plugins from:
 
@@ -31,7 +31,7 @@ By default, the runtime loads plugins from:
 
 ## Plugin Requirements
 
-Each stage in an example references a **stage type**:
+Each stage in a flow references a **stage type**:
 
 ```yaml
 type: noop_source
@@ -43,7 +43,7 @@ At runtime, this maps to a shared library:
 libstage_noop_source.so
 ```
 
-The following plugins are expected for the examples in this directory:
+The following plugins are expected for the flows in this directory:
 
 | Stage type | Plugin file |
 |----------|-------------|
@@ -53,9 +53,9 @@ The following plugins are expected for the examples in this directory:
 
 ---
 
-## Example Structure
+## Flow Structure
 
-All examples follow the same structure:
+All flows follow the same structure:
 
 ```yaml
 queues:
@@ -97,7 +97,7 @@ Optional fields:
 
 ---
 
-## Available Examples
+## Available Flows
 
 | File | Description |
 |----|------------|
@@ -136,10 +136,4 @@ and has the correct name.
 
 ### Invalid wiring
 
-If a stage has incompatible inputs or outputs, the runtime will fail fast during startup.
-
----
-
-## Next Steps
-
-Use th
+If a stage has incompatible inputs or outputs, the runtime will fail
