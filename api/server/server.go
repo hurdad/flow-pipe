@@ -23,23 +23,23 @@ func (s *FlowServer) CreateFlow(
 
 	spec := req.Spec
 	spec.Version = 1
-//
-// 	flow := &flowpipev1.Flow{
-// 		Name:    spec.Name,
-// 		Version: spec.Version,
-// 		Spec:    spec,
-// 		Status: &flowpipev1.FlowStatus{
-// 			State:         flowpipev1.FlowState_FLOW_STATE_PENDING,
-// 			ActiveVersion: spec.Version,
-// 			LastUpdated:   timestamppb.Now(),
-// 		},
-// 	}
-//
-// 	s.store.mu.Lock()
-// 	defer s.store.mu.Unlock()
-//
-// 	s.store.flows[spec.Name] = flow
- 	return nil, nil
+	//
+	// 	flow := &flowpipev1.Flow{
+	// 		Name:    spec.Name,
+	// 		Version: spec.Version,
+	// 		Spec:    spec,
+	// 		Status: &flowpipev1.FlowStatus{
+	// 			State:         flowpipev1.FlowState_FLOW_STATE_PENDING,
+	// 			ActiveVersion: spec.Version,
+	// 			LastUpdated:   timestamppb.Now(),
+	// 		},
+	// 	}
+	//
+	// 	s.store.mu.Lock()
+	// 	defer s.store.mu.Unlock()
+	//
+	// 	s.store.flows[spec.Name] = flow
+	return nil, nil
 }
 
 func (s *FlowServer) GetFlow(
