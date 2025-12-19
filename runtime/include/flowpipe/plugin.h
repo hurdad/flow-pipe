@@ -4,14 +4,12 @@
 
 namespace flowpipe {
 
-    // Factory functions exported by plugins
-    using CreateStageFn = IStage* (*)();
-    using DestroyStageFn = void (*)(IStage*);
+// Factory functions exported by plugins
+using CreateStageFn = IStage* (*)();
+using DestroyStageFn = void (*)(IStage*);
 
-    // Required symbol names
-    constexpr const char* FLOWPIPE_CREATE_STAGE_SYMBOL =
-        "flowpipe_create_stage";
-    constexpr const char* FLOWPIPE_DESTROY_STAGE_SYMBOL =
-        "flowpipe_destroy_stage";
+// Required symbol names
+constexpr const char* FLOWPIPE_CREATE_STAGE_SYMBOL = "flowpipe_create_stage";
+constexpr const char* FLOWPIPE_DESTROY_STAGE_SYMBOL = "flowpipe_destroy_stage";
 
-} // namespace flowpipe
+}  // namespace flowpipe

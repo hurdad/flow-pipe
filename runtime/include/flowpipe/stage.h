@@ -1,8 +1,9 @@
 #pragma once
 
+#include <string>
+
 #include "bounded_queue.h"
 #include "payload.h"
-#include <string>
 
 namespace flowpipe {
 
@@ -16,16 +17,16 @@ struct IStage {
 };
 
 struct ISourceStage : IStage {
-  virtual void run(StageContext &ctx, BoundedQueue<Payload> &output) = 0;
+  virtual void run(StageContext& ctx, BoundedQueue<Payload>& output) = 0;
 };
 
 struct ITransformStage : IStage {
-  virtual void run(StageContext &ctx, BoundedQueue<Payload> &input,
-                   BoundedQueue<Payload> &output) = 0;
+  virtual void run(StageContext& ctx, BoundedQueue<Payload>& input,
+                   BoundedQueue<Payload>& output) = 0;
 };
 
 struct ISinkStage : IStage {
-  virtual void run(StageContext &ctx, BoundedQueue<Payload> &input) = 0;
+  virtual void run(StageContext& ctx, BoundedQueue<Payload>& input) = 0;
 };
 
-} // namespace flowpipe
+}  // namespace flowpipe

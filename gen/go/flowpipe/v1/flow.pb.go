@@ -22,13 +22,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type FlowRuntime int32
+
+const (
+	FlowRuntime_FLOW_RUNTIME_UNSPECIFIED FlowRuntime = 0
+	// All stages execute as builtins inside the runtime binary.
+	FlowRuntime_FLOW_RUNTIME_BUILTIN FlowRuntime = 1
+	// All stages execute inside the same container image.
+	FlowRuntime_FLOW_RUNTIME_CONTAINER FlowRuntime = 2
+)
+
+// Enum value maps for FlowRuntime.
+var (
+	FlowRuntime_name = map[int32]string{
+		0: "FLOW_RUNTIME_UNSPECIFIED",
+		1: "FLOW_RUNTIME_BUILTIN",
+		2: "FLOW_RUNTIME_CONTAINER",
+	}
+	FlowRuntime_value = map[string]int32{
+		"FLOW_RUNTIME_UNSPECIFIED": 0,
+		"FLOW_RUNTIME_BUILTIN":     1,
+		"FLOW_RUNTIME_CONTAINER":   2,
+	}
+)
+
+func (x FlowRuntime) Enum() *FlowRuntime {
+	p := new(FlowRuntime)
+	*p = x
+	return p
+}
+
+func (x FlowRuntime) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FlowRuntime) Descriptor() protoreflect.EnumDescriptor {
+	return file_flowpipe_v1_flow_proto_enumTypes[0].Descriptor()
+}
+
+func (FlowRuntime) Type() protoreflect.EnumType {
+	return &file_flowpipe_v1_flow_proto_enumTypes[0]
+}
+
+func (x FlowRuntime) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FlowRuntime.Descriptor instead.
+func (FlowRuntime) EnumDescriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
+}
+
 type ExecutionMode int32
 
 const (
 	ExecutionMode_EXECUTION_MODE_UNSPECIFIED ExecutionMode = 0
-	// Long-running, continuous pipeline (Kubernetes Deployment)
+	// Long-running, continuous pipeline (Kubernetes Deployment).
 	ExecutionMode_EXECUTION_MODE_STREAMING ExecutionMode = 1
-	// Run-to-completion pipeline (Kubernetes Job)
+	// Run-to-completion pipeline (Kubernetes Job).
 	ExecutionMode_EXECUTION_MODE_JOB ExecutionMode = 2
 )
 
@@ -57,11 +108,11 @@ func (x ExecutionMode) String() string {
 }
 
 func (ExecutionMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[0].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
 }
 
 func (ExecutionMode) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[0]
+	return &file_flowpipe_v1_flow_proto_enumTypes[1]
 }
 
 func (x ExecutionMode) Number() protoreflect.EnumNumber {
@@ -70,15 +121,17 @@ func (x ExecutionMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionMode.Descriptor instead.
 func (ExecutionMode) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
 }
 
 type QueueType int32
 
 const (
 	QueueType_QUEUE_TYPE_UNSPECIFIED QueueType = 0
-	QueueType_QUEUE_TYPE_MPSC        QueueType = 1
-	QueueType_QUEUE_TYPE_MPMC        QueueType = 2
+	// Multi-producer, single-consumer.
+	QueueType_QUEUE_TYPE_MPSC QueueType = 1
+	// Multi-producer, multi-consumer.
+	QueueType_QUEUE_TYPE_MPMC QueueType = 2
 )
 
 // Enum value maps for QueueType.
@@ -106,11 +159,11 @@ func (x QueueType) String() string {
 }
 
 func (QueueType) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
 }
 
 func (QueueType) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[1]
+	return &file_flowpipe_v1_flow_proto_enumTypes[2]
 }
 
 func (x QueueType) Number() protoreflect.EnumNumber {
@@ -119,7 +172,7 @@ func (x QueueType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use QueueType.Descriptor instead.
 func (QueueType) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
 }
 
 type FlowState int32
@@ -129,7 +182,7 @@ const (
 	FlowState_FLOW_STATE_PENDING     FlowState = 1
 	FlowState_FLOW_STATE_DEPLOYING   FlowState = 2
 	FlowState_FLOW_STATE_RUNNING     FlowState = 3
-	FlowState_FLOW_STATE_SUCCEEDED   FlowState = 4 // Jobs only
+	FlowState_FLOW_STATE_SUCCEEDED   FlowState = 4 // Jobs only.
 	FlowState_FLOW_STATE_FAILED      FlowState = 5
 	FlowState_FLOW_STATE_STOPPED     FlowState = 6
 )
@@ -167,11 +220,11 @@ func (x FlowState) String() string {
 }
 
 func (FlowState) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[3].Descriptor()
 }
 
 func (FlowState) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[2]
+	return &file_flowpipe_v1_flow_proto_enumTypes[3]
 }
 
 func (x FlowState) Number() protoreflect.EnumNumber {
@@ -180,26 +233,31 @@ func (x FlowState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FlowState.Descriptor instead.
 func (FlowState) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
 }
 
 type FlowSpec struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Logical flow name (identifier and K8s resource prefix)
+	// Logical flow name (identifier and K8s resource prefix).
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Immutable version assigned by the Flow API
+	// Immutable version assigned by the Flow API / controller.
 	Version uint64 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
-	// Execution model for the flow
-	Execution *Execution `protobuf:"bytes,3,opt,name=execution,proto3" json:"execution,omitempty"`
-	// Pipeline definition
-	Stages []*StageSpec `protobuf:"bytes,4,rep,name=stages,proto3" json:"stages,omitempty"`
-	Queues []*QueueSpec `protobuf:"bytes,5,rep,name=queues,proto3" json:"queues,omitempty"`
-	// Optional CPU pinning hints per stage (best-effort)
-	CpuPinning map[string]*CpuSet `protobuf:"bytes,6,rep,name=cpu_pinning,json=cpuPinning,proto3" json:"cpu_pinning,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// Optional resource intent for the whole flow
-	Resources *Resources `protobuf:"bytes,7,opt,name=resources,proto3" json:"resources,omitempty"`
-	// Optional metadata (team, env, cost-center, etc.)
-	Labels        map[string]string `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Runtime environment for this flow.
+	Runtime FlowRuntime `protobuf:"varint,3,opt,name=runtime,proto3,enum=flowpipe.v1.FlowRuntime" json:"runtime,omitempty"`
+	// Container image reference when runtime == FLOW_RUNTIME_CONTAINER.
+	Image *string `protobuf:"bytes,4,opt,name=image,proto3,oneof" json:"image,omitempty"`
+	// Execution model (streaming vs job).
+	Execution *Execution `protobuf:"bytes,5,opt,name=execution,proto3,oneof" json:"execution,omitempty"`
+	// Pipeline definition.
+	Stages []*StageSpec `protobuf:"bytes,6,rep,name=stages,proto3" json:"stages,omitempty"`
+	Queues []*QueueSpec `protobuf:"bytes,7,rep,name=queues,proto3" json:"queues,omitempty"`
+	// Optional CPU pinning hints per stage (best-effort).
+	// Key MUST match StageSpec.name.
+	CpuPinning map[string]*CpuSet `protobuf:"bytes,8,rep,name=cpu_pinning,json=cpuPinning,proto3" json:"cpu_pinning,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Optional resource intent for the whole flow.
+	Resources *Resources `protobuf:"bytes,9,opt,name=resources,proto3,oneof" json:"resources,omitempty"`
+	// Optional metadata (team, env, cost-center, etc.).
+	Labels        map[string]string `protobuf:"bytes,10,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -246,6 +304,20 @@ func (x *FlowSpec) GetVersion() uint64 {
 		return x.Version
 	}
 	return 0
+}
+
+func (x *FlowSpec) GetRuntime() FlowRuntime {
+	if x != nil {
+		return x.Runtime
+	}
+	return FlowRuntime_FLOW_RUNTIME_UNSPECIFIED
+}
+
+func (x *FlowSpec) GetImage() string {
+	if x != nil && x.Image != nil {
+		return *x.Image
+	}
+	return ""
 }
 
 func (x *FlowSpec) GetExecution() *Execution {
@@ -336,20 +408,23 @@ func (x *Execution) GetMode() ExecutionMode {
 
 type StageSpec struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Unique stage name
+	// Unique stage name within the flow.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Stage type (resolved via registry in runtime)
+	// Stage type (resolved via runtime registry).
+	// Interpretation depends on FlowSpec.runtime.
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	// Number of worker threads for this stage
+	// Number of worker threads for this stage.
 	Threads uint32 `protobuf:"varint,3,opt,name=threads,proto3" json:"threads,omitempty"`
-	// Optional input queue
-	// - unset => source or side-effect stage
+	// Optional input queue name:
+	// - unset => source or side-effect stage.
 	InputQueue *string `protobuf:"bytes,4,opt,name=input_queue,json=inputQueue,proto3,oneof" json:"input_queue,omitempty"`
-	// Optional output queue
-	// - unset => sink or side-effect stage
+	// Optional output queue name:
+	// - unset => sink or side-effect stage.
 	OutputQueue *string `protobuf:"bytes,5,opt,name=output_queue,json=outputQueue,proto3,oneof" json:"output_queue,omitempty"`
-	// Stage-specific parameters
-	Params        map[string]*Value `protobuf:"bytes,6,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Stage-specific parameters.
+	Params map[string]*Value `protobuf:"bytes,6,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Optional implementation override
+	Plugin        *string `protobuf:"bytes,7,opt,name=plugin,proto3,oneof" json:"plugin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -426,6 +501,13 @@ func (x *StageSpec) GetParams() map[string]*Value {
 	return nil
 }
 
+func (x *StageSpec) GetPlugin() string {
+	if x != nil && x.Plugin != nil {
+		return *x.Plugin
+	}
+	return ""
+}
+
 type QueueSpec struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -488,11 +570,11 @@ func (x *QueueSpec) GetCapacity() uint32 {
 
 type Resources struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Preferred total CPU cores
+	// Preferred total CPU cores.
 	CpuCores *uint32 `protobuf:"varint,1,opt,name=cpu_cores,json=cpuCores,proto3,oneof" json:"cpu_cores,omitempty"`
-	// Preferred memory in MB
+	// Preferred memory in MB.
 	MemoryMb *uint32 `protobuf:"varint,2,opt,name=memory_mb,json=memoryMb,proto3,oneof" json:"memory_mb,omitempty"`
-	// Optional named profile (e.g. "high-throughput")
+	// Optional named profile (e.g. "high-throughput").
 	Profile       *string `protobuf:"bytes,3,opt,name=profile,proto3,oneof" json:"profile,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -551,7 +633,7 @@ func (x *Resources) GetProfile() string {
 
 type CpuSet struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// CPU core IDs
+	// CPU core IDs.
 	Cpu           []uint32 `protobuf:"varint,1,rep,packed,name=cpu,proto3" json:"cpu,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -596,10 +678,8 @@ func (x *CpuSet) GetCpu() []uint32 {
 
 type Flow struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Version       uint64                 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
-	Spec          *FlowSpec              `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
-	Status        *FlowStatus            `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	Spec          *FlowSpec              `protobuf:"bytes,1,opt,name=spec,proto3" json:"spec,omitempty"`
+	Status        *FlowStatus            `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -634,20 +714,6 @@ func (*Flow) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *Flow) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Flow) GetVersion() uint64 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 func (x *Flow) GetSpec() *FlowSpec {
 	if x != nil {
 		return x.Spec
@@ -665,13 +731,13 @@ func (x *Flow) GetStatus() *FlowStatus {
 type FlowStatus struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	State FlowState              `protobuf:"varint,1,opt,name=state,proto3,enum=flowpipe.v1.FlowState" json:"state,omitempty"`
-	// Human-readable message (optional)
+	// Human-readable message.
 	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	// Currently active version
+	// Currently active version.
 	ActiveVersion uint64 `protobuf:"varint,3,opt,name=active_version,json=activeVersion,proto3" json:"active_version,omitempty"`
-	// Kubernetes workload name (Deployment or Job)
+	// Kubernetes workload name (Deployment or Job).
 	Workload string `protobuf:"bytes,4,opt,name=workload,proto3" json:"workload,omitempty"`
-	// Last controller update time
+	// Last controller update time.
 	LastUpdated   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_updated,json=lastUpdated,proto3" json:"last_updated,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1236,25 +1302,33 @@ var File_flowpipe_v1_flow_proto protoreflect.FileDescriptor
 
 const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\n" +
-	"\x16flowpipe/v1/flow.proto\x12\vflowpipe.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x04\n" +
+	"\x16flowpipe/v1/flow.proto\x12\vflowpipe.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x05\n" +
 	"\bFlowSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\x04R\aversion\x124\n" +
-	"\texecution\x18\x03 \x01(\v2\x16.flowpipe.v1.ExecutionR\texecution\x12.\n" +
-	"\x06stages\x18\x04 \x03(\v2\x16.flowpipe.v1.StageSpecR\x06stages\x12.\n" +
-	"\x06queues\x18\x05 \x03(\v2\x16.flowpipe.v1.QueueSpecR\x06queues\x12F\n" +
-	"\vcpu_pinning\x18\x06 \x03(\v2%.flowpipe.v1.FlowSpec.CpuPinningEntryR\n" +
-	"cpuPinning\x124\n" +
-	"\tresources\x18\a \x01(\v2\x16.flowpipe.v1.ResourcesR\tresources\x129\n" +
-	"\x06labels\x18\b \x03(\v2!.flowpipe.v1.FlowSpec.LabelsEntryR\x06labels\x1aR\n" +
+	"\aversion\x18\x02 \x01(\x04R\aversion\x122\n" +
+	"\aruntime\x18\x03 \x01(\x0e2\x18.flowpipe.v1.FlowRuntimeR\aruntime\x12\x19\n" +
+	"\x05image\x18\x04 \x01(\tH\x00R\x05image\x88\x01\x01\x129\n" +
+	"\texecution\x18\x05 \x01(\v2\x16.flowpipe.v1.ExecutionH\x01R\texecution\x88\x01\x01\x12.\n" +
+	"\x06stages\x18\x06 \x03(\v2\x16.flowpipe.v1.StageSpecR\x06stages\x12.\n" +
+	"\x06queues\x18\a \x03(\v2\x16.flowpipe.v1.QueueSpecR\x06queues\x12F\n" +
+	"\vcpu_pinning\x18\b \x03(\v2%.flowpipe.v1.FlowSpec.CpuPinningEntryR\n" +
+	"cpuPinning\x129\n" +
+	"\tresources\x18\t \x01(\v2\x16.flowpipe.v1.ResourcesH\x02R\tresources\x88\x01\x01\x129\n" +
+	"\x06labels\x18\n" +
+	" \x03(\v2!.flowpipe.v1.FlowSpec.LabelsEntryR\x06labels\x1aR\n" +
 	"\x0fCpuPinningEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12)\n" +
 	"\x05value\x18\x02 \x01(\v2\x13.flowpipe.v1.CpuSetR\x05value:\x028\x01\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\";\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\b\n" +
+	"\x06_imageB\f\n" +
+	"\n" +
+	"_executionB\f\n" +
+	"\n" +
+	"_resources\";\n" +
 	"\tExecution\x12.\n" +
-	"\x04mode\x18\x01 \x01(\x0e2\x1a.flowpipe.v1.ExecutionModeR\x04mode\"\xc7\x02\n" +
+	"\x04mode\x18\x01 \x01(\x0e2\x1a.flowpipe.v1.ExecutionModeR\x04mode\"\xef\x02\n" +
 	"\tStageSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +
@@ -1262,12 +1336,14 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\vinput_queue\x18\x04 \x01(\tH\x00R\n" +
 	"inputQueue\x88\x01\x01\x12&\n" +
 	"\foutput_queue\x18\x05 \x01(\tH\x01R\voutputQueue\x88\x01\x01\x12:\n" +
-	"\x06params\x18\x06 \x03(\v2\".flowpipe.v1.StageSpec.ParamsEntryR\x06params\x1aM\n" +
+	"\x06params\x18\x06 \x03(\v2\".flowpipe.v1.StageSpec.ParamsEntryR\x06params\x12\x1b\n" +
+	"\x06plugin\x18\a \x01(\tH\x02R\x06plugin\x88\x01\x01\x1aM\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12(\n" +
 	"\x05value\x18\x02 \x01(\v2\x12.flowpipe.v1.ValueR\x05value:\x028\x01B\x0e\n" +
 	"\f_input_queueB\x0f\n" +
-	"\r_output_queue\"g\n" +
+	"\r_output_queueB\t\n" +
+	"\a_plugin\"g\n" +
 	"\tQueueSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12*\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x16.flowpipe.v1.QueueTypeR\x04type\x12\x1a\n" +
@@ -1283,12 +1359,10 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\n" +
 	"\b_profile\"\x1a\n" +
 	"\x06CpuSet\x12\x10\n" +
-	"\x03cpu\x18\x01 \x03(\rR\x03cpu\"\x90\x01\n" +
-	"\x04Flow\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\x04R\aversion\x12)\n" +
-	"\x04spec\x18\x03 \x01(\v2\x15.flowpipe.v1.FlowSpecR\x04spec\x12/\n" +
-	"\x06status\x18\x04 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"\xd6\x01\n" +
+	"\x03cpu\x18\x01 \x03(\rR\x03cpu\"b\n" +
+	"\x04Flow\x12)\n" +
+	"\x04spec\x18\x01 \x01(\v2\x15.flowpipe.v1.FlowSpecR\x04spec\x12/\n" +
+	"\x06status\x18\x02 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"\xd6\x01\n" +
 	"\n" +
 	"FlowStatus\x12,\n" +
 	"\x05state\x18\x01 \x01(\x0e2\x16.flowpipe.v1.FlowStateR\x05state\x12\x18\n" +
@@ -1330,7 +1404,11 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"DoubleList\x12\x16\n" +
 	"\x06values\x18\x01 \x03(\x01R\x06values\"\"\n" +
 	"\bBoolList\x12\x16\n" +
-	"\x06values\x18\x01 \x03(\bR\x06values*e\n" +
+	"\x06values\x18\x01 \x03(\bR\x06values*a\n" +
+	"\vFlowRuntime\x12\x1c\n" +
+	"\x18FLOW_RUNTIME_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14FLOW_RUNTIME_BUILTIN\x10\x01\x12\x1a\n" +
+	"\x16FLOW_RUNTIME_CONTAINER\x10\x02*e\n" +
 	"\rExecutionMode\x12\x1e\n" +
 	"\x1aEXECUTION_MODE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18EXECUTION_MODE_STREAMING\x10\x01\x12\x16\n" +
@@ -1360,62 +1438,64 @@ func file_flowpipe_v1_flow_proto_rawDescGZIP() []byte {
 	return file_flowpipe_v1_flow_proto_rawDescData
 }
 
-var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_flowpipe_v1_flow_proto_goTypes = []any{
-	(ExecutionMode)(0),            // 0: flowpipe.v1.ExecutionMode
-	(QueueType)(0),                // 1: flowpipe.v1.QueueType
-	(FlowState)(0),                // 2: flowpipe.v1.FlowState
-	(*FlowSpec)(nil),              // 3: flowpipe.v1.FlowSpec
-	(*Execution)(nil),             // 4: flowpipe.v1.Execution
-	(*StageSpec)(nil),             // 5: flowpipe.v1.StageSpec
-	(*QueueSpec)(nil),             // 6: flowpipe.v1.QueueSpec
-	(*Resources)(nil),             // 7: flowpipe.v1.Resources
-	(*CpuSet)(nil),                // 8: flowpipe.v1.CpuSet
-	(*Flow)(nil),                  // 9: flowpipe.v1.Flow
-	(*FlowStatus)(nil),            // 10: flowpipe.v1.FlowStatus
-	(*Value)(nil),                 // 11: flowpipe.v1.Value
-	(*Struct)(nil),                // 12: flowpipe.v1.Struct
-	(*StringList)(nil),            // 13: flowpipe.v1.StringList
-	(*IntList)(nil),               // 14: flowpipe.v1.IntList
-	(*UIntList)(nil),              // 15: flowpipe.v1.UIntList
-	(*DoubleList)(nil),            // 16: flowpipe.v1.DoubleList
-	(*BoolList)(nil),              // 17: flowpipe.v1.BoolList
-	nil,                           // 18: flowpipe.v1.FlowSpec.CpuPinningEntry
-	nil,                           // 19: flowpipe.v1.FlowSpec.LabelsEntry
-	nil,                           // 20: flowpipe.v1.StageSpec.ParamsEntry
-	nil,                           // 21: flowpipe.v1.Struct.FieldsEntry
-	(*timestamppb.Timestamp)(nil), // 22: google.protobuf.Timestamp
+	(FlowRuntime)(0),              // 0: flowpipe.v1.FlowRuntime
+	(ExecutionMode)(0),            // 1: flowpipe.v1.ExecutionMode
+	(QueueType)(0),                // 2: flowpipe.v1.QueueType
+	(FlowState)(0),                // 3: flowpipe.v1.FlowState
+	(*FlowSpec)(nil),              // 4: flowpipe.v1.FlowSpec
+	(*Execution)(nil),             // 5: flowpipe.v1.Execution
+	(*StageSpec)(nil),             // 6: flowpipe.v1.StageSpec
+	(*QueueSpec)(nil),             // 7: flowpipe.v1.QueueSpec
+	(*Resources)(nil),             // 8: flowpipe.v1.Resources
+	(*CpuSet)(nil),                // 9: flowpipe.v1.CpuSet
+	(*Flow)(nil),                  // 10: flowpipe.v1.Flow
+	(*FlowStatus)(nil),            // 11: flowpipe.v1.FlowStatus
+	(*Value)(nil),                 // 12: flowpipe.v1.Value
+	(*Struct)(nil),                // 13: flowpipe.v1.Struct
+	(*StringList)(nil),            // 14: flowpipe.v1.StringList
+	(*IntList)(nil),               // 15: flowpipe.v1.IntList
+	(*UIntList)(nil),              // 16: flowpipe.v1.UIntList
+	(*DoubleList)(nil),            // 17: flowpipe.v1.DoubleList
+	(*BoolList)(nil),              // 18: flowpipe.v1.BoolList
+	nil,                           // 19: flowpipe.v1.FlowSpec.CpuPinningEntry
+	nil,                           // 20: flowpipe.v1.FlowSpec.LabelsEntry
+	nil,                           // 21: flowpipe.v1.StageSpec.ParamsEntry
+	nil,                           // 22: flowpipe.v1.Struct.FieldsEntry
+	(*timestamppb.Timestamp)(nil), // 23: google.protobuf.Timestamp
 }
 var file_flowpipe_v1_flow_proto_depIdxs = []int32{
-	4,  // 0: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
-	5,  // 1: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
-	6,  // 2: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
-	18, // 3: flowpipe.v1.FlowSpec.cpu_pinning:type_name -> flowpipe.v1.FlowSpec.CpuPinningEntry
-	7,  // 4: flowpipe.v1.FlowSpec.resources:type_name -> flowpipe.v1.Resources
-	19, // 5: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
-	0,  // 6: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
-	20, // 7: flowpipe.v1.StageSpec.params:type_name -> flowpipe.v1.StageSpec.ParamsEntry
-	1,  // 8: flowpipe.v1.QueueSpec.type:type_name -> flowpipe.v1.QueueType
-	3,  // 9: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
-	10, // 10: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
-	2,  // 11: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
-	22, // 12: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
-	13, // 13: flowpipe.v1.Value.string_list:type_name -> flowpipe.v1.StringList
-	14, // 14: flowpipe.v1.Value.int_list:type_name -> flowpipe.v1.IntList
-	15, // 15: flowpipe.v1.Value.uint_list:type_name -> flowpipe.v1.UIntList
-	16, // 16: flowpipe.v1.Value.double_list:type_name -> flowpipe.v1.DoubleList
-	17, // 17: flowpipe.v1.Value.bool_list:type_name -> flowpipe.v1.BoolList
-	12, // 18: flowpipe.v1.Value.struct_value:type_name -> flowpipe.v1.Struct
-	21, // 19: flowpipe.v1.Struct.fields:type_name -> flowpipe.v1.Struct.FieldsEntry
-	8,  // 20: flowpipe.v1.FlowSpec.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
-	11, // 21: flowpipe.v1.StageSpec.ParamsEntry.value:type_name -> flowpipe.v1.Value
-	11, // 22: flowpipe.v1.Struct.FieldsEntry.value:type_name -> flowpipe.v1.Value
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	0,  // 0: flowpipe.v1.FlowSpec.runtime:type_name -> flowpipe.v1.FlowRuntime
+	5,  // 1: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
+	6,  // 2: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
+	7,  // 3: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
+	19, // 4: flowpipe.v1.FlowSpec.cpu_pinning:type_name -> flowpipe.v1.FlowSpec.CpuPinningEntry
+	8,  // 5: flowpipe.v1.FlowSpec.resources:type_name -> flowpipe.v1.Resources
+	20, // 6: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
+	1,  // 7: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
+	21, // 8: flowpipe.v1.StageSpec.params:type_name -> flowpipe.v1.StageSpec.ParamsEntry
+	2,  // 9: flowpipe.v1.QueueSpec.type:type_name -> flowpipe.v1.QueueType
+	4,  // 10: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
+	11, // 11: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
+	3,  // 12: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
+	23, // 13: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
+	14, // 14: flowpipe.v1.Value.string_list:type_name -> flowpipe.v1.StringList
+	15, // 15: flowpipe.v1.Value.int_list:type_name -> flowpipe.v1.IntList
+	16, // 16: flowpipe.v1.Value.uint_list:type_name -> flowpipe.v1.UIntList
+	17, // 17: flowpipe.v1.Value.double_list:type_name -> flowpipe.v1.DoubleList
+	18, // 18: flowpipe.v1.Value.bool_list:type_name -> flowpipe.v1.BoolList
+	13, // 19: flowpipe.v1.Value.struct_value:type_name -> flowpipe.v1.Struct
+	22, // 20: flowpipe.v1.Struct.fields:type_name -> flowpipe.v1.Struct.FieldsEntry
+	9,  // 21: flowpipe.v1.FlowSpec.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
+	12, // 22: flowpipe.v1.StageSpec.ParamsEntry.value:type_name -> flowpipe.v1.Value
+	12, // 23: flowpipe.v1.Struct.FieldsEntry.value:type_name -> flowpipe.v1.Value
+	24, // [24:24] is the sub-list for method output_type
+	24, // [24:24] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_flow_proto_init() }
@@ -1423,6 +1503,7 @@ func file_flowpipe_v1_flow_proto_init() {
 	if File_flowpipe_v1_flow_proto != nil {
 		return
 	}
+	file_flowpipe_v1_flow_proto_msgTypes[0].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[2].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[4].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[8].OneofWrappers = []any{
@@ -1443,7 +1524,7 @@ func file_flowpipe_v1_flow_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_flow_proto_rawDesc), len(file_flowpipe_v1_flow_proto_rawDesc)),
-			NumEnums:      3,
+			NumEnums:      4,
 			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   0,

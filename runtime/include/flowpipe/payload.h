@@ -9,4 +9,4 @@ namespace flowpipe {
 // later: arena-backed buffer, views, ref-counting
 using Payload = std::string;
 
-} // namespace flowpipe
+}  // namespace flowpipe

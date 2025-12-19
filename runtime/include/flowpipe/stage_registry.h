@@ -4,32 +4,32 @@
 #include <unordered_map>
 #include <vector>
 
-#include "flowpipe/stage_factory.h"
 #include "flowpipe/stage.h"
+#include "flowpipe/stage_factory.h"
 
 namespace flowpipe {
 
-    class StageRegistry {
-    public:
-        StageRegistry() = default;
-        ~StageRegistry();
+class StageRegistry {
+ public:
+  StageRegistry() = default;
+  ~StageRegistry();
 
-        StageRegistry(const StageRegistry&) = delete;
-        StageRegistry& operator=(const StageRegistry&) = delete;
+  StageRegistry(const StageRegistry&) = delete;
+  StageRegistry& operator=(const StageRegistry&) = delete;
 
-        IStage* create_stage(const std::string& plugin_name);
-        void destroy_stage(IStage* stage);
-        void shutdown();
+  IStage* create_stage(const std::string& plugin_name);
+  void destroy_stage(IStage* stage);
+  void shutdown();
 
-    private:
-        struct StageInstance {
-            std::string plugin_name;
-            IStage* stage = nullptr;
-        };
+ private:
+  struct StageInstance {
+    std::string plugin_name;
+    IStage* stage = nullptr;
+  };
 
-        StageFactory factory_;
-        std::unordered_map<std::string, LoadedPlugin> plugins_;
-        std::vector<StageInstance> instances_;
-    };
+  StageFactory factory_;
+  std::unordered_map<std::string, LoadedPlugin> plugins_;
+  std::vector<StageInstance> instances_;
+};
 
-} // namespace flowpipe
+}  // namespace flowpipe

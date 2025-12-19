@@ -287,7 +287,7 @@
             "type": "integer",
             "format": "int64"
           },
-          "title": "CPU core IDs"
+          "description": "CPU core IDs."
         }
       }
     },
@@ -319,18 +319,11 @@
         "EXECUTION_MODE_JOB"
       ],
       "default": "EXECUTION_MODE_UNSPECIFIED",
-      "title": "- EXECUTION_MODE_STREAMING: Long-running, continuous pipeline (Kubernetes Deployment)\n - EXECUTION_MODE_JOB: Run-to-completion pipeline (Kubernetes Job)"
+      "description": " - EXECUTION_MODE_STREAMING: Long-running, continuous pipeline (Kubernetes Deployment).\n - EXECUTION_MODE_JOB: Run-to-completion pipeline (Kubernetes Job)."
     },
     "v1Flow": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string",
-          "format": "uint64"
-        },
         "spec": {
           "$ref": "#/definitions/v1FlowSpec"
         },
@@ -339,21 +332,39 @@
         }
       }
     },
+    "v1FlowRuntime": {
+      "type": "string",
+      "enum": [
+        "FLOW_RUNTIME_UNSPECIFIED",
+        "FLOW_RUNTIME_BUILTIN",
+        "FLOW_RUNTIME_CONTAINER"
+      ],
+      "default": "FLOW_RUNTIME_UNSPECIFIED",
+      "description": " - FLOW_RUNTIME_BUILTIN: All stages execute as builtins inside the runtime binary.\n - FLOW_RUNTIME_CONTAINER: All stages execute inside the same container image."
+    },
     "v1FlowSpec": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string",
-          "title": "Logical flow name (identifier and K8s resource prefix)"
+          "description": "Logical flow name (identifier and K8s resource prefix)."
         },
         "version": {
           "type": "string",
           "format": "uint64",
-          "title": "Immutable version assigned by the Flow API"
+          "description": "Immutable version assigned by the Flow API / controller."
+        },
+        "runtime": {
+          "$ref": "#/definitions/v1FlowRuntime",
+          "description": "Runtime environment for this flow."
+        },
+        "image": {
+          "type": "string",
+          "description": "Container image reference when runtime == FLOW_RUNTIME_CONTAINER."
         },
         "execution": {
           "$ref": "#/definitions/v1Execution",
-          "title": "Execution model for the flow"
+          "description": "Execution model (streaming vs job)."
         },
         "stages": {
           "type": "array",
@@ -361,7 +372,7 @@
             "type": "object",
             "$ref": "#/definitions/v1StageSpec"
           },
-          "title": "Pipeline definition"
+          "description": "Pipeline definition."
         },
         "queues": {
           "type": "array",
@@ -375,18 +386,18 @@
           "additionalProperties": {
             "$ref": "#/definitions/v1CpuSet"
           },
-          "title": "Optional CPU pinning hints per stage (best-effort)"
+          "description": "Optional CPU pinning hints per stage (best-effort).\nKey MUST match StageSpec.name."
         },
         "resources": {
           "$ref": "#/definitions/v1Resources",
-          "title": "Optional resource intent for the whole flow"
+          "description": "Optional resource intent for the whole flow."
         },
         "labels": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
           },
-          "title": "Optional metadata (team, env, cost-center, etc.)"
+          "description": "Optional metadata (team, env, cost-center, etc.)."
         }
       }
     },
@@ -402,7 +413,7 @@
         "FLOW_STATE_STOPPED"
       ],
       "default": "FLOW_STATE_UNSPECIFIED",
-      "title": "- FLOW_STATE_SUCCEEDED: Jobs only"
+      "description": " - FLOW_STATE_SUCCEEDED: Jobs only."
     },
     "v1FlowStatus": {
       "type": "object",
@@ -412,21 +423,21 @@
         },
         "message": {
           "type": "string",
-          "title": "Human-readable message (optional)"
+          "description": "Human-readable message."
         },
         "activeVersion": {
           "type": "string",
           "format": "uint64",
-          "title": "Currently active version"
+          "description": "Currently active version."
         },
         "workload": {
           "type": "string",
-          "title": "Kubernetes workload name (Deployment or Job)"
+          "description": "Kubernetes workload name (Deployment or Job)."
         },
         "lastUpdated": {
           "type": "string",
           "format": "date-time",
-          "title": "Last controller update time"
+          "description": "Last controller update time."
         }
       }
     },
@@ -476,7 +487,8 @@
         "QUEUE_TYPE_MPSC",
         "QUEUE_TYPE_MPMC"
       ],
-      "default": "QUEUE_TYPE_UNSPECIFIED"
+      "default": "QUEUE_TYPE_UNSPECIFIED",
+      "description": " - QUEUE_TYPE_MPSC: Multi-producer, single-consumer.\n - QUEUE_TYPE_MPMC: Multi-producer, multi-consumer."
     },
     "v1Resources": {
       "type": "object",
@@ -484,16 +496,16 @@
         "cpuCores": {
           "type": "integer",
           "format": "int64",
-          "title": "Preferred total CPU cores"
+          "description": "Preferred total CPU cores."
         },
         "memoryMb": {
           "type": "integer",
           "format": "int64",
-          "title": "Preferred memory in MB"
+          "description": "Preferred memory in MB."
         },
         "profile": {
           "type": "string",
-          "title": "Optional named profile (e.g. \"high-throughput\")"
+          "description": "Optional named profile (e.g. \"high-throughput\")."
         }
       }
     },
@@ -502,31 +514,35 @@
       "properties": {
         "name": {
           "type": "string",
-          "title": "Unique stage name"
+          "description": "Unique stage name within the flow."
         },
         "type": {
           "type": "string",
-          "title": "Stage type (resolved via registry in runtime)"
+          "description": "Stage type (resolved via runtime registry).\nInterpretation depends on FlowSpec.runtime."
         },
         "threads": {
           "type": "integer",
           "format": "int64",
-          "title": "Number of worker threads for this stage"
+          "description": "Number of worker threads for this stage."
         },
         "inputQueue": {
           "type": "string",
-          "title": "Optional input queue\n- unset =\u003e source or side-effect stage"
+          "description": "Optional input queue name:\n- unset =\u003e source or side-effect stage."
         },
         "outputQueue": {
           "type": "string",
-          "title": "Optional output queue\n- unset =\u003e sink or side-effect stage"
+          "description": "Optional output queue name:\n- unset =\u003e sink or side-effect stage."
         },
         "params": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/v1Value"
           },
-          "title": "Stage-specific parameters"
+          "description": "Stage-specific parameters."
+        },
+        "plugin": {
+          "type": "string",
+          "title": "Optional implementation override"
         }
       }
     },

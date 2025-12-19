@@ -1,0 +1,43 @@
+# ============================================================
+# flow-pipe base image
+#
+# Purpose:
+# - Extend the flow-pipe runtime image
+# - Add ONLY runtime shared-library dependencies
+#
+# Contains:
+# - flow_runtime (from runtime image)
+# - runtime shared libraries (grpc, protobuf, yaml)
+#
+# Does NOT contain:
+# - headers
+# - compilers
+# - build tools
+#
+# CUDA analogy:
+#   nvidia/cuda:<ver>-base
+# ============================================================
+
+# The runtime tag is injected by CLI or CI so that
+# runtime, base, and dev always share the same ABI.
+ARG FLOW_PIPE_RUNTIME_TAG
+
+# Base directly on the matching runtime image
+FROM ghcr.io/hurdad/flow-pipe-runtime:${FLOW_PIPE_RUNTIME_TAG}
+
+# Install runtime-only shared libraries required by
+# flow_runtime and dynamically-loaded stage plugins.
+RUN apt-get update && apt-get install -y \
+    libyaml-cpp0.8 \
+    libprotobuf32 \
+    libgrpc++1.51 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# No ENTRYPOINT is defined here.
+# The runtime image already defines:
+#   ENTRYPOINT ["flow_runtime"]
+#
+# This image is intended to be extended by:
+# - flow-pipe-dev (SDK)
+# - plugin/runtime images

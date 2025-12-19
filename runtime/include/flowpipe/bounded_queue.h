@@ -9,19 +9,21 @@
 namespace flowpipe {
 
 struct StopToken {
-  bool *stop_flag{nullptr};
-  bool stop_requested() const noexcept { return stop_flag && *stop_flag; }
+  bool* stop_flag{nullptr};
+  bool stop_requested() const noexcept {
+    return stop_flag && *stop_flag;
+  }
 };
 
-template <typename T> class BoundedQueue {
-public:
+template <typename T>
+class BoundedQueue {
+ public:
   explicit BoundedQueue(std::size_t capacity) : capacity_(capacity) {}
 
-  bool push(T item, const StopToken &stop) {
+  bool push(T item, const StopToken& stop) {
     std::unique_lock lock(mu_);
-    not_full_.wait(lock, [&] {
-      return stop.stop_requested() || closed_ || queue_.size() < capacity_;
-    });
+    not_full_.wait(lock,
+                   [&] { return stop.stop_requested() || closed_ || queue_.size() < capacity_; });
 
     if (stop.stop_requested() || closed_)
       return false;
@@ -31,11 +33,9 @@ public:
     return true;
   }
 
-  std::optional<T> pop(const StopToken &stop) {
+  std::optional<T> pop(const StopToken& stop) {
     std::unique_lock lock(mu_);
-    not_empty_.wait(lock, [&] {
-      return stop.stop_requested() || closed_ || !queue_.empty();
-    });
+    not_empty_.wait(lock, [&] { return stop.stop_requested() || closed_ || !queue_.empty(); });
 
     if (!queue_.empty()) {
       T item = std::move(queue_.front());
@@ -53,7 +53,7 @@ public:
     not_full_.notify_all();
   }
 
-private:
+ private:
   std::size_t capacity_;
   std::mutex mu_;
   std::condition_variable not_empty_;
@@ -62,4 +62,4 @@ private:
   bool closed_{false};
 };
 
-} // namespace flowpipe
+}  // namespace flowpipe
