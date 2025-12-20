@@ -17,15 +17,25 @@ spec:
       containers:
         - name: api
           image: {{ .Values.api.image }}
-          args:
-            - --config=/etc/flow-pipe/config.yaml
+          imagePullPolicy: {{ .Values.api.imagePullPolicy | default "IfNotPresent" }}
           ports:
-            - containerPort: {{ .Values.api.port }}
-          volumeMounts:
-            - name: config
-              mountPath: /etc/flow-pipe
-      volumes:
-        - name: config
-          configMap:
-            name: flow-pipe-api-config
+            - name: grpc
+              containerPort: {{ .Values.api.grpcPort }}
+            - name: http
+              containerPort: {{ .Values.api.httpPort }}
+          env:
+            # -------------------------------------------------
+            # API listen addresses
+            # -------------------------------------------------
+            - name: FLOW_GRPC_ADDR
+              value: {{ .Values.api.grpcAddr | quote }}
+
+            - name: FLOW_HTTP_ADDR
+              value: {{ .Values.api.httpAddr | quote }}
+
+            # -------------------------------------------------
+            # Etcd
+            # -------------------------------------------------
+            - name: ETCD_ENDPOINTS
+              value: {{ join "," .Values.etcd.endpoints | quote }}
 {{- end }}
