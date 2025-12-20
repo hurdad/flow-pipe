@@ -677,9 +677,15 @@ func (x *CpuSet) GetCpu() []uint32 {
 }
 
 type Flow struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Spec          *FlowSpec              `protobuf:"bytes,1,opt,name=spec,proto3" json:"spec,omitempty"`
-	Status        *FlowStatus            `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique flow identifier.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Active spec version.
+	Version uint64 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	// Desired flow configuration.
+	Spec *FlowSpec `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
+	// Observed runtime state.
+	Status        *FlowStatus `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -712,6 +718,20 @@ func (x *Flow) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Flow.ProtoReflect.Descriptor instead.
 func (*Flow) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Flow) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Flow) GetVersion() uint64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
 }
 
 func (x *Flow) GetSpec() *FlowSpec {
@@ -1359,10 +1379,12 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\n" +
 	"\b_profile\"\x1a\n" +
 	"\x06CpuSet\x12\x10\n" +
-	"\x03cpu\x18\x01 \x03(\rR\x03cpu\"b\n" +
-	"\x04Flow\x12)\n" +
-	"\x04spec\x18\x01 \x01(\v2\x15.flowpipe.v1.FlowSpecR\x04spec\x12/\n" +
-	"\x06status\x18\x02 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"\xd6\x01\n" +
+	"\x03cpu\x18\x01 \x03(\rR\x03cpu\"\x90\x01\n" +
+	"\x04Flow\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\x04R\aversion\x12)\n" +
+	"\x04spec\x18\x03 \x01(\v2\x15.flowpipe.v1.FlowSpecR\x04spec\x12/\n" +
+	"\x06status\x18\x04 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"\xd6\x01\n" +
 	"\n" +
 	"FlowStatus\x12,\n" +
 	"\x05state\x18\x01 \x01(\x0e2\x16.flowpipe.v1.FlowStateR\x05state\x12\x18\n" +

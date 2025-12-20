@@ -160,8 +160,17 @@ message CpuSet {
 // ============================================================
 
 message Flow {
-  FlowSpec spec = 1;
-  FlowStatus status = 2;
+  // Unique flow identifier.
+  string name = 1;
+
+  // Active spec version.
+  uint64 version = 2;
+
+  // Desired flow configuration.
+  FlowSpec spec = 3;
+
+  // Observed runtime state.
+  FlowStatus status = 4;
 }
 
 message FlowStatus {
@@ -217,8 +226,8 @@ message Struct {
   map<string, Value> fields = 1;
 }
 
-message StringList { repeated string values = 1; }
-message IntList    { repeated int64 values = 1; }
-message UIntList   { repeated uint64 values = 1; }
-message DoubleList { repeated double values = 1; }
-message BoolList   { repeated bool values = 1; }
+message StringList {repeated string values = 1;}
+message IntList    {repeated int64 values = 1;}
+message UIntList   {repeated uint64 values = 1;}
+message DoubleList {repeated double values = 1;}
+message BoolList   {repeated bool values = 1;}

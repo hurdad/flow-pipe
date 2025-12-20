@@ -38,7 +38,7 @@ RUN cd api && \
 # --------------------------------------------------
 # Runtime stage
 # --------------------------------------------------
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/base-debian13
 
 WORKDIR /
 

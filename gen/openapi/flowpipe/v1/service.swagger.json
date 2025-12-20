@@ -324,11 +324,22 @@
     "v1Flow": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique flow identifier."
+        },
+        "version": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Active spec version."
+        },
         "spec": {
-          "$ref": "#/definitions/v1FlowSpec"
+          "$ref": "#/definitions/v1FlowSpec",
+          "description": "Desired flow configuration."
         },
         "status": {
-          "$ref": "#/definitions/v1FlowStatus"
+          "$ref": "#/definitions/v1FlowStatus",
+          "description": "Observed runtime state."
         }
       }
     },
