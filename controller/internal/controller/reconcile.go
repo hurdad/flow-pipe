@@ -18,6 +18,7 @@ func (c *Controller) worker(ctx context.Context) {
 			name, ok := c.queue.Get()
 			if !ok {
 				// queue empty → idle
+				time.Sleep(50 * time.Millisecond)
 				continue
 			}
 
@@ -32,7 +33,7 @@ func (c *Controller) worker(ctx context.Context) {
 }
 
 func (c *Controller) reconcile(ctx context.Context, name string) error {
-	log.Printf("reconcile flow: %s", name)
+	log.Printf("[reconcile] flow=%s", name)
 
 	spec, version, err := c.store.GetActiveFlow(ctx, name)
 	if err != nil {
@@ -41,7 +42,7 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 
 	if spec == nil {
 		// Flow deleted or not yet fully written
-		log.Printf("flow not found: %s", name)
+		log.Printf("[reconcile] flow=%s not found or incomplete", name)
 		return nil
 	}
 
@@ -57,6 +58,6 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 		return err
 	}
 
-	log.Printf("status updated for %s (version=%d)", name, version)
+	log.Printf("[reconcile] flow=%s status updated (version=%d)", name, version)
 	return nil
 }

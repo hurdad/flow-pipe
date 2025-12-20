@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
@@ -19,6 +20,9 @@ import (
 type EtcdStore struct {
 	cli *clientv3.Client
 }
+
+// Compile-time interface check
+var _ Store = (*EtcdStore)(nil)
 
 // NewEtcd creates a new etcd-backed store for the controller.
 func NewEtcd(endpoints []string) (*EtcdStore, error) {
@@ -70,15 +74,122 @@ func statusKey(name string) string {
 }
 
 // ============================================================
-// Watch flows (desired state)
+// List flows (initial controller sync)
 // ============================================================
 
-func (s *EtcdStore) WatchFlows(ctx context.Context) clientv3.WatchChan {
-	return s.cli.Watch(
+func (s *EtcdStore) ListFlows(ctx context.Context) ([]*flowpipev1.Flow, error) {
+	resp, err := s.cli.Get(
 		ctx,
 		rootPrefix+"/",
 		clientv3.WithPrefix(),
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	flows := map[string]*flowpipev1.Flow{}
+
+	for _, kv := range resp.Kvs {
+		key := string(kv.Key)
+
+		// We only care about active pointers
+		if !strings.HasSuffix(key, "/active") {
+			continue
+		}
+
+		name := path.Base(path.Dir(key))
+
+		version, err := strconv.ParseUint(string(kv.Value), 10, 64)
+		if err != nil {
+			continue
+		}
+
+		specResp, err := s.cli.Get(ctx, versionSpecKey(name, version))
+		if err != nil || len(specResp.Kvs) == 0 {
+			continue
+		}
+
+		var spec flowpipev1.FlowSpec
+		if err := proto.Unmarshal(specResp.Kvs[0].Value, &spec); err != nil {
+			continue
+		}
+
+		flows[name] = &flowpipev1.Flow{
+			Name: name,
+			Spec: &spec,
+		}
+	}
+
+	out := make([]*flowpipev1.Flow, 0, len(flows))
+	for _, f := range flows {
+		out = append(out, f)
+	}
+
+	return out, nil
+}
+
+// ============================================================
+// Watch flows (desired state)
+// ============================================================
+
+type etcdWatchStream struct {
+	ch     chan WatchEvent
+	cancel context.CancelFunc
+}
+
+func (w *etcdWatchStream) Events() <-chan WatchEvent {
+	return w.ch
+}
+
+func (w *etcdWatchStream) Stop() {
+	w.cancel()
+}
+
+func (s *EtcdStore) WatchFlows(ctx context.Context) WatchStream {
+	ctx, cancel := context.WithCancel(ctx)
+
+	out := make(chan WatchEvent, 16)
+
+	watchCh := s.cli.Watch(
+		ctx,
+		rootPrefix+"/",
+		clientv3.WithPrefix(),
+	)
+
+	go func() {
+		defer close(out)
+
+		for wr := range watchCh {
+			for _, ev := range wr.Events {
+				key := string(ev.Kv.Key)
+
+				// Only react to changes in desired state
+				if !strings.HasSuffix(key, "/active") {
+					continue
+				}
+
+				name := path.Base(path.Dir(key))
+
+				spec, _, err := s.GetActiveFlow(ctx, name)
+				if err != nil {
+					continue
+				}
+
+				out <- WatchEvent{
+					Type: WatchUpdated,
+					Flow: &flowpipev1.Flow{
+						Name: name,
+						Spec: spec,
+					},
+				}
+			}
+		}
+	}()
+
+	return &etcdWatchStream{
+		ch:     out,
+		cancel: cancel,
+	}
 }
 
 // ============================================================

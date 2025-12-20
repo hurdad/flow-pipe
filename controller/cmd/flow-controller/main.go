@@ -19,6 +19,14 @@ func main() {
 	cfg := config.Load()
 
 	// --------------------------------------------------
+	// Controller identity (used for HA / ownership)
+	// --------------------------------------------------
+	nodeName := os.Getenv("POD_NAME")
+	if nodeName == "" {
+		nodeName = "flow-controller-local"
+	}
+
+	// --------------------------------------------------
 	// Create etcd-backed store (desired state)
 	// --------------------------------------------------
 	st, err := store.NewEtcd(cfg.EtcdEndpoints)
@@ -35,7 +43,7 @@ func main() {
 	// --------------------------------------------------
 	// Create controller
 	// --------------------------------------------------
-	ctrl := controller.New(st, queue)
+	ctrl := controller.New(st, queue, nodeName)
 
 	// --------------------------------------------------
 	// Signal-aware context
