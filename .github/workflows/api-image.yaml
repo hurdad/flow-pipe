@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - "api/**"
+      - "gen/go/**"
       - ".github/workflows/api-image.yaml"
   release:
     types: [ published ]
