@@ -4,29 +4,31 @@ kind: Ingress
 metadata:
   name: flow-pipe-api
   namespace: {{ include "flowpipe.namespace" . }}
+  {{- with .Values.api.ingress.annotations }}
   annotations:
-    {{- with .Values.api.ingress.annotations }}
-      {{- toYaml . | nindent 4 }}
-      {{- end }}
+  {{ toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   {{- if .Values.api.ingress.className }}
   ingressClassName: {{ .Values.api.ingress.className }}
   {{- end }}
+
   rules:
-    - host: {{ .Values.api.ingress.host }}
+    - host: {{ .Values.api.ingress.host | quote }}
       http:
         paths:
-          - path: {{ .Values.api.ingress.path | default "/" }}
+          - path: {{ .Values.api.ingress.path | default "/" | quote }}
             pathType: Prefix
             backend:
               service:
                 name: flow-pipe-api
                 port:
-                  number: {{ .Values.api.port }}
+                  number: {{ .Values.api.httpPort }}
+
   {{- if .Values.api.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.api.ingress.host }}
+        - {{ .Values.api.ingress.host | quote }}
       secretName: {{ .Values.api.ingress.tls.secretName }}
   {{- end }}
-{{- end }}
+  {{- end }}
