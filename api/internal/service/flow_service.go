@@ -3,7 +3,7 @@ package flow
 import (
 	"context"
 
-	"github.com/hurdad/flow-pipe/api/store"
+	"github.com/hurdad/flow-pipe/api/internal/store"
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
