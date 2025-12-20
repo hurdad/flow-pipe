@@ -1,90 +1,63 @@
+#include <google/protobuf/util/json_util.h>
 #include <yaml-cpp/yaml.h>
 
 #include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <string>
 
 #include "flowpipe/runtime.h"
+#include "flowpipe/util/yaml_to_json.h"
 #include "flowpipe/v1/flow.pb.h"
 
-using json = nlohmann::json;
-
 static bool load_from_yaml(const std::string& path, flowpipe::v1::FlowSpec& flow) {
-  YAML::Node root = YAML::LoadFile(path);
-
-  if (!root["queues"] || !root["stages"]) {
-    std::cerr << "yaml: missing queues or stages\n";
+  YAML::Node root;
+  try {
+    root = YAML::LoadFile(path);
+  } catch (const YAML::Exception& e) {
+    std::cerr << "yaml parse error: " << e.what() << "\n";
     return false;
   }
 
-  for (const auto& q : root["queues"]) {
-    auto* queue = flow.add_queues();
-    queue->set_name(q["name"].as<std::string>());
-    queue->set_capacity(q["capacity"].as<uint32_t>());
-  }
+  // Convert YAML → JSON text
+  std::stringstream json;
+  flowpipe::util::yaml_to_json(root, json);
 
-  for (const auto& s : root["stages"]) {
-    auto* stage = flow.add_stages();
-    stage->set_name(s["name"].as<std::string>());
-    stage->set_type(s["type"].as<std::string>());
-    stage->set_threads(s["threads"].as<uint32_t>());
+  // Parse JSON → Protobuf
+  google::protobuf::util::JsonParseOptions opts;
+  opts.ignore_unknown_fields = false;
 
-    if (s["plugin"])
-      stage->set_plugin(s["plugin"].as<std::string>());
-    if (s["input_queue"])
-      stage->set_input_queue(s["input_queue"].as<std::string>());
-    if (s["output_queue"])
-      stage->set_output_queue(s["output_queue"].as<std::string>());
+  auto status = google::protobuf::util::JsonStringToMessage(json.str(), &flow, opts);
 
-    if (s["params"]) {
-      for (const auto& it : s["params"]) {
-        (*stage->mutable_params())[it.first.as<std::string>()].set_string_value(
-            it.second.as<std::string>());
-      }
-    }
+  if (!status.ok()) {
+    std::cerr << "yaml → json → protobuf failed: " << status.ToString() << "\n";
+    return false;
   }
 
   return true;
 }
 
 static bool load_from_json(const std::string& path, flowpipe::v1::FlowSpec& flow) {
+  // Read file into string
   std::ifstream in(path);
-  if (!in)
-    return false;
-
-  json root;
-  in >> root;
-
-  if (!root.contains("queues") || !root.contains("stages")) {
-    std::cerr << "json: missing queues or stages\n";
+  if (!in) {
+    std::cerr << "failed to open json file: " << path << "\n";
     return false;
   }
 
-  for (const auto& q : root["queues"]) {
-    auto* queue = flow.add_queues();
-    queue->set_name(q.at("name").get<std::string>());
-    queue->set_capacity(q.at("capacity").get<uint32_t>());
-  }
+  std::stringstream buffer;
+  buffer << in.rdbuf();
+  std::string json = buffer.str();
 
-  for (const auto& s : root["stages"]) {
-    auto* stage = flow.add_stages();
-    stage->set_name(s.at("name").get<std::string>());
-    stage->set_type(s.at("type").get<std::string>());
-    stage->set_threads(s.at("threads").get<uint32_t>());
+  // Configure JSON parsing options
+  google::protobuf::util::JsonParseOptions opts;
+  opts.ignore_unknown_fields = false;  // set true if you want forward compatibility
 
-    if (s.contains("plugin"))
-      stage->set_plugin(s.at("plugin").get<std::string>());
-    if (s.contains("input_queue"))
-      stage->set_input_queue(s.at("input_queue").get<std::string>());
-    if (s.contains("output_queue"))
-      stage->set_output_queue(s.at("output_queue").get<std::string>());
+  // Parse JSON → Protobuf
+  auto status = google::protobuf::util::JsonStringToMessage(json, &flow, opts);
 
-    if (s.contains("params")) {
-      for (auto it = s["params"].begin(); it != s["params"].end(); ++it) {
-        (*stage->mutable_params())[it.key()].set_string_value(it.value().get<std::string>());
-      }
-    }
+  if (!status.ok()) {
+    std::cerr << "json → protobuf parse failed: " << status.ToString() << "\n";
+    return false;
   }
 
   return true;

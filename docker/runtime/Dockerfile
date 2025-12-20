@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
     ninja-build \
     pkg-config \
     libyaml-cpp-dev \
-    nlohmann-json3-dev \
     libprotobuf-dev \
     protobuf-compiler \
     protobuf-compiler-grpc \
