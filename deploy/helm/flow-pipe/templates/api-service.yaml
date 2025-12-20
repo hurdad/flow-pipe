@@ -5,8 +5,17 @@ metadata:
   name: flow-pipe-api
   namespace: {{ include "flowpipe.namespace" . }}
 spec:
+  type: ClusterIP
   selector:
     app: flow-pipe-api
   ports:
-    - port: {{ .Values.api.port }}
-{{- end }}
+    - name: http
+      port: {{ .Values.api.httpPort }}
+      targetPort: http
+      protocol: TCP
+
+    - name: grpc
+      port: {{ .Values.api.grpcPort }}
+      targetPort: grpc
+      protocol: TCP
+  {{- end }}

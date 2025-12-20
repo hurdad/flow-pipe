@@ -12,6 +12,16 @@ spec:
     path: deploy/helm/flow-pipe
     helm:
       releaseName: flow-pipe
+      values: |
+        api:
+          enabled: true
+          replicas: 1
+          ingress:
+            enabled: true
+            className: traefik
+            host: flow-pipe.k3s.lan
+            tls:
+              enabled: false
 
   destination:
     server: https://kubernetes.default.svc
