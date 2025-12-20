@@ -1,21 +1,7 @@
 package config
 
-import (
-	"os"
-	"strings"
-)
-
+// Config defines runtime configuration for the flow-pipe controller.
 type Config struct {
+	// Etcd endpoints (desired state store)
 	EtcdEndpoints []string
-}
-
-func Load() Config {
-	endpoints := os.Getenv("FLOW_ETCD_ENDPOINTS")
-	if endpoints == "" {
-		endpoints = "http://localhost:2379"
-	}
-
-	return Config{
-		EtcdEndpoints: strings.Split(endpoints, ","),
-	}
 }

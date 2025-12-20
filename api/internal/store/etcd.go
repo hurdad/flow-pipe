@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -20,8 +21,20 @@ type EtcdStore struct {
 	cli *clientv3.Client
 }
 
-func NewEtcdStore(cli *clientv3.Client) *EtcdStore {
-	return &EtcdStore{cli: cli}
+func NewEtcd(endpoints []string) (*EtcdStore, error) {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   endpoints,
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &EtcdStore{cli: cli}, nil
+}
+
+func (s *EtcdStore) Close() error {
+	return s.cli.Close()
 }
 
 // ============================================================

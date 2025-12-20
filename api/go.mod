@@ -5,7 +5,6 @@ go 1.22.0
 toolchain go1.22.2
 
 require (
-	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
 	github.com/hurdad/flow-pipe v0.0.0-00010101000000-000000000000
 	go.etcd.io/etcd/client/v3 v3.5.15

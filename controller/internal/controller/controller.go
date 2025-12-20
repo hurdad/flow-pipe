@@ -4,21 +4,21 @@ import (
 	"context"
 	"sync"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"github.com/hurdad/flow-pipe/controller/internal/store"
 )
 
 // Controller is the core reconciliation engine.
 // It is intentionally small and stateless.
 type Controller struct {
-	store *clientv3.Client
+	store store.Store
 	queue WorkQueue
 }
 
 // New creates a new controller instance.
 //
-// store: persistent desired-state store (etcd)
+// store: desired-state store (etcd-backed, abstracted)
 // queue: work queue for reconciliation keys
-func New(store *clientv3.Client, queue WorkQueue) *Controller {
+func New(store store.Store, queue WorkQueue) *Controller {
 	return &Controller{
 		store: store,
 		queue: queue,
@@ -27,16 +27,16 @@ func New(store *clientv3.Client, queue WorkQueue) *Controller {
 
 // Run starts worker goroutines and blocks until context cancellation.
 func (c *Controller) Run(ctx context.Context) error {
-	const workers = 4
+	const workers = 1 // keep minimal for now
 
 	var wg sync.WaitGroup
 
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
-		go func(id int) {
+		go func() {
 			defer wg.Done()
 			c.worker(ctx)
-		}(i)
+		}()
 	}
 
 	// Block until shutdown signal

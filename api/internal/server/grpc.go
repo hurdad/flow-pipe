@@ -25,20 +25,15 @@ func NewGRPCServer(cfg config.Config, store store.Store) (*GRPCServer, error) {
 		return nil, fmt.Errorf("listen %s: %w", cfg.GRPCAddr, err)
 	}
 
-	s := grpc.NewServer(
-		// interceptors later (auth, otel, logging)
-	)
+	grpcServer := grpc.NewServer()
+	flowServer := service.NewFlowServer(store)
+	flowpipev1.RegisterFlowServiceServer(grpcServer, flowServer)
 
-	flowpipev1.RegisterFlowServiceServer(
-		s,
-		service.NewFlowService(store),
-	)
-
-	reflection.Register(s)
+	reflection.Register(grpcServer)
 
 	return &GRPCServer{
 		addr:   cfg.GRPCAddr,
-		server: s,
+		server: grpcServer,
 		lis:    lis,
 	}, nil
 }

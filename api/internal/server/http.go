@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/hurdad/flow-pipe/api/internal/config"
-	flowpipev1 "github.com/hurdad/flow-pipe/proto/gen/go/flowpipe/v1"
+	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 )
 
 type HTTPServer struct {

@@ -14,18 +14,18 @@ import (
 
 func main() {
 	// --------------------------------------------------
-	// Load config
+	// Load configuration
 	// --------------------------------------------------
 	cfg := config.Load()
 
 	// --------------------------------------------------
-	// Connect to etcd (desired state store)
+	// Create etcd-backed store (desired state)
 	// --------------------------------------------------
-	etcdClient, err := store.NewEtcd(cfg.EtcdEndpoints)
+	st, err := store.NewEtcd(cfg.EtcdEndpoints)
 	if err != nil {
 		log.Fatalf("failed to connect to etcd: %v", err)
 	}
-	defer etcdClient.Close()
+	defer st.Close()
 
 	// --------------------------------------------------
 	// Create work queue
@@ -35,10 +35,10 @@ func main() {
 	// --------------------------------------------------
 	// Create controller
 	// --------------------------------------------------
-	ctrl := controller.New(etcdClient, queue)
+	ctrl := controller.New(st, queue)
 
 	// --------------------------------------------------
-	// Context + signal handling
+	// Signal-aware context
 	// --------------------------------------------------
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -53,7 +53,7 @@ func main() {
 	// Run controller (blocks until shutdown)
 	// --------------------------------------------------
 	if err := ctrl.Run(ctx); err != nil {
-		log.Fatalf("controller exited with error: %v", err)
+		log.Fatalf("flow-controller exited with error: %v", err)
 	}
 
 	log.Println("flow-controller stopped")
