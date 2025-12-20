@@ -10,7 +10,8 @@ etcd:
   image: quay.io/coreos/etcd:v3.5.12
   replicas: 1
   port: 2379
-
+  storage:
+    size: 5Gi
   # Computed into ETCD_ENDPOINTS
   endpoints:
     - http://flow-pipe-etcd:2379
