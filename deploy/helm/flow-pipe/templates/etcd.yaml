@@ -1,4 +1,27 @@
 {{- if .Values.etcd.enabled }}
+
+# -------------------------------
+# Persistent Volume Claim
+# -------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: flow-pipe-etcd-data
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.etcd.storage.size }}
+  {{- if .Values.etcd.storage.storageClassName }}
+  storageClassName: {{ .Values.etcd.storage.storageClassName }}
+  {{- end }}
+
+---
+# -------------------------------
+# Etcd Deployment
+# -------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,11 +42,24 @@ spec:
           image: {{ .Values.etcd.image }}
           command:
             - etcd
+            - --data-dir=/var/lib/etcd
             - --listen-client-urls=http://0.0.0.0:{{ .Values.etcd.port }}
             - --advertise-client-urls=http://flow-pipe-etcd:{{ .Values.etcd.port }}
           ports:
-            - containerPort: {{ .Values.etcd.port }}
+            - name: client
+              containerPort: {{ .Values.etcd.port }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/etcd
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: flow-pipe-etcd-data
+
 ---
+# -------------------------------
+# Etcd Service (k3s ServiceLB)
+# -------------------------------
 apiVersion: v1
 kind: Service
 metadata:
@@ -37,4 +73,5 @@ spec:
     - name: client
       port: {{ .Values.etcd.port }}
       targetPort: {{ .Values.etcd.port }}
+
 {{- end }}
