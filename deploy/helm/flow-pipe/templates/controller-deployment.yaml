@@ -17,16 +17,9 @@ spec:
       containers:
         - name: controller
           image: {{ .Values.controller.image }}
-          args:
-            - --config=/etc/flow-pipe/config.yaml
-          ports:
-            - containerPort: {{ .Values.controller.port }}
-          volumeMounts:
-            - name: config
-              mountPath: /etc/flow-pipe
+          imagePullPolicy: {{ .Values.controller.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: ETCD_ENDPOINTS
+              value: {{ .Values.etcd.endpoints | quote }}
           resources:
             {{- toYaml .Values.controller.resources | nindent 12 }}
-      volumes:
-        - name: config
-          configMap:
-            name: flow-pipe-controller-config

@@ -22,7 +22,6 @@ etcd:
 controller:
   image: ghcr.io/hurdad/flow-pipe-controller:main
   replicas: 1
-  port: 8080
   resources:
     requests:
       cpu: 100m
