@@ -5,8 +5,6 @@ project(flowpipe_runtime
         LANGUAGES CXX
 )
 
-find_package(nlohmann_json REQUIRED)
-
 # =========================
 # Runtime library
 # =========================
