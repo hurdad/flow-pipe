@@ -55,7 +55,7 @@ add_executable(flow_runtime
 
 target_link_libraries(flow_runtime
         PUBLIC flowpipe_runtime
-        PRIVATE flowpipe_proto yaml-cpp nlohmann_json::nlohmann_json
+        PRIVATE flowpipe_proto yaml-cpp
 )
 
 # =========================
