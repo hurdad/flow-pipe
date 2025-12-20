@@ -30,8 +30,11 @@ metadata:
   name: flow-pipe-etcd
   namespace: {{ include "flowpipe.namespace" . }}
 spec:
+  type: LoadBalancer
   selector:
     app: flow-pipe-etcd
   ports:
-    - port: {{ .Values.etcd.port }}
+    - name: client
+      port: {{ .Values.etcd.port }}
+      targetPort: {{ .Values.etcd.port }}
 {{- end }}
