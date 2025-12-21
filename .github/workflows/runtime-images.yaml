@@ -1,4 +1,4 @@
-name: Build & Publish Runtime Docker Images
+name: Build & Push Runtime Docker Images
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
     paths:
       - "runtime/**"
       - "stages/**"
-      - ".github/workflows/runtime-image.yaml"
+      - ".github/workflows/runtime-images.yaml"
   release:
     types: [ published ]
 
