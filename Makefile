@@ -11,6 +11,7 @@ PROTO_GO_SCRIPT  := tools/gen_go_protos.sh
 
 API_DIR         := api
 CONTROLLER_DIR  := controller
+CLI_DIR         := cli
 RUNTIME_DIR     := runtime
 
 # -----------------------------------------------------
@@ -40,7 +41,7 @@ GO    ?= go
 # Default target
 # -----------------------------------------------------
 
-all: submodules proto runtime api controller
+all: submodules proto runtime api controller cli
 
 # -----------------------------------------------------
 # Help
@@ -54,6 +55,7 @@ help:
 	@echo "  runtime       Build C++ runtime"
 	@echo "  api           Build Go API"
 	@echo "  controller    Build Go controller"
+	@echo "  cli    	   Build Go flowctl"
 	@echo "  format | fmt  Format Go and C++ code"
 	@echo "  lint          Lint Go code"
 	@echo "  install       Install C++ runtime"
@@ -106,7 +108,7 @@ install: configure
 # Go API
 # -----------------------------------------------------
 
-api: proto
+api: proto-go
 	@echo "==> Building Flow API"
 	@cd $(API_DIR) && $(GO) build ./...
 
@@ -114,9 +116,18 @@ api: proto
 # Go Controller
 # -----------------------------------------------------
 
-controller: proto
+controller: proto-go
 	@echo "==> Building Flow Controller"
 	@cd $(CONTROLLER_DIR) && $(GO) build ./...
+
+
+# -----------------------------------------------------
+# Go cli (flowctl)
+# -----------------------------------------------------
+cli: proto-go
+	@echo "==> Building Flow CLI"
+	@cd $(CLI_DIR) && $(GO) build ./...
+
 
 # -----------------------------------------------------
 # Formatting
@@ -126,6 +137,7 @@ format:
 	@echo "==> Formatting Go code"
 	@cd $(API_DIR) && gofmt -w .
 	@cd $(CONTROLLER_DIR) && gofmt -w .
+	@cd $(CLI_DIR) && gofmt -w .
 
 	@echo "==> Formatting C++ code (Google style)"
 	@find $(RUNTIME_DIR) \
