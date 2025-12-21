@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/hurdad/flow-pipe/cli/internal"
+	"fmt"
+	"os"
 )
 
 func main() {
-	if err := internal.Execute(); err != nil {
-		// Cobra already prints errors
-		// Non-zero exit for CI / scripting
-		panic(err)
+	if err := Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
