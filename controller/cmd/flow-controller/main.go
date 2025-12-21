@@ -23,7 +23,7 @@ func main() {
 	// --------------------------------------------------
 	nodeName := os.Getenv("POD_NAME")
 	if nodeName == "" {
-		nodeName = "flow-controller-local"
+		nodeName = "flow-controller-local-default"
 	}
 
 	// --------------------------------------------------
