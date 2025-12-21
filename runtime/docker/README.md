@@ -28,7 +28,7 @@ the same tag**.
 
 ---
 
-## `runtime/`
+## `Dockerfile.runtime`
 
 **Lowest-level image**.
 
@@ -46,7 +46,7 @@ This is the image used in production Kubernetes workloads.
 
 ---
 
-## `base/`
+## `Dockerfile.base`
 
 Extends the runtime image.
 
@@ -66,7 +66,7 @@ and is the parent of the SDK image.
 
 ---
 
-## `dev/` (SDK)
+## `Dockerfile.dev` (SDK)
 
 The development image used to build custom flow-pipe stages.
 
