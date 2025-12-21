@@ -6,6 +6,7 @@ on:
     paths:
       - "controller/**"
       - "gen/go/**"
+      - "pkg/**"
       - ".github/workflows/controller-image.yaml"
   release:
     types: [ published ]

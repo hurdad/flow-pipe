@@ -26,6 +26,7 @@ RUN cd cli && go mod download
 # Copy source
 # --------------------------------------------------
 COPY gen ./gen
+COPY pkg ./pkg
 COPY cli ./cli
 
 # --------------------------------------------------

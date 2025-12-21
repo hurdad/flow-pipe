@@ -6,6 +6,7 @@ on:
     paths:
       - "api/**"
       - "gen/go/**"
+      - "pkg/**"
       - ".github/workflows/api-image.yaml"
   release:
     types: [ published ]

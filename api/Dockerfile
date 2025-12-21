@@ -26,6 +26,7 @@ RUN cd api && go mod download
 # Copy source
 # --------------------------------------------------
 COPY gen ./gen
+COPY pkg ./pkg
 COPY api ./api
 
 # --------------------------------------------------

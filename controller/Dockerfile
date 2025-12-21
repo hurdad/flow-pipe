@@ -26,6 +26,7 @@ RUN cd controller && go mod download
 # Copy source
 # --------------------------------------------------
 COPY gen ./gen
+COPY pkg ./pkg
 COPY controller ./controller
 
 # --------------------------------------------------
