@@ -87,16 +87,16 @@ Images must be built **in order**.
 
 ```bash
 # 1. runtime
-docker build -f docker/runtime/Dockerfile \
+docker build -f runtime/docker/Dockerfile.runtime \
   -t ghcr.io/hurdad/flow-pipe-runtime:<tag> .
 
 # 2. base
-docker build -f docker/base/Dockerfile \
+docker build -f runtime/docker/Dockerfile.base \
   --build-arg FLOW_PIPE_RUNTIME_TAG=<tag> \
   -t ghcr.io/hurdad/flow-pipe-base:<tag> .
 
 # 3. dev
-docker build -f docker/dev/Dockerfile \
+docker build -f runtime/docker/Dockerfile.dev \
   --build-arg FLOW_PIPE_BASE_TAG=<tag> \
   -t ghcr.io/hurdad/flow-pipe-dev:<tag> .
 ```
@@ -164,7 +164,7 @@ compatibility.
 
 See:
 ```
-.github/workflows/docker-images.yml
+.github/workflows/runtime-images.yml
 ```
 
 ---
