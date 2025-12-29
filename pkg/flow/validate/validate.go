@@ -82,7 +82,7 @@ func Validate(spec *flowpipev1.FlowSpec) error {
 			q := *s.InputQueue
 			if _, ok := queueNames[q]; !ok {
 				return &Error{
-					Field:   "stages.input_queue",
+					Field: "stages.input_queue",
 					Message: fmt.Sprintf(
 						"stage %q references unknown input queue %q",
 						s.Name,
@@ -97,7 +97,7 @@ func Validate(spec *flowpipev1.FlowSpec) error {
 			q := *s.OutputQueue
 			if _, ok := queueNames[q]; !ok {
 				return &Error{
-					Field:   "stages.output_queue",
+					Field: "stages.output_queue",
 					Message: fmt.Sprintf(
 						"stage %q references unknown output queue %q",
 						s.Name,
