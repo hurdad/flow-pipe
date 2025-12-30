@@ -78,12 +78,12 @@ target_link_libraries(flow_runtime
 include(GNUInstallDirs)
 
 # ---- Runtime library ----
-install(TARGETS flowpipe_runtime
-        EXPORT flowpipeTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+#install(TARGETS flowpipe_runtime
+#        EXPORT flowpipeTargets
+#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#)
 
 # ---- Runtime executable ----
 install(TARGETS flow_runtime
