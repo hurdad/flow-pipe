@@ -74,29 +74,42 @@ target_link_libraries(flow_runtime
 # =========================
 # Install rules
 # =========================
-#
-#include(GNUInstallDirs)
-#
-## ---- Runtime library ----
-#install(TARGETS flowpipe_runtime
-#        EXPORT flowpipeTargets
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#)
-#
-## ---- Runtime executable ----
-#install(TARGETS flow_runtime
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
-#
-## ---- Public headers ----
-#install(
-#        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#)
-#
-## ---- Export targets for downstream consumers ----
-#install(EXPORT flowpipeTargets
-#        NAMESPACE flowpipe::
-#        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
-#)
+
+include(GNUInstallDirs)
+
+# ---- Runtime library and optional deps ----
+set(flowpipe_install_targets flowpipe_runtime)
+
+if(FLOWPIPE_ENABLE_OTEL)
+    list(APPEND flowpipe_install_targets
+            opentelemetry_common
+            opentelemetry_trace
+            opentelemetry_resources
+            opentelemetry_otlp_recordable
+            opentelemetry_exporter_otlp_grpc
+            opentelemetry_exporter_otlp_grpc_client)
+endif()
+
+install(TARGETS ${flowpipe_install_targets}
+        EXPORT flowpipeTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# ---- Runtime executable ----
+install(TARGETS flow_runtime
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# ---- Public headers ----
+install(
+        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# ---- Export targets for downstream consumers ----
+install(EXPORT flowpipeTargets
+        NAMESPACE flowpipe::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
+)
