@@ -77,20 +77,8 @@ target_link_libraries(flow_runtime
 
 include(GNUInstallDirs)
 
-# ---- Runtime library and optional deps ----
-set(flowpipe_install_targets flowpipe_runtime)
-
-if(FLOWPIPE_ENABLE_OTEL)
-    list(APPEND flowpipe_install_targets
-            opentelemetry_common
-            opentelemetry_trace
-            opentelemetry_resources
-            opentelemetry_otlp_recordable
-            opentelemetry_exporter_otlp_grpc
-            opentelemetry_exporter_otlp_grpc_client)
-endif()
-
-install(TARGETS ${flowpipe_install_targets}
+# ---- Runtime library ----
+install(TARGETS flowpipe_runtime
         EXPORT flowpipeTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
