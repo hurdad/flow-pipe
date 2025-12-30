@@ -38,6 +38,26 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 endif()
 
 # --------------------------------------------------
+# Optional components
+# --------------------------------------------------
+
+option(FLOWPIPE_ENABLE_OTEL "Enable OpenTelemetry integration" OFF)
+add_compile_definitions($<$<BOOL:${FLOWPIPE_ENABLE_OTEL}>:FLOWPIPE_ENABLE_OTEL>)
+
+if(FLOWPIPE_ENABLE_OTEL)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/opentelemetry-cpp/CMakeLists.txt)
+        message(FATAL_ERROR "FLOWPIPE_ENABLE_OTEL is enabled but the opentelemetry-cpp submodule is missing. "
+                "Run 'git submodule update --init --recursive' to fetch third_party/opentelemetry-cpp.")
+    endif()
+
+    set(BUILD_TESTING OFF CACHE BOOL "Disable tests for dependencies" FORCE)
+    set(WITH_OTLP ON CACHE BOOL "Build OTLP exporters" FORCE)
+    set(WITH_OTLP_GRPC ON CACHE BOOL "Build OTLP gRPC exporter" FORCE)
+
+    add_subdirectory(third_party/opentelemetry-cpp)
+endif()
+
+# --------------------------------------------------
 # Subdirectories
 # --------------------------------------------------
 

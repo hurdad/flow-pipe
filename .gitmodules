@@ -1,3 +1,7 @@
 [submodule "third_party/googleapis"]
-	path = third_party/googleapis
-	url = https://github.com/googleapis/googleapis.git
+        path = third_party/googleapis
+        url = https://github.com/googleapis/googleapis.git
+[submodule "third_party/opentelemetry-cpp"]
+        path = third_party/opentelemetry-cpp
+        url = https://github.com/open-telemetry/opentelemetry-cpp.git
+        branch = v1.16.1
