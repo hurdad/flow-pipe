@@ -63,12 +63,12 @@ void Metrics::Init(const std::string& service_name, const std::string& endpoint)
       {"service.namespace", "flow-pipe"},
   });
 
-  auto meter_context = std::make_shared<otel_sdk_metrics::MeterContext>(resource);
-  auto sdk_provider = std::make_shared<otel_sdk_metrics::MeterProvider>(meter_context);
-  sdk_provider->AddMetricReader(std::move(reader));
-
-  provider = opentelemetry::nostd::shared_ptr<otel_metrics::MeterProvider>(sdk_provider);
-  otel_metrics::Provider::SetMeterProvider(provider);
+  // auto meter_context = std::make_shared<otel_sdk_metrics::MeterContext>(resource);
+  // auto sdk_provider = std::make_shared<otel_sdk_metrics::MeterProvider>(meter_context);
+  // sdk_provider->AddMetricReader(std::move(reader));
+  //
+  // provider = opentelemetry::nostd::shared_ptr<otel_metrics::MeterProvider>(sdk_provider);
+  // otel_metrics::Provider::SetMeterProvider(provider);
 
   // ---- Meter ----
   meter = provider->GetMeter("flowpipe.runtime", "1.0.0");

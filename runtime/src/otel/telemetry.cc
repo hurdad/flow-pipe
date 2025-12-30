@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "metrics/otel_metrics.h"
+#include "flowpipe/otel/metrics.h"
 
 #ifdef FLOWPIPE_ENABLE_OTEL
 // API
@@ -54,12 +54,12 @@ void Init(const TelemetryConfig& config) {
     trace_options.use_ssl_credentials = false;
 
     auto exporter = otel_otlp::OtlpGrpcExporterFactory::Create(trace_options);
-    auto processor = std::make_unique<otel_sdktrace::BatchSpanProcessor>(std::move(exporter));
-
-    tracer_provider = std::make_shared<otel_sdktrace::TracerProvider>(
-        std::move(processor), resource);
-
-    otel_trace::Provider::SetTracerProvider(tracer_provider);
+    // auto processor = std::make_unique<otel_sdktrace::BatchSpanProcessor>(std::move(exporter));
+    //
+    // tracer_provider = std::make_shared<otel_sdktrace::TracerProvider>(
+    //     std::move(processor), resource);
+    //
+    // otel_trace::Provider::SetTracerProvider(tracer_provider);
   }
 
   // ---- Metrics ----
@@ -77,7 +77,7 @@ void Init(const TelemetryConfig& config) {
     logger_provider = std::make_shared<otel_sdklogs::LoggerProvider>(
         std::move(processor), resource);
 
-    otel_logs::Provider::SetLoggerProvider(logger_provider);
+   // otel_logs::Provider::SetLoggerProvider(logger_provider);
   }
 #else
   (void)config;
@@ -91,8 +91,8 @@ void Shutdown() {
   logger_provider.reset();
   tracer_provider.reset();
 
-  otel_logs::Provider::SetLoggerProvider(nullptr);
-  otel_trace::Provider::SetTracerProvider(nullptr);
+  //otel_logs::Provider::SetLoggerProvider(nullptr);
+  //otel_trace::Provider::SetTracerProvider(nullptr);
 #endif  // FLOWPIPE_ENABLE_OTEL
 }
 

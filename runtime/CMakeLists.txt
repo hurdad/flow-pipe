@@ -10,7 +10,7 @@ project(flowpipe_runtime
 # =========================
 add_library(flowpipe_runtime
         src/runtime.cc
-        src/metrics/otel_metrics.cc
+        src/otel/metrics.cc
         src/otel/telemetry.cc
         src/signal_handler.cc
 
@@ -36,6 +36,8 @@ if(FLOWPIPE_ENABLE_OTEL)
             opentelemetry_logs
             opentelemetry_resources
             opentelemetry_exporter_otlp_grpc
+            opentelemetry_exporter_otlp_grpc_metrics
+            opentelemetry_exporter_otlp_grpc_log
     )
 endif()
 
@@ -74,6 +76,7 @@ target_link_libraries(flow_runtime
         PUBLIC flowpipe_runtime
         PRIVATE flowpipe_proto yaml-cpp
 )
+
 
 # =========================
 # Install rules
