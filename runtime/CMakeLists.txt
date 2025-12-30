@@ -74,29 +74,29 @@ target_link_libraries(flow_runtime
 # =========================
 # Install rules
 # =========================
-
-include(GNUInstallDirs)
-
-# ---- Runtime library ----
-install(TARGETS flowpipe_runtime
-        EXPORT flowpipeTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-# ---- Runtime executable ----
-install(TARGETS flow_runtime
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-# ---- Public headers ----
-install(
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-# ---- Export targets for downstream consumers ----
-install(EXPORT flowpipeTargets
-        NAMESPACE flowpipe::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
-)
+#
+#include(GNUInstallDirs)
+#
+## ---- Runtime library ----
+#install(TARGETS flowpipe_runtime
+#        EXPORT flowpipeTargets
+#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#)
+#
+## ---- Runtime executable ----
+#install(TARGETS flow_runtime
+#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#)
+#
+## ---- Public headers ----
+#install(
+#        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#)
+#
+## ---- Export targets for downstream consumers ----
+#install(EXPORT flowpipeTargets
+#        NAMESPACE flowpipe::
+#        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe
+#)
