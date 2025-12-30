@@ -10,7 +10,7 @@ project(flowpipe_runtime
 # =========================
 add_library(flowpipe_runtime
         src/runtime.cc
-        src/otel/metrics.cc
+        src/metrics/otel_metrics.cc
         src/otel/telemetry.cc
         src/signal_handler.cc
 

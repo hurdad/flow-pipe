@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "flowpipe/otel/metrics.h"
+#include "metrics/otel_metrics.h"
 
 #ifdef FLOWPIPE_ENABLE_OTEL
 // API
