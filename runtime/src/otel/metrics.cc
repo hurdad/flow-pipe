@@ -42,7 +42,8 @@ opentelemetry::nostd::shared_ptr<otel_metrics::UpDownCounter<int64_t>> queue_dep
 
 // -------------------------------------------------------------
 
-void Metrics::Init(const std::string& service_name, const std::string& endpoint) {
+void Metrics::Init(const std::string& service_name, const std::string& endpoint,
+                   std::chrono::milliseconds export_interval) {
   // ---- Exporter ----
   otel_otlp::OtlpGrpcMetricExporterOptions exporter_opts;
   exporter_opts.endpoint = endpoint;
@@ -52,7 +53,7 @@ void Metrics::Init(const std::string& service_name, const std::string& endpoint)
 
   // ---- Reader ----
   otel_sdk_metrics::PeriodicExportingMetricReaderOptions period_options;
-  period_options.export_interval_millis = std::chrono::milliseconds{5000};
+  period_options.export_interval_millis = export_interval;
 
   auto reader = std::make_unique<otel_sdk_metrics::PeriodicExportingMetricReader>(
       std::move(exporter), period_options);
@@ -126,7 +127,7 @@ void Metrics::QueueDepth(const std::string& queue, int64_t depth) {
 
 namespace flowpipe::metrics {
 
-void Metrics::Init(const std::string&, const std::string&) {}
+void Metrics::Init(const std::string&, const std::string&, std::chrono::milliseconds) {}
 
 void Metrics::Shutdown() {}
 
