@@ -63,7 +63,8 @@ void Init(const TelemetryConfig& config) {
   }
 
   // ---- Metrics ----
-  metrics::Metrics::Init(config.service_name, config.endpoint);
+  metrics::Metrics::Init(config.service_name, config.endpoint,
+                        config.metrics_export_interval);
 
   // ---- Logs ----
   {
