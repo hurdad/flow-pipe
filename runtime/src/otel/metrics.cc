@@ -1,4 +1,4 @@
-#include "metrics/otel_metrics.h"
+#include "flowpipe/otel/metrics.h"
 
 #include <chrono>
 

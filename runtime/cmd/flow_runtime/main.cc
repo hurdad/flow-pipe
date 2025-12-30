@@ -1,11 +1,13 @@
 #include <google/protobuf/util/json_util.h>
 #include <yaml-cpp/yaml.h>
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <string>
 
 #include "flowpipe/runtime.h"
+#include "flowpipe/otel/telemetry.h"
 #include "flowpipe/util/yaml_to_json.h"
 #include "flowpipe/v1/flow.pb.h"
 
@@ -87,6 +89,22 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+#ifdef FLOWPIPE_ENABLE_OTEL
+  const char* endpoint_env = std::getenv("FLOWPIPE_OTEL_GRPC_ENDPOINT");
+  const std::string otel_endpoint = endpoint_env ? endpoint_env : "0.0.0.0:4317";
+
+  flowpipe::otel::Init({
+      .service_name = "flowpipe-runtime",
+      .endpoint = otel_endpoint,
+  });
+#endif
+
   flowpipe::Runtime runtime;
-  return runtime.run(flow);
+  const int result = runtime.run(flow);
+
+#ifdef FLOWPIPE_ENABLE_OTEL
+  flowpipe::otel::Shutdown();
+#endif
+
+  return result;
 }

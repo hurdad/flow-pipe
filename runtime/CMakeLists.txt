@@ -10,6 +10,8 @@ project(flowpipe_runtime
 # =========================
 add_library(flowpipe_runtime
         src/runtime.cc
+        src/otel/metrics.cc
+        src/otel/telemetry.cc
         src/signal_handler.cc
 
         # Plugin infrastructure
@@ -29,7 +31,9 @@ target_link_libraries(flowpipe_runtime
 if(FLOWPIPE_ENABLE_OTEL)
     target_link_libraries(flowpipe_runtime
             PRIVATE
+            opentelemetry_metrics
             opentelemetry_trace
+            opentelemetry_logs
             opentelemetry_resources
             opentelemetry_exporter_otlp_grpc
     )
