@@ -26,6 +26,19 @@ target_link_libraries(flowpipe_runtime
         dl
 )
 
+if(FLOWPIPE_ENABLE_OTEL)
+    target_link_libraries(flowpipe_runtime
+            PRIVATE
+            opentelemetry_trace
+            opentelemetry_resources
+            opentelemetry_exporter_otlp_grpc
+    )
+endif()
+
+target_compile_definitions(flowpipe_runtime
+        PUBLIC $<$<BOOL:${FLOWPIPE_ENABLE_OTEL}>:FLOWPIPE_ENABLE_OTEL>
+)
+
 # Public headers (build vs install)
 target_include_directories(flowpipe_runtime
         PUBLIC
