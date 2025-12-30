@@ -1,4 +1,4 @@
-#include "metrics/otel_metrics.h"
+#include "flowpipe/otel/metrics.h"
 
 #include <chrono>
 
@@ -38,13 +38,6 @@ opentelemetry::nostd::shared_ptr<otel_metrics::Counter<uint64_t>> flow_completed
 opentelemetry::nostd::shared_ptr<otel_metrics::Counter<uint64_t>> stage_processed;
 opentelemetry::nostd::shared_ptr<otel_metrics::UpDownCounter<int64_t>> queue_depth;
 
-otel_resource::Resource CreateResource(const std::string& service_name) {
-  return otel_resource::Resource::Create({
-      {"service.name", service_name},
-      {"service.namespace", "flow-pipe"},
-  });
-}
-
 }  // namespace
 
 // -------------------------------------------------------------
@@ -65,8 +58,13 @@ void Metrics::Init(const std::string& service_name, const std::string& endpoint)
       std::move(exporter), period_options);
 
   // ---- Meter provider ----
-  auto sdk_provider = std::make_shared<otel_sdk_metrics::MeterProvider>();
-  sdk_provider->SetResource(CreateResource(service_name));
+  auto resource = otel_resource::Resource::Create({
+      {"service.name", service_name},
+      {"service.namespace", "flow-pipe"},
+  });
+
+  auto meter_context = std::make_shared<otel_sdk_metrics::MeterContext>(resource);
+  auto sdk_provider = std::make_shared<otel_sdk_metrics::MeterProvider>(meter_context);
   sdk_provider->AddMetricReader(std::move(reader));
 
   provider = opentelemetry::nostd::shared_ptr<otel_metrics::MeterProvider>(sdk_provider);
