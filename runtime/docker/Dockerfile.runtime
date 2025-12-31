@@ -9,11 +9,14 @@ RUN apt-get update && apt-get install -y \
     cmake \
     ninja-build \
     pkg-config \
+    git \
     libyaml-cpp-dev \
     libprotobuf-dev \
     protobuf-compiler \
     protobuf-compiler-grpc \
     libgrpc++-dev \
+    libcurl4-openssl-dev \
+    libspdlog-dev \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,7 +29,7 @@ COPY . .
 # Configure & build only the runtime target
 # (adjust path if your CMake layout differs)
 RUN cmake -S . -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=Release -DFLOWPIPE_ENABLE_OTEL=ON \
   && cmake --build build --target flow_runtime \
   && cmake --build build --target stage_noop_source \
   && cmake --build build --target stage_noop_transform \

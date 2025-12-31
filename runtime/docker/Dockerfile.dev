@@ -14,14 +14,17 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     ninja-build \
-    clang \
-    git \
     pkg-config \
-    ca-certificates \
+    git \
     libyaml-cpp-dev \
     libprotobuf-dev \
     protobuf-compiler \
- && rm -rf /var/lib/apt/lists/*
+    protobuf-compiler-grpc \
+    libgrpc++-dev \
+    libcurl4-openssl-dev \
+    libspdlog-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------
 # Workdir
@@ -40,7 +43,7 @@ COPY . .
 # -----------------------------------------------------
 
 RUN cmake -S . -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_BUILD_TYPE=Debug -DFLOWPIPE_ENABLE_OTEL=ON \
       -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe \
  && cmake --build build --target flow_runtime
 

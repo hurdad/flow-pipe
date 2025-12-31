@@ -29,7 +29,10 @@ FROM ghcr.io/hurdad/flow-pipe-runtime:${FLOW_PIPE_RUNTIME_TAG}
 # flow_runtime and dynamically-loaded stage plugins.
 RUN apt-get update && apt-get install -y \
     libyaml-cpp0.8 \
+    libgrpc++1.51t64 \
     libprotobuf32 \
+    libspdlog1.12 \
+    libcurl4t64 \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
