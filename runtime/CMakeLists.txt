@@ -19,6 +19,7 @@ add_library(flowpipe_runtime
         # Observability
         src/observability/defaults.cc
         src/observability/observability.cc
+        src/observability/observability_state.cc
         src/observability/metrics.cc
         src/observability/tracing.cc
         src/observability/logging.cc

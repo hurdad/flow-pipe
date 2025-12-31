@@ -60,26 +60,65 @@ message ObservabilityConfig {
 
     enum TraceHint {
       TRACE_HINT_UNSPECIFIED = 0; // Use runtime default behavior.
-      TRACE_HINT_DEFAULT = 1; // Normal sampling behavior.
-      TRACE_HINT_ALWAYS = 2; // Force tracing for this flow.
-      TRACE_HINT_NEVER = 3; // Suppress tracing for this flow.
+      TRACE_HINT_DEFAULT = 1;     // Normal sampling behavior.
+      TRACE_HINT_ALWAYS = 2;      // Force tracing for this flow.
+      TRACE_HINT_NEVER = 3;       // Suppress tracing for this flow.
     }
 
     // Sampling intent hint for this flow.
     TraceHint trace_hint = 3;
 
     // --------------------------------------------------------
+    // Trace processing strategy
+    // --------------------------------------------------------
+
+    enum TraceProcessorType {
+      TRACE_PROCESSOR_UNSPECIFIED = 0; // Runtime default.
+      TRACE_PROCESSOR_SIMPLE = 1;      // Synchronous export.
+      TRACE_PROCESSOR_BATCH = 2;       // Asynchronous batch export.
+    }
+
+    // Trace processor selection.
+    TraceProcessorType processor = 4;
+
+    // --------------------------------------------------------
+    // Batch trace processor tuning
+    // --------------------------------------------------------
+
+    message BatchConfig {
+
+      // Maximum number of spans queued in memory.
+      // Spans are dropped once this limit is reached.
+      uint32 max_queue_size = 1;
+
+      // Maximum number of spans sent per export.
+      // Must be <= max_queue_size.
+      uint32 max_export_batch_size = 2;
+
+      // Delay between two consecutive exports (milliseconds).
+      uint32 schedule_delay_ms = 3;
+
+      // Maximum time allowed for an export attempt (milliseconds).
+      // NOTE: Currently ignored by the OTEL C++ SDK but preserved
+      // for forward compatibility.
+      uint32 export_timeout_ms = 4;
+    }
+
+    // Batch processor configuration.
+    BatchConfig batch = 5;
+
+    // --------------------------------------------------------
     // Span granularity controls
     // --------------------------------------------------------
 
     // Emit spans for stage execution.
-    bool stage_spans_enabled = 4;
+    bool stage_spans_enabled = 6;
 
     // Emit spans for queue wait and dequeue.
-    bool queue_spans_enabled = 5;
+    bool queue_spans_enabled = 7;
 
     // Emit per-record spans (high overhead).
-    bool record_spans_enabled = 6;
+    bool record_spans_enabled = 8;
 
     // --------------------------------------------------------
     // Trace attribute verbosity
@@ -87,17 +126,17 @@ message ObservabilityConfig {
 
     enum AttributeLevel {
       ATTRIBUTES_UNSPECIFIED = 0; // Runtime default.
-      ATTRIBUTES_MINIMAL = 1; // IDs and timing only.
-      ATTRIBUTES_STANDARD = 2; // Safe default attributes.
-      ATTRIBUTES_VERBOSE = 3; // Debug-level verbosity.
+      ATTRIBUTES_MINIMAL = 1;     // IDs and timing only.
+      ATTRIBUTES_STANDARD = 2;    // Safe default attributes.
+      ATTRIBUTES_VERBOSE = 3;     // Debug-level verbosity.
     }
 
     // Attribute verbosity level for tracing.
-    AttributeLevel attribute_level = 7;
+    AttributeLevel attribute_level = 9;
 
     // Expected end-to-end latency budget (milliseconds).
     // Used for observability context only (not enforced).
-    uint32 latency_budget_ms = 8;
+    uint32 latency_budget_ms = 10;
   }
 
   // Tracing configuration block.
