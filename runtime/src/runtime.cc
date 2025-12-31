@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "flowpipe/queue_runtime.h"
 #include "flowpipe/signal_handler.h"
 
 namespace flowpipe {
@@ -17,14 +18,37 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   SignalHandler::install(stop_flag);
   StopToken stop{reinterpret_cast<bool*>(&stop_flag)};
 
-  std::unordered_map<std::string, std::shared_ptr<BoundedQueue<Payload>>> queues;
+  // ------------------------------------------------------------
+  // Create runtime queues (QueueRuntime)
+  // ------------------------------------------------------------
+  std::unordered_map<std::string, std::shared_ptr<QueueRuntime>> queues;
+
   for (const auto& q : spec.queues()) {
-    queues.emplace(q.name(), std::make_shared<BoundedQueue<Payload>>(q.capacity()));
+    if (q.capacity() == 0) {
+      throw std::runtime_error("queue capacity must be > 0: " + q.name());
+    }
+
+    if (q.type() == flowpipe::v1::QUEUE_TYPE_UNSPECIFIED) {
+      throw std::runtime_error("queue type unspecified: " + q.name());
+    }
+
+    auto qr = std::make_shared<QueueRuntime>();
+    qr->name = q.name();
+    qr->type = q.type();
+    qr->capacity = q.capacity();
+
+    // For now both MPSC / MPMC map to the same implementation
+    qr->queue = std::make_shared<BoundedQueue<Payload>>(q.capacity());
+
+    queues.emplace(qr->name, std::move(qr));
   }
 
   StageContext ctx{stop};
   std::vector<std::thread> threads;
 
+  // ------------------------------------------------------------
+  // Wire stages
+  // ------------------------------------------------------------
   for (const auto& s : spec.stages()) {
     const bool has_input = s.has_input_queue();
     const bool has_output = s.has_output_queue();
@@ -39,7 +63,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
       auto out = queues.at(s.output_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
-        threads.emplace_back([&, src, out] { src->run(ctx, *out); });
+        threads.emplace_back([&, src, out] { src->run(ctx, *out->queue); });
       }
       continue;
     }
@@ -52,7 +76,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       auto in = queues.at(s.input_queue());
       auto out = queues.at(s.output_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
-        threads.emplace_back([&, xf, in, out] { xf->run(ctx, *in, *out); });
+        threads.emplace_back([&, xf, in, out] { xf->run(ctx, *in->queue, *out->queue); });
       }
       continue;
     }
@@ -64,7 +88,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
       auto in = queues.at(s.input_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
-        threads.emplace_back([&, sink, in] { sink->run(ctx, *in); });
+        threads.emplace_back([&, sink, in] { sink->run(ctx, *in->queue); });
       }
       continue;
     }
@@ -72,6 +96,9 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     throw std::runtime_error("stage does not implement a valid interface: " + s.name());
   }
 
+  // ------------------------------------------------------------
+  // Join
+  // ------------------------------------------------------------
   for (auto& t : threads) {
     t.join();
   }

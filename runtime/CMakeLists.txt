@@ -5,6 +5,11 @@ project(flowpipe_runtime
         LANGUAGES CXX
 )
 
+find_library(JEMALLOC_LIB
+        NAMES jemalloc
+        REQUIRED
+)
+
 # =========================
 # Runtime library
 # =========================
@@ -28,10 +33,12 @@ add_library(flowpipe_runtime
 # Runtime depends on:
 # - flowpipe_proto (for FlowSpec, StageSpec, etc.)
 # - dl (for dlopen/dlsym)
+# - jemalloc (for memory pool)
 target_link_libraries(flowpipe_runtime
         PRIVATE
         flowpipe_proto
         dl
+        ${JEMALLOC_LIB}
 )
 
 if(FLOWPIPE_ENABLE_OTEL)
