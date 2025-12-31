@@ -50,6 +50,7 @@ if(FLOWPIPE_ENABLE_OTEL)
                 "Run 'git submodule update --init --recursive' to fetch third_party/opentelemetry-cpp.")
     endif()
 
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Dont build Shared Libs" FORCE)
     set(BUILD_TESTING OFF CACHE BOOL "Disable tests for dependencies" FORCE)
     set(WITH_OTLP_GRPC ON CACHE BOOL "Build OTLP gRPC exporter" FORCE)
     set(WITH_OTLP_HTTP ON CACHE BOOL "Build OTLP HTTP exporter" FORCE)
