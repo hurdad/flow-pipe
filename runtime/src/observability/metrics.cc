@@ -30,27 +30,27 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
   }
 
   // Create exporter
-  std::unique_ptr<metrics_sdk::MetricExporter> exporter;
-
-  if (transport == flowpipe::v1::OTLP_TRANSPORT_HTTP) {
-    otlp::OtlpHttpMetricExporterOptions opts;
-    opts.url = endpoint;
-    exporter = std::make_unique<otlp::OtlpHttpMetricExporter>(opts);
-  } else {
-    otlp::OtlpGrpcMetricExporterOptions opts;
-    opts.endpoint = endpoint;
-    exporter = std::make_unique<otlp::OtlpGrpcMetricExporter>(opts);
-  }
-
-  // Periodic metric reader
-  auto reader = std::make_unique<metrics_sdk::PeriodicExportingMetricReader>(std::move(exporter));
-
-  // Install meter provider
-  auto provider = std::make_shared<metrics_sdk::MeterProvider>();
-  provider->AddMetricReader(std::move(reader));
-
-  opentelemetry::metrics::Provider::SetMeterProvider(provider);
-}
+//   std::unique_ptr<metrics_sdk::MetricExporter> exporter;
+//
+//   if (transport == flowpipe::v1::OTLP_TRANSPORT_HTTP) {
+//     otlp::OtlpHttpMetricExporterOptions opts;
+//     opts.url = endpoint;
+//     exporter = std::make_unique<otlp::OtlpHttpMetricExporter>(opts);
+//   } else {
+//     otlp::OtlpGrpcMetricExporterOptions opts;
+//     opts.endpoint = endpoint;
+//     exporter = std::make_unique<otlp::OtlpGrpcMetricExporter>(opts);
+//   }
+//
+//   // Periodic metric reader
+//   auto reader = std::make_unique<metrics_sdk::PeriodicExportingMetricReader>(std::move(exporter));
+//
+//   // Install meter provider
+//   auto provider = std::make_shared<metrics_sdk::MeterProvider>();
+//   provider->AddMetricReader(std::move(reader));
+//
+//   opentelemetry::metrics::Provider::SetMeterProvider(provider);
+ }
 
 }  // namespace flowpipe::observability
 

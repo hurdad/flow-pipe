@@ -35,20 +35,20 @@ void InitTracing(const flowpipe::v1::ObservabilityConfig::TracingConfig* cfg,
   if (transport == flowpipe::v1::OTLP_TRANSPORT_HTTP) {
     otlp::OtlpHttpExporterOptions opts;
     opts.url = endpoint;
-    exporter = std::make_unique<otlp::OtlpHttpExporter>(opts);
+ //   exporter = std::make_unique<otlp::OtlpHttpExporter>(opts);
   } else {
     otlp::OtlpGrpcExporterOptions opts;
     opts.endpoint = endpoint;
-    exporter = std::make_unique<otlp::OtlpGrpcExporter>(opts);
+  //  exporter = std::make_unique<otlp::OtlpGrpcExporter>(opts);
   }
 
   // Use batch span processor
-  auto processor = std::make_unique<trace_sdk::BatchSpanProcessor>(std::move(exporter));
+//  auto processor = std::make_unique<trace_sdk::BatchSpanProcessor>(std::move(exporter));
 
   // Install tracer provider
-  auto provider = std::make_shared<trace_sdk::TracerProvider>(std::move(processor));
+//  auto provider = std::make_shared<trace_sdk::TracerProvider>(std::move(processor));
 
-  opentelemetry::trace::Provider::SetTracerProvider(provider);
+  //opentelemetry::trace::Provider::SetTracerProvider(provider);
 }
 
 }  // namespace flowpipe::observability

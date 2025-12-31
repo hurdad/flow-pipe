@@ -40,9 +40,17 @@ if(FLOWPIPE_ENABLE_OTEL)
             opentelemetry_trace
             opentelemetry_logs
             opentelemetry_resources
+
+            # grpc exporter
             opentelemetry_exporter_otlp_grpc
             opentelemetry_exporter_otlp_grpc_metrics
             opentelemetry_exporter_otlp_grpc_log
+
+            # http exporter
+            opentelemetry_ext
+            opentelemetry_exporter_otlp_http
+            opentelemetry_exporter_otlp_http_metric
+            opentelemetry_exporter_otlp_http_log
     )
 endif()
 

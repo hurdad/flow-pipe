@@ -30,6 +30,8 @@ set(PROTO_FILES
 set(GENERATED_SRCS
         ${PROTO_GEN_DIR}/flowpipe/v1/flow.pb.cc
         ${PROTO_GEN_DIR}/flowpipe/v1/flow.pb.h
+        ${PROTO_GEN_DIR}/flowpipe/v1/observability.pb.cc
+        ${PROTO_GEN_DIR}/flowpipe/v1/observability.pb.h
 )
 
 file(MAKE_DIRECTORY ${PROTO_GEN_DIR}/flowpipe/v1)

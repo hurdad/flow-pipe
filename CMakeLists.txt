@@ -51,7 +51,6 @@ if(FLOWPIPE_ENABLE_OTEL)
     endif()
 
     set(BUILD_TESTING OFF CACHE BOOL "Disable tests for dependencies" FORCE)
-    set(WITH_OTLP ON CACHE BOOL "Build OTLP exporters" FORCE)
     set(WITH_OTLP_GRPC ON CACHE BOOL "Build OTLP gRPC exporter" FORCE)
     set(WITH_OTLP_HTTP ON CACHE BOOL "Build OTLP HTTP exporter" FORCE)
 
