@@ -8,8 +8,8 @@
 #include <string>
 #include <string_view>
 
+#include "flowpipe/observability/observability.h"
 #include "flowpipe/runtime.h"
-#include "flowpipe/otel/telemetry.h"
 #include "flowpipe/util/yaml_to_json.h"
 #include "flowpipe/v1/flow.pb.h"
 
@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
   const std::string path = argv[1];
   flowpipe::v1::FlowSpec flow;
 
+  // parse flow
   bool ok = false;
   if (path.ends_with(".yaml") || path.ends_with(".yml")) {
     ok = load_from_yaml(path, flow);
@@ -91,41 +92,18 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  bool telemetry_enabled = false;
-
-#ifdef FLOWPIPE_ENABLE_OTEL
-  const char* endpoint_env = std::getenv("FLOWPIPE_OTEL_GRPC_ENDPOINT");
-  const std::string otel_endpoint = endpoint_env ? endpoint_env : "0.0.0.0:4317";
-
-  const char* telemetry_disabled_env = std::getenv("FLOWPIPE_DISABLE_TELEMETRY");
-
-  if (!telemetry_disabled_env || std::string_view{telemetry_disabled_env}.empty()) {
-    std::chrono::milliseconds metrics_interval{5000};
-    if (const char* interval_env = std::getenv("FLOWPIPE_METRICS_EXPORT_INTERVAL_MS")) {
-      char* endptr = nullptr;
-      const long parsed = std::strtol(interval_env, &endptr, 10);
-      if (endptr != interval_env && parsed > 0) {
-        metrics_interval = std::chrono::milliseconds{parsed};
-      }
-    }
-
-    flowpipe::otel::Init({
-        .service_name = "flowpipe-runtime",
-        .endpoint = otel_endpoint,
-        .metrics_export_interval = metrics_interval,
-    });
-    telemetry_enabled = true;
+  // ----------------------------------------------------------
+  // Initialize observability ONCE, early
+  // ----------------------------------------------------------
+  if (flow.has_observability()) {
+    flowpipe::observability::InitFromProto(&flow.observability());
+  } else {
+    // No observability block → runtime defaults apply
+    flowpipe::observability::InitFromProto(nullptr);
   }
-#endif
 
   flowpipe::Runtime runtime;
   const int result = runtime.run(flow);
-
-#ifdef FLOWPIPE_ENABLE_OTEL
-  if (telemetry_enabled) {
-    flowpipe::otel::Shutdown();
-  }
-#endif
 
   return result;
 }

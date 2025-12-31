@@ -20,6 +20,7 @@ set(PROTO_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 set(PROTO_FILES
         ${PROTO_V1}/flow.proto
+        ${PROTO_V1}/observability.proto
 )
 
 # --------------------------------------------------

@@ -10,13 +10,18 @@ project(flowpipe_runtime
 # =========================
 add_library(flowpipe_runtime
         src/runtime.cc
-        src/otel/metrics.cc
-        src/otel/telemetry.cc
         src/signal_handler.cc
 
         # Plugin infrastructure
         src/stage_factory.cc
         src/stage_registry.cc
+
+        # Observability
+        src/observability/defaults.cc
+        src/observability/observability.cc
+        src/observability/metrics.cc
+        src/observability/tracing.cc
+        src/observability/logging.cc
 )
 
 # Runtime depends on:

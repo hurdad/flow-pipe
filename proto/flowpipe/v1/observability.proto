@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+package flowpipe.v1;
+
+// ============================================================
+// Flow-level observability configuration (intent only)
+// ============================================================
+//
+// - Expresses what signals a flow wants to emit
+// - Does NOT define exporters, backends, or credentials
+// - Runtime applies defaults, validation, and safety limits
+// - Global runtime configuration always wins
+//
+
+// ------------------------------------------------------------
+// OTLP transport selection
+// ------------------------------------------------------------
+//
+// Defines which OTLP transport should be used when exporting
+// telemetry. This is a hint only and may be ignored by runtime
+// policy.
+//
+enum OtlpTransport {
+  OTLP_TRANSPORT_UNSPECIFIED = 0; // Runtime default (typically gRPC)
+  OTLP_TRANSPORT_GRPC = 1; // OTLP over gRPC
+  OTLP_TRANSPORT_HTTP = 2; // OTLP over HTTP/protobuf
+}
+
+message ObservabilityConfig {
+
+  // ----------------------------------------------------------
+  // Master enable switches
+  // ----------------------------------------------------------
+
+  // Allow metrics emission for this flow.
+  bool metrics_enabled = 1;
+
+  // Allow tracing emission for this flow.
+  bool tracing_enabled = 2;
+
+  // Allow log emission for this flow.
+  bool logs_enabled = 3;
+
+  // ==========================================================
+  // Tracing configuration
+  // ==========================================================
+  message TracingConfig {
+
+    // Optional OTLP endpoint override for tracing (host:port).
+    // If unset, the global runtime tracing endpoint is used.
+    string otlp_endpoint = 1;
+
+    // OTLP transport selection (gRPC or HTTP).
+    // If unspecified, runtime default is used.
+    OtlpTransport transport = 2;
+
+    // --------------------------------------------------------
+    // Tracing sampling intent
+    // --------------------------------------------------------
+
+    enum TraceHint {
+      TRACE_HINT_UNSPECIFIED = 0; // Use runtime default behavior.
+      TRACE_HINT_DEFAULT = 1; // Normal sampling behavior.
+      TRACE_HINT_ALWAYS = 2; // Force tracing for this flow.
+      TRACE_HINT_NEVER = 3; // Suppress tracing for this flow.
+    }
+
+    // Sampling intent hint for this flow.
+    TraceHint trace_hint = 3;
+
+    // --------------------------------------------------------
+    // Span granularity controls
+    // --------------------------------------------------------
+
+    // Emit spans for stage execution.
+    bool stage_spans_enabled = 4;
+
+    // Emit spans for queue wait and dequeue.
+    bool queue_spans_enabled = 5;
+
+    // Emit per-record spans (high overhead).
+    bool record_spans_enabled = 6;
+
+    // --------------------------------------------------------
+    // Trace attribute verbosity
+    // --------------------------------------------------------
+
+    enum AttributeLevel {
+      ATTRIBUTES_UNSPECIFIED = 0; // Runtime default.
+      ATTRIBUTES_MINIMAL = 1; // IDs and timing only.
+      ATTRIBUTES_STANDARD = 2; // Safe default attributes.
+      ATTRIBUTES_VERBOSE = 3; // Debug-level verbosity.
+    }
+
+    // Attribute verbosity level for tracing.
+    AttributeLevel attribute_level = 7;
+
+    // Expected end-to-end latency budget (milliseconds).
+    // Used for observability context only (not enforced).
+    uint32 latency_budget_ms = 8;
+  }
+
+  // Tracing configuration block.
+  TracingConfig tracing = 4;
+
+  // ==========================================================
+  // Metrics configuration
+  // ==========================================================
+  message MetricsConfig {
+
+    // Optional OTLP endpoint override for metrics (host:port).
+    // If unset, the global runtime metrics endpoint is used.
+    string otlp_endpoint = 1;
+
+    // OTLP transport selection (gRPC or HTTP).
+    // If unspecified, runtime default is used.
+    OtlpTransport transport = 2;
+
+    // --------------------------------------------------------
+    // Metrics granularity controls
+    // --------------------------------------------------------
+
+    // Emit per-stage metrics.
+    bool stage_metrics_enabled = 3;
+
+    // Emit queue-level metrics.
+    bool queue_metrics_enabled = 4;
+
+    // Emit flow-level aggregate metrics.
+    bool flow_metrics_enabled = 5;
+
+    // --------------------------------------------------------
+    // Cost and cardinality controls
+    // --------------------------------------------------------
+
+    // Emit latency histogram metrics.
+    bool latency_histograms_enabled = 6;
+
+    // Emit counters only (no gauges or histograms).
+    bool counters_only = 7;
+
+    // --------------------------------------------------------
+    // Metrics collection interval hints
+    // --------------------------------------------------------
+
+    // Minimum metrics emission interval (milliseconds).
+    uint32 min_collection_interval_ms = 8;
+
+    // Preferred metrics emission interval (milliseconds).
+    uint32 collection_interval_ms = 9;
+
+    // Expected latency budget for metric tagging and alerting.
+    uint32 latency_budget_ms = 10;
+  }
+
+  // Metrics configuration block.
+  MetricsConfig metrics = 5;
+
+  // ==========================================================
+  // Logging configuration
+  // ==========================================================
+  message LoggingConfig {
+
+    // Optional OTLP endpoint override for logs (host:port).
+    // If unset, the global runtime logging endpoint is used.
+    string otlp_endpoint = 1;
+
+    // OTLP transport selection (gRPC or HTTP).
+    // If unspecified, runtime default is used.
+    OtlpTransport transport = 2;
+
+    // --------------------------------------------------------
+    // Log processing strategy
+    // --------------------------------------------------------
+
+    enum LogProcessorType {
+      LOG_PROCESSOR_UNSPECIFIED = 0; // Runtime default.
+      LOG_PROCESSOR_SIMPLE = 1; // Synchronous export.
+      LOG_PROCESSOR_BATCH = 2; // Asynchronous batch export.
+    }
+
+    // Log processor selection.
+    LogProcessorType processor = 3;
+
+    // --------------------------------------------------------
+    // Batch log processor tuning
+    // --------------------------------------------------------
+
+    message BatchConfig {
+      uint32 max_queue_size = 1; // Max queued log records
+      uint32 max_export_batch_size = 2; // Max records per export
+      uint32 schedule_delay_ms = 3; // Delay before export
+      uint32 export_timeout_ms = 4; // Export timeout
+    }
+
+    // Batch processor configuration.
+    BatchConfig batch = 4;
+  }
+
+  // Logging configuration block.
+  LoggingConfig logging = 6;
+
+  // ----------------------------------------------------------
+  // Debug intent
+  // ----------------------------------------------------------
+
+  // Indicates this flow is under investigation and may emit
+  // higher-cost observability signals.
+  bool debug = 7;
+}

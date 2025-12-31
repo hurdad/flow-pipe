@@ -5,6 +5,7 @@ package flowpipe.v1;
 option go_package = "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1";
 
 import "google/protobuf/timestamp.proto";
+import "flowpipe/v1/observability.proto";
 
 
 // ============================================================
@@ -40,6 +41,9 @@ message FlowSpec {
 
   // Optional metadata (team, env, cost-center, etc.).
   map<string, string> labels = 10;
+
+  // Optional flow-level observability configuration
+  optional ObservabilityConfig observability = 11;
 }
 
 
