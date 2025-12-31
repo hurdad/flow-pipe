@@ -3,25 +3,52 @@
 #include <memory>
 
 #if FLOWPIPE_ENABLE_OTEL
+
+#include <opentelemetry/logs/logger_provider.h>
+#include <opentelemetry/metrics/meter_provider.h>
 #include <opentelemetry/sdk/logs/logger_provider.h>
 #include <opentelemetry/sdk/metrics/meter_provider.h>
 #include <opentelemetry/sdk/trace/tracer_provider.h>
-#endif
+#include <opentelemetry/trace/tracer_provider.h>
+
+#endif  // FLOWPIPE_ENABLE_OTEL
 
 namespace flowpipe::observability {
 
-// Owns all OTEL providers for process lifetime
+// ------------------------------------------------------------
+// Global OpenTelemetry runtime state
+// ------------------------------------------------------------
 struct OtelState {
 #if FLOWPIPE_ENABLE_OTEL
+  // ----------------------------------------------------------
+  // Providers (SDK ownership)
+  // ----------------------------------------------------------
   std::shared_ptr<opentelemetry::sdk::trace::TracerProvider> tracer_provider;
-
   std::shared_ptr<opentelemetry::sdk::metrics::MeterProvider> meter_provider;
-
   std::shared_ptr<opentelemetry::sdk::logs::LoggerProvider> logger_provider;
+
+  // ----------------------------------------------------------
+  // Metrics runtime flags (cached from MetricsConfig)
+  // ----------------------------------------------------------
+  bool stage_metrics_enabled = false;
+  bool queue_metrics_enabled = false;
+  bool flow_metrics_enabled = false;
+
+  bool latency_histograms = false;
+  bool metrics_counters_only = false;
+
+  // ----------------------------------------------------------
+  // Tracing runtime flags (for symmetry / future use)
+  // ----------------------------------------------------------
+  bool stage_spans_enabled = false;
+  bool queue_spans_enabled = false;
+  bool record_spans_enabled = false;
 #endif
 };
 
-// Accessor for global OTEL state
+// ------------------------------------------------------------
+// Global state access
+// ------------------------------------------------------------
 OtelState& GetOtelState();
 
 }  // namespace flowpipe::observability

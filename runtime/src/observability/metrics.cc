@@ -18,6 +18,8 @@
 #include <opentelemetry/sdk/metrics/meter_context_factory.h>
 #include <opentelemetry/sdk/metrics/meter_provider.h>
 #include <opentelemetry/sdk/metrics/meter_provider_factory.h>
+#include <opentelemetry/sdk/metrics/view/instrument_selector_factory.h>
+#include <opentelemetry/sdk/metrics/view/view_factory.h>
 
 // ---- OpenTelemetry: OTLP exporters
 #include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter_factory.h>
@@ -34,25 +36,27 @@ namespace flowpipe::observability {
 // Periodic metric reader option mapping
 // ------------------------------------------------------------
 static metrics_sdk::PeriodicExportingMetricReaderOptions CreatePeriodicMetricReaderOptions(
-    const flowpipe::v1::ObservabilityConfig::MetricsConfig& cfg, bool debug) {
+    const flowpipe::v1::ObservabilityConfig::MetricsConfig& cfg, const GlobalDefaults& global,
+    bool debug) {
   metrics_sdk::PeriodicExportingMetricReaderOptions opts;
 
-  // Apply explicit intent
-  if (cfg.collection_interval_ms() > 0)
+  // Explicit intent
+  if (cfg.collection_interval_ms() > 0) {
     opts.export_interval_millis = std::chrono::milliseconds(cfg.collection_interval_ms());
+  }
 
-  // Runtime default if not provided
+  // Enforce minimum interval if specified
   if (cfg.min_collection_interval_ms() > 0 &&
       opts.export_interval_millis < std::chrono::milliseconds(cfg.min_collection_interval_ms())) {
     opts.export_interval_millis = std::chrono::milliseconds(cfg.min_collection_interval_ms());
   }
 
-  // Debug intent → faster export cadence
+  // Debug intent → faster cadence
   if (debug) {
     opts.export_interval_millis = std::chrono::milliseconds(500);
   }
 
-  // Conservative timeout (SDK default-safe)
+  // Conservative timeout
   opts.export_timeout_millis = std::chrono::milliseconds(500);
 
   return opts;
@@ -65,8 +69,23 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
                  const GlobalDefaults& global, bool debug) {
   auto& state = GetOtelState();
 
-  if (!cfg || state.meter_provider)
+  if (!cfg || state.meter_provider) {
     return;
+  }
+
+  // ----------------------------------------------------------
+  // Cache runtime flags
+  // ----------------------------------------------------------
+  state.stage_metrics_enabled = cfg->stage_metrics_enabled();
+  state.queue_metrics_enabled = cfg->queue_metrics_enabled();
+  state.flow_metrics_enabled = cfg->flow_metrics_enabled();
+  state.latency_histograms = cfg->latency_histograms_enabled();
+  state.metrics_counters_only = cfg->counters_only();
+
+  // Nothing enabled → no-op
+  if (!state.stage_metrics_enabled && !state.queue_metrics_enabled && !state.flow_metrics_enabled) {
+    return;
+  }
 
   // ----------------------------------------------------------
   // Endpoint & transport resolution
@@ -74,11 +93,13 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
   std::string endpoint = global.metrics_endpoint;
   auto transport = flowpipe::v1::OTLP_TRANSPORT_GRPC;
 
-  if (!cfg->otlp_endpoint().empty() && global.allow_endpoint_overrides)
+  if (!cfg->otlp_endpoint().empty() && global.allow_endpoint_overrides) {
     endpoint = cfg->otlp_endpoint();
+  }
 
-  if (cfg->transport() != flowpipe::v1::OTLP_TRANSPORT_UNSPECIFIED)
+  if (cfg->transport() != flowpipe::v1::OTLP_TRANSPORT_UNSPECIFIED) {
     transport = cfg->transport();
+  }
 
   // ----------------------------------------------------------
   // Exporter
@@ -98,7 +119,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
   // ----------------------------------------------------------
   // Metric reader
   // ----------------------------------------------------------
-  auto reader_opts = CreatePeriodicMetricReaderOptions(*cfg, debug);
+  auto reader_opts = CreatePeriodicMetricReaderOptions(*cfg, global, debug);
 
   auto reader =
       metrics_sdk::PeriodicExportingMetricReaderFactory::Create(std::move(exporter), reader_opts);
@@ -110,12 +131,32 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
   context->AddMetricReader(std::move(reader));
 
   // ----------------------------------------------------------
+  // Counters-only mode
+  // ----------------------------------------------------------
+  // if (state.metrics_counters_only) {
+  //   auto selector =
+  //       metrics_sdk::InstrumentSelectorFactory::Create(metrics_sdk::InstrumentType::kHistogram);
+  //
+  //   auto view = metrics_sdk::ViewFactory::Create(metrics_sdk::AggregationType::kDrop);
+  //
+  //   context->AddView(std::move(selector), std::move(view));
+  // }
+
+  // ----------------------------------------------------------
   // Provider (SDK → API)
   // ----------------------------------------------------------
   state.meter_provider = metrics_sdk::MeterProviderFactory::Create(std::move(context));
   std::shared_ptr<opentelemetry::metrics::MeterProvider> api_provider(
       std::move(state.meter_provider));
   opentelemetry::metrics::Provider::SetMeterProvider(api_provider);
+
+  if (debug) {
+    fprintf(stderr,
+            "[otel] metrics enabled "
+            "(stage=%d queue=%d flow=%d histograms=%d counters_only=%d)\n",
+            state.stage_metrics_enabled, state.queue_metrics_enabled, state.flow_metrics_enabled,
+            state.latency_histograms, state.metrics_counters_only);
+  }
 }
 
 }  // namespace flowpipe::observability
