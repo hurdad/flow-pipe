@@ -54,6 +54,7 @@ target_include_directories(stage_noop_transform
 
 target_link_libraries(stage_noop_transform
         PRIVATE
+        flowpipe_runtime
         stage_noop_proto
 )
 
