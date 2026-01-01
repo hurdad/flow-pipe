@@ -1,12 +1,15 @@
 #include "flowpipe/stage_runner.h"
 
 #include <chrono>
+#include <cstring>
 
 #if FLOWPIPE_ENABLE_OTEL
 #include <opentelemetry/trace/provider.h>
 #include <opentelemetry/trace/span_context.h>
 #include <opentelemetry/trace/span_id.h>
 #include <opentelemetry/trace/trace_id.h>
+
+#include "flowpipe/observability/observability_state.h"
 #endif
 
 namespace flowpipe {
@@ -21,6 +24,11 @@ static inline uint64_t now_ns() noexcept {
 }
 
 #if FLOWPIPE_ENABLE_OTEL
+
+static inline bool StageSpansEnabled() noexcept {
+  return flowpipe::observability::GetOtelState().stage_spans_enabled;
+}
+
 static opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer> GetTracer() {
   auto provider = opentelemetry::trace::Provider::GetTracerProvider();
   return provider->GetTracer("flowpipe.runtime", "1.0.0");
@@ -32,23 +40,20 @@ static opentelemetry::trace::SpanContext SpanContextFromPayload(const PayloadMet
     return opentelemetry::trace::SpanContext::GetInvalid();
   }
 
-  // Reconstruct TraceId
   opentelemetry::trace::TraceId trace_id{
       opentelemetry::nostd::span<const uint8_t, PayloadMeta::trace_id_size>(meta.trace_id)};
 
-  // Reconstruct SpanId
   opentelemetry::trace::SpanId span_id{
       opentelemetry::nostd::span<const uint8_t, PayloadMeta::span_id_size>(meta.span_id)};
 
-  // Reconstruct trace flags
   opentelemetry::trace::TraceFlags flags{static_cast<uint8_t>(meta.flags & 0xFF)};
 
-  return opentelemetry::trace::SpanContext{trace_id, span_id, flags,
-                                           /*is_remote=*/true};
+  return opentelemetry::trace::SpanContext{trace_id, span_id, flags, /*is_remote=*/true};
 }
 
 // Write child span context back into payload metadata
-static void WriteSpanToPayload(const opentelemetry::trace::SpanContext& ctx, PayloadMeta& meta) {
+static inline void WriteSpanToPayload(const opentelemetry::trace::SpanContext& ctx,
+                                      PayloadMeta& meta) noexcept {
   if (!ctx.IsValid()) {
     std::memset(meta.trace_id, 0, PayloadMeta::trace_id_size);
     std::memset(meta.span_id, 0, PayloadMeta::span_id_size);
@@ -56,7 +61,6 @@ static void WriteSpanToPayload(const opentelemetry::trace::SpanContext& ctx, Pay
     return;
   }
 
-  // Copy opaque IDs directly
   ctx.trace_id().CopyBytesTo(
       opentelemetry::nostd::span<uint8_t, PayloadMeta::trace_id_size>(meta.trace_id));
 
@@ -77,9 +81,14 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
     Payload payload;
 
 #if FLOWPIPE_ENABLE_OTEL
-    auto tracer = GetTracer();
-    auto span = tracer->StartSpan(stage->name());
-    auto scope = tracer->WithActiveSpan(span);
+    opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> span;
+    std::unique_ptr<opentelemetry::trace::Scope> scope;
+
+    if (StageSpansEnabled()) {
+      auto tracer = GetTracer();
+      span = tracer->StartSpan(stage->name());
+      scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
+    }
 #endif
 
     const uint64_t start_ns = now_ns();
@@ -87,8 +96,10 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
-    WriteSpanToPayload(span->GetContext(), payload.meta);
-    span->End();
+    if (span) {
+      WriteSpanToPayload(span->GetContext(), payload.meta);
+      span->End();
+    }
 #endif
 
     if (!produced) {
@@ -130,16 +141,21 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
     }
 
 #if FLOWPIPE_ENABLE_OTEL
-    auto tracer = GetTracer();
-    auto parent_ctx = SpanContextFromPayload(in_payload.meta);
+    opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> span;
+    std::unique_ptr<opentelemetry::trace::Scope> scope;
 
-    opentelemetry::trace::StartSpanOptions opts;
-    if (parent_ctx.IsValid()) {
-      opts.parent = parent_ctx;
+    if (StageSpansEnabled()) {
+      auto tracer = GetTracer();
+      auto parent_ctx = SpanContextFromPayload(in_payload.meta);
+
+      opentelemetry::trace::StartSpanOptions opts;
+      if (parent_ctx.IsValid()) {
+        opts.parent = parent_ctx;
+      }
+
+      span = tracer->StartSpan(stage->name(), opts);
+      scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
     }
-
-    auto span = tracer->StartSpan(stage->name(), opts);
-    auto scope = tracer->WithActiveSpan(span);
 #endif
 
     Payload out_payload;
@@ -149,8 +165,10 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
-    WriteSpanToPayload(span->GetContext(), out_payload.meta);
-    span->End();
+    if (span) {
+      WriteSpanToPayload(span->GetContext(), out_payload.meta);
+      span->End();
+    }
 #endif
 
     if (metrics) {
@@ -188,15 +206,21 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
     }
 
 #if FLOWPIPE_ENABLE_OTEL
-    auto tracer = GetTracer();
-    auto parent_ctx = SpanContextFromPayload(payload.meta);
-    opentelemetry::trace::StartSpanOptions opts;
-    if (parent_ctx.IsValid()) {
-      opts.parent = parent_ctx;
-    }
+    opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> span;
+    std::unique_ptr<opentelemetry::trace::Scope> scope;
 
-    auto span = tracer->StartSpan(stage->name(), opts);
-    auto scope = tracer->WithActiveSpan(span);
+    if (StageSpansEnabled()) {
+      auto tracer = GetTracer();
+      auto parent_ctx = SpanContextFromPayload(payload.meta);
+
+      opentelemetry::trace::StartSpanOptions opts;
+      if (parent_ctx.IsValid()) {
+        opts.parent = parent_ctx;
+      }
+
+      span = tracer->StartSpan(stage->name(), opts);
+      scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
+    }
 #endif
 
     const uint64_t start_ns = now_ns();
@@ -204,7 +228,9 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
-    span->End();
+    if (span) {
+      span->End();
+    }
 #endif
 
     if (metrics) {
