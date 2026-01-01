@@ -8,8 +8,16 @@
 #include <memory>
 #include <string>
 
-// ---- OpenTelemetry: Logs (SDK)
+// ---- OpenTelemetry: Logs (API)
+#include <opentelemetry/logs/logger.h>
+#include <opentelemetry/logs/logger_provider.h>
 #include <opentelemetry/logs/provider.h>
+#include <opentelemetry/logs/severity.h>
+
+// ---- OpenTelemetry: Common
+#include <opentelemetry/common/attribute_value.h>
+
+// ---- OpenTelemetry: Logs (SDK)
 #include <opentelemetry/sdk/logs/batch_log_record_processor.h>
 #include <opentelemetry/sdk/logs/batch_log_record_processor_factory.h>
 #include <opentelemetry/sdk/logs/logger_provider.h>
@@ -26,6 +34,26 @@ namespace logs_sdk = opentelemetry::sdk::logs;
 namespace otlp = opentelemetry::exporter::otlp;
 
 namespace flowpipe::observability {
+
+// ------------------------------------------------------------
+// Severity mapping
+// ------------------------------------------------------------
+static opentelemetry::logs::Severity ToOtelSeverity(LogLevel level) {
+  using S = opentelemetry::logs::Severity;
+  switch (level) {
+    case LogLevel::Debug:
+      return S::kDebug;
+    case LogLevel::Info:
+      return S::kInfo;
+    case LogLevel::Warn:
+      return S::kWarn;
+    case LogLevel::Error:
+      return S::kError;
+    case LogLevel::Fatal:
+      return S::kFatal;
+  }
+  return S::kInfo;
+}
 
 // ------------------------------------------------------------
 // Batch processor option mapping
@@ -46,7 +74,7 @@ static logs_sdk::BatchLogRecordProcessorOptions CreateBatchLoggingOptions(
   if (cfg.export_timeout_ms() > 0)
     opts.export_timeout_millis = std::chrono::milliseconds(cfg.export_timeout_ms());
 
-  // Debug intent → faster flush, smaller batches
+  // Debug intent → faster flush
   if (debug) {
     opts.schedule_delay_millis = std::chrono::milliseconds(200);
     opts.max_export_batch_size = 64;
@@ -56,7 +84,7 @@ static logs_sdk::BatchLogRecordProcessorOptions CreateBatchLoggingOptions(
 }
 
 // ------------------------------------------------------------
-// Init logging
+// Init logging (SDK setup)
 // ------------------------------------------------------------
 void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
                  const GlobalDefaults& global, bool debug) {
@@ -65,9 +93,6 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
   if (!cfg || state.logger_provider)
     return;
 
-  // ----------------------------------------------------------
-  // Endpoint & transport resolution
-  // ----------------------------------------------------------
   std::string endpoint = global.logging_endpoint;
   auto transport = flowpipe::v1::OTLP_TRANSPORT_GRPC;
 
@@ -77,9 +102,6 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
   if (cfg->transport() != flowpipe::v1::OTLP_TRANSPORT_UNSPECIFIED)
     transport = cfg->transport();
 
-  // ----------------------------------------------------------
-  // Exporter
-  // ----------------------------------------------------------
   std::unique_ptr<logs_sdk::LogRecordExporter> exporter;
 
   if (transport == flowpipe::v1::OTLP_TRANSPORT_HTTP) {
@@ -92,9 +114,6 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
     exporter = otlp::OtlpGrpcLogRecordExporterFactory::Create(opts);
   }
 
-  // ----------------------------------------------------------
-  // Processor
-  // ----------------------------------------------------------
   std::unique_ptr<logs_sdk::LogRecordProcessor> processor;
 
   if (cfg->processor() == flowpipe::v1::ObservabilityConfig::LoggingConfig::LOG_PROCESSOR_SIMPLE) {
@@ -104,12 +123,48 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
     processor = logs_sdk::BatchLogRecordProcessorFactory::Create(std::move(exporter), opts);
   }
 
-  // ----------------------------------------------------------
-  // Provider (SDK → API)
-  // ----------------------------------------------------------
   state.logger_provider = logs_sdk::LoggerProviderFactory::Create(std::move(processor));
   std::shared_ptr<opentelemetry::logs::LoggerProvider> api_provider = state.logger_provider;
   opentelemetry::logs::Provider::SetLoggerProvider(api_provider);
+}
+
+// ------------------------------------------------------------
+// Emit log record (CreateLogRecord + EmitLogRecord)
+// ------------------------------------------------------------
+void Log(LogLevel level, const std::string& message, const char* file, int line) {
+  auto provider = opentelemetry::logs::Provider::GetLoggerProvider();
+  if (!provider)
+    return;
+
+  auto logger = provider->GetLogger("flowpipe.runtime");
+  if (!logger)
+    return;
+
+  auto record = logger->CreateLogRecord();
+  if (!record)
+    return;
+
+  using opentelemetry::common::AttributeValue;
+
+  if (file && line > 0) {
+    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
+                          std::initializer_list<std::pair<std::string, AttributeValue>>{
+                              {"code.filepath", AttributeValue{file}},
+                              {"code.lineno", AttributeValue{line}},
+                          });
+  } else if (file) {
+    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
+                          std::initializer_list<std::pair<std::string, AttributeValue>>{
+                              {"code.filepath", AttributeValue{file}},
+                          });
+  } else if (line > 0) {
+    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
+                          std::initializer_list<std::pair<std::string, AttributeValue>>{
+                              {"code.lineno", AttributeValue{line}},
+                          });
+  } else {
+    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message);
+  }
 }
 
 }  // namespace flowpipe::observability
@@ -120,6 +175,8 @@ namespace flowpipe::observability {
 
 void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig*, const GlobalDefaults&,
                  bool) {}
+
+void Log(LogLevel, const std::string&, const char*, int) {}
 
 }  // namespace flowpipe::observability
 
