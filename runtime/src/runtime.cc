@@ -17,7 +17,7 @@ Runtime::Runtime() = default;
 int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   std::atomic<bool> stop_flag{false};
   SignalHandler::install(stop_flag);
-  StopToken stop{reinterpret_cast<bool*>(&stop_flag)};
+  StopToken stop{&stop_flag};
 
   // ------------------------------------------------------------
   // Create runtime queues (QueueRuntime)

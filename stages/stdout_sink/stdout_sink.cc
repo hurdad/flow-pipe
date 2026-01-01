@@ -10,15 +10,18 @@ public:
     return "stdout_sink";
   }
 
-  void run(StageContext& ctx,
-           BoundedQueue<Payload>& in) override {
-    while (!ctx.stop.stop_requested()) {
-      auto item = in.pop(ctx.stop);
-      if (!item.has_value()) {
-        break;
-      }
-      std::cout << "payload received\n";
+  // Called once per payload by the runtime
+  void consume(StageContext& ctx, const Payload& payload) override {
+    if (ctx.stop.stop_requested()) {
+      return;
     }
+
+    // Example usage
+    std::cout << "payload received (size=" << payload.size << ")\n";
+
+    // You may inspect metadata if you want:
+    // payload.meta.enqueue_ts_ns
+    // payload.meta.trace_id / span_id
   }
 };
 
@@ -32,4 +35,4 @@ extern "C" {
     delete stage;
   }
 
-}
+}  // extern "C"

@@ -6,14 +6,9 @@
 #include <mutex>
 #include <optional>
 
-namespace flowpipe {
+#include "stop_token.h"
 
-struct StopToken {
-  bool* stop_flag{nullptr};
-  bool stop_requested() const noexcept {
-    return stop_flag && *stop_flag;
-  }
-};
+namespace flowpipe {
 
 template <typename T>
 class BoundedQueue {

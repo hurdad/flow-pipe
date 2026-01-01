@@ -8,14 +8,19 @@ public:
     return "noop_source";
   }
 
-  void run(StageContext& ctx,
-           BoundedQueue<Payload>& out) override {
-    while (!ctx.stop.stop_requested()) {
-      Payload p{};
-      if (!out.push(std::move(p), ctx.stop)) {
-        break;
-      }
+  // Produce a single payload.
+  // Return false to signal end-of-stream.
+  bool produce(StageContext& ctx, Payload& out) override {
+    if (ctx.stop.stop_requested()) {
+      return false;
     }
+
+    // Empty payload (noop)
+    out.data = nullptr;
+    out.size = 0;
+
+    // Metadata (trace + timestamps) will be filled by runtime
+    return true;
   }
 };
 
@@ -29,4 +34,4 @@ extern "C" {
     delete stage;
   }
 
-}
+}  // extern "C"

@@ -10,19 +10,25 @@ namespace flowpipe {
  * Small, fixed-size, and cheap to copy.
  */
 struct PayloadMeta {
+  static constexpr int trace_id_size = 16;
+  static constexpr int span_id_size = 8;
+
   // Monotonic enqueue timestamp (nanoseconds)
   uint64_t enqueue_ts_ns = 0;
 
-  // W3C Trace Context identifiers
-  uint64_t trace_id_hi = 0;
-  uint64_t trace_id_lo = 0;
-  uint64_t span_id = 0;
+  // W3C trace identifiers (opaque bytes)
+  uint8_t trace_id[trace_id_size]{};
+  uint8_t span_id[span_id_size]{};
 
   // Bit flags (sampled, error, future use)
   uint32_t flags = 0;
 
   constexpr bool has_trace() const noexcept {
-    return trace_id_hi != 0 || trace_id_lo != 0;
+    for (int i = 0; i < trace_id_size; ++i) {
+      if (trace_id[i] != 0)
+        return true;
+    }
+    return false;
   }
 };
 

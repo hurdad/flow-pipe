@@ -8,19 +8,17 @@ public:
     return "noop_transform";
   }
 
-  void run(StageContext& ctx,
-           BoundedQueue<Payload>& in,
-           BoundedQueue<Payload>& out) override {
-    while (!ctx.stop.stop_requested()) {
-      auto item = in.pop(ctx.stop);
-      if (!item.has_value()) {
-        break;
-      }
-
-      if (!out.push(std::move(*item), ctx.stop)) {
-        break;
-      }
+  // Process a single payload.
+  // Runtime handles dequeue/enqueue.
+  void process(StageContext& ctx,
+               const Payload& input,
+               Payload& output) override {
+    if (ctx.stop.stop_requested()) {
+      return;
     }
+
+    // Pass-through (shallow copy of view + metadata)
+    output = input;
   }
 };
 
@@ -34,4 +32,4 @@ extern "C" {
     delete stage;
   }
 
-}
+}  // extern "C"

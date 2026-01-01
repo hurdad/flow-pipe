@@ -2,40 +2,114 @@
 
 #include <chrono>
 
+#if FLOWPIPE_ENABLE_OTEL
+#include <opentelemetry/trace/provider.h>
+#include <opentelemetry/trace/span_context.h>
+#include <opentelemetry/trace/span_id.h>
+#include <opentelemetry/trace/trace_id.h>
+#endif
+
 namespace flowpipe {
 
 // ------------------------------------------------------------
 // Time helper (monotonic, nanoseconds)
 // ------------------------------------------------------------
-static inline uint64_t now_ns() {
+static inline uint64_t now_ns() noexcept {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }
+
+#if FLOWPIPE_ENABLE_OTEL
+static opentelemetry::nostd::shared_ptr<opentelemetry::trace::Tracer> GetTracer() {
+  auto provider = opentelemetry::trace::Provider::GetTracerProvider();
+  return provider->GetTracer("flowpipe.runtime", "1.0.0");
+}
+
+// Build a parent span context from PayloadMeta (if present)
+static opentelemetry::trace::SpanContext SpanContextFromPayload(const PayloadMeta& meta) {
+  if (!meta.has_trace()) {
+    return opentelemetry::trace::SpanContext::GetInvalid();
+  }
+
+  // Reconstruct TraceId
+  opentelemetry::trace::TraceId trace_id{
+      opentelemetry::nostd::span<const uint8_t, PayloadMeta::trace_id_size>(meta.trace_id)};
+
+  // Reconstruct SpanId
+  opentelemetry::trace::SpanId span_id{
+      opentelemetry::nostd::span<const uint8_t, PayloadMeta::span_id_size>(meta.span_id)};
+
+  // Reconstruct trace flags
+  opentelemetry::trace::TraceFlags flags{static_cast<uint8_t>(meta.flags & 0xFF)};
+
+  return opentelemetry::trace::SpanContext{trace_id, span_id, flags,
+                                           /*is_remote=*/true};
+}
+
+// Write child span context back into payload metadata
+static void WriteSpanToPayload(const opentelemetry::trace::SpanContext& ctx, PayloadMeta& meta) {
+  if (!ctx.IsValid()) {
+    std::memset(meta.trace_id, 0, PayloadMeta::trace_id_size);
+    std::memset(meta.span_id, 0, PayloadMeta::span_id_size);
+    meta.flags = 0;
+    return;
+  }
+
+  // Copy opaque IDs directly
+  ctx.trace_id().CopyBytesTo(
+      opentelemetry::nostd::span<uint8_t, PayloadMeta::trace_id_size>(meta.trace_id));
+
+  ctx.span_id().CopyBytesTo(
+      opentelemetry::nostd::span<uint8_t, PayloadMeta::span_id_size>(meta.span_id));
+
+  meta.flags = ctx.trace_flags().flags();
+}
+
+#endif  // FLOWPIPE_ENABLE_OTEL
 
 // ------------------------------------------------------------
 // Source stage runner
 // ------------------------------------------------------------
 void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output,
                     StageMetrics* metrics) {
-  // Source stages typically push into the output queue themselves,
-  // so we only measure stage execution time and enqueue metrics
   while (!ctx.stop.stop_requested()) {
-    uint64_t start_ns = now_ns();
+    Payload payload;
 
-    // Let the source stage produce into the queue
-    stage->run(ctx, *output.queue);
+#if FLOWPIPE_ENABLE_OTEL
+    auto tracer = GetTracer();
+    auto span = tracer->StartSpan(stage->name());
+    auto scope = tracer->WithActiveSpan(span);
+#endif
 
-    uint64_t end_ns = now_ns();
+    const uint64_t start_ns = now_ns();
+    const bool produced = stage->produce(ctx, payload);
+    const uint64_t end_ns = now_ns();
+
+#if FLOWPIPE_ENABLE_OTEL
+    WriteSpanToPayload(span->GetContext(), payload.meta);
+    span->End();
+#endif
+
+    if (!produced) {
+      break;
+    }
 
     if (metrics) {
       metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
     }
 
-    // NOTE:
-    // Enqueue metrics are usually recorded at the actual push site.
-    // If you centralize enqueue in the runtime later, hook it here.
+    payload.meta.enqueue_ts_ns = now_ns();
+    if (!output.queue->push(std::move(payload), ctx.stop)) {
+      break;
+    }
+
+    if (metrics) {
+      metrics->RecordQueueEnqueue(output);
+    }
   }
+
+  output.queue->close();
 }
 
 // ------------------------------------------------------------
@@ -49,32 +123,51 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
       break;
     }
 
-    const Payload& payload = *item;
+    const Payload& in_payload = *item;
 
-    // ------------------------------
-    // Queue dequeue metrics
-    // ------------------------------
     if (metrics) {
-      metrics->RecordQueueDequeue(input, payload);
+      metrics->RecordQueueDequeue(input, in_payload);
     }
 
-    // ------------------------------
-    // Stage execution latency
-    // ------------------------------
-    uint64_t start_ns = now_ns();
+#if FLOWPIPE_ENABLE_OTEL
+    auto tracer = GetTracer();
+    auto parent_ctx = SpanContextFromPayload(in_payload.meta);
 
-    stage->run(ctx, *input.queue, *output.queue);
+    opentelemetry::trace::StartSpanOptions opts;
+    if (parent_ctx.IsValid()) {
+      opts.parent = parent_ctx;
+    }
 
-    uint64_t end_ns = now_ns();
+    auto span = tracer->StartSpan(stage->name(), opts);
+    auto scope = tracer->WithActiveSpan(span);
+#endif
+
+    Payload out_payload;
+
+    const uint64_t start_ns = now_ns();
+    stage->process(ctx, in_payload, out_payload);
+    const uint64_t end_ns = now_ns();
+
+#if FLOWPIPE_ENABLE_OTEL
+    WriteSpanToPayload(span->GetContext(), out_payload.meta);
+    span->End();
+#endif
 
     if (metrics) {
       metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
     }
 
-    // NOTE:
-    // Enqueue metrics for `output` should be recorded
-    // where the payload is actually pushed.
+    out_payload.meta.enqueue_ts_ns = now_ns();
+    if (!output.queue->push(std::move(out_payload), ctx.stop)) {
+      break;
+    }
+
+    if (metrics) {
+      metrics->RecordQueueEnqueue(output);
+    }
   }
+
+  output.queue->close();
 }
 
 // ------------------------------------------------------------
@@ -90,21 +183,29 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
 
     const Payload& payload = *item;
 
-    // ------------------------------
-    // Queue dequeue metrics
-    // ------------------------------
     if (metrics) {
       metrics->RecordQueueDequeue(input, payload);
     }
 
-    // ------------------------------
-    // Stage execution latency
-    // ------------------------------
-    uint64_t start_ns = now_ns();
+#if FLOWPIPE_ENABLE_OTEL
+    auto tracer = GetTracer();
+    auto parent_ctx = SpanContextFromPayload(payload.meta);
+    opentelemetry::trace::StartSpanOptions opts;
+    if (parent_ctx.IsValid()) {
+      opts.parent = parent_ctx;
+    }
 
-    stage->run(ctx, *input.queue);
+    auto span = tracer->StartSpan(stage->name(), opts);
+    auto scope = tracer->WithActiveSpan(span);
+#endif
 
-    uint64_t end_ns = now_ns();
+    const uint64_t start_ns = now_ns();
+    stage->consume(ctx, payload);
+    const uint64_t end_ns = now_ns();
+
+#if FLOWPIPE_ENABLE_OTEL
+    span->End();
+#endif
 
     if (metrics) {
       metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
