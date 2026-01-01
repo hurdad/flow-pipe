@@ -1,4 +1,5 @@
 #include "flowpipe/stage.h"
+#include "flowpipe/plugin.h"
 
 // Logging (plugin-safe)
 #include "flowpipe/observability/logging.h"
@@ -33,12 +34,12 @@ public:
 
 extern "C" {
 
-  IStage* flowpipe_create_stage() {
+  FLOWPIPE_PLUGIN_API IStage* flowpipe_create_stage() {
     FP_LOG_INFO("creating stdout_sink stage");
     return new StdoutSink();
   }
 
-  void flowpipe_destroy_stage(IStage* stage) {
+  FLOWPIPE_PLUGIN_API void flowpipe_destroy_stage(IStage* stage) {
     FP_LOG_INFO("destroying stdout_sink stage");
     delete stage;
   }

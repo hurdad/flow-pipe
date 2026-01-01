@@ -1,6 +1,7 @@
 #include "flowpipe/stage.h"
 #include "flowpipe/configurable_stage.h"
 #include "flowpipe/observability/logging.h"
+#include "flowpipe/plugin.h"
 
 #include "noop_transform.pb.h"
 
@@ -98,12 +99,12 @@ private:
 
 extern "C" {
 
-IStage* flowpipe_create_stage() {
+FLOWPIPE_PLUGIN_API IStage* flowpipe_create_stage() {
   FP_LOG_INFO("creating noop_transform stage");
   return new NoopTransform();
 }
 
-void flowpipe_destroy_stage(IStage* stage) {
+FLOWPIPE_PLUGIN_API void flowpipe_destroy_stage(IStage* stage) {
   FP_LOG_INFO("destroying noop_transform stage");
   delete stage;
 }
