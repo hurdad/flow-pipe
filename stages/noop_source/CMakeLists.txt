@@ -24,3 +24,7 @@ target_link_libraries(stage_noop_source
 target_compile_features(stage_noop_source
         PRIVATE cxx_std_20
 )
+
+install(TARGETS stage_noop_source
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/plugins
+)

@@ -62,6 +62,9 @@ target_compile_features(stage_noop_transform
         PRIVATE cxx_std_20
 )
 
+install(TARGETS stage_noop_transform
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/plugins
+)
 # ------------------------------------------------------------
 # Plugin hardening (recommended)
 # ------------------------------------------------------------
