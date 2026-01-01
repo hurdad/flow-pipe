@@ -13,6 +13,8 @@ There is **no code** in this directory.
 
 ## Running a Flow
 
+### Local binary
+
 From the project root:
 
 ```bash
@@ -25,6 +27,38 @@ By default, the runtime loads plugins from:
 
 ```
 /opt/flow-pipe/plugins
+```
+
+### Docker runtime image
+
+Prebuilt runtime images live in [`runtime/docker`](../runtime/docker/README.md) and
+expose `flow_runtime` as the container entrypoint. To run a flow without
+installing the binary locally:
+
+```bash
+# Pull or build the runtime image first (all images share the same tag)
+TAG=main-ubuntu24.04
+IMAGE=ghcr.io/hurdad/flow-pipe-runtime:${TAG}
+
+docker run --rm \
+  # Mount sample flows
+  -v "$(pwd)/flows:/flows" \
+  ${IMAGE} /flows/noop.yaml
+```
+
+The runtime image already bundles the built-in stage plugins in
+`/opt/flow-pipe/plugins` and sets `FLOW_PIPE_PLUGIN_PATH` accordingly. To use
+custom plugins, mount an additional directory and override the path:
+
+```bash
+docker run --rm \
+  # Flow definitions
+  -v "$(pwd)/flows:/flows" \
+  # Custom plugins
+  -v "$(pwd)/my-plugins:/plugins" \
+  # Point runtime to mounted plugins
+  -e FLOW_PIPE_PLUGIN_PATH=/plugins \
+  ${IMAGE} /flows/simple_pipeline.yaml
 ```
 
 ---
@@ -137,3 +171,4 @@ and has the correct name.
 ### Invalid wiring
 
 If a stage has incompatible inputs or outputs, the runtime will fail
+to start. Verify queues, inputs, and outputs line up between stages.
