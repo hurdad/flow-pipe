@@ -1,16 +1,17 @@
 #pragma once
 
-#include <google/protobuf/message.h>
+#include <google/protobuf/struct.pb.h>
 
 namespace flowpipe {
 
-// Optional mixin interface
-class IConfigurableStage {
+class ConfigurableStage {
  public:
-  virtual ~IConfigurableStage() = default;
+  virtual ~ConfigurableStage() = default;
 
-  // Called once after stage creation
-  virtual bool set_config(const google::protobuf::Message& config) = 0;
+  // Called once after stage construction.
+  // The config is opaque to the runtime.
+  // The plugin is responsible for parsing & validating.
+  virtual bool Configure(const google::protobuf::Struct& config) = 0;
 };
 
 }  // namespace flowpipe

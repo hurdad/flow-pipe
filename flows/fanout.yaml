@@ -28,12 +28,18 @@ stages:
     threads: 1
     input_queue: q_in
     output_queue: q_a
+    config:
+      verbose: true
+      delay_ms: 10
 
   - name: transform_b
     type: noop_transform
     threads: 1
     input_queue: q_in
     output_queue: q_b
+    config:
+      verbose: false
+      delay_ms: 50
 
   - name: sink_a
     type: stdout_sink

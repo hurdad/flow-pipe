@@ -1,12 +1,8 @@
 queues:
-  # source → transform
-  # 1 producer (source), 2 consumers (transform threads)
   - name: q1
     type: QUEUE_TYPE_MPMC
     capacity: 256
 
-  # transform → sink
-  # 2 producers (transform threads), 1 consumer (sink)
   - name: q2
     type: QUEUE_TYPE_MPSC
     capacity: 256
@@ -22,6 +18,9 @@ stages:
     threads: 2
     input_queue: q1
     output_queue: q2
+    config:
+      verbose: true
+      delay_ms: 50
 
   - name: sink
     type: stdout_sink

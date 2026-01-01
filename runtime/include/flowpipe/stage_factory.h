@@ -1,8 +1,9 @@
 #pragma once
 
-#include <string>
+#include <google/protobuf/struct.pb.h>
+
 #include <memory>
-#include <google/protobuf/any.pb.h>
+#include <string>
 
 #include "flowpipe/plugin.h"
 #include "flowpipe/stage.h"
@@ -22,9 +23,11 @@ public:
 
   LoadedPlugin load(const std::string& plugin_name);
   void unload(LoadedPlugin& plugin);
+
+  // Create a stage instance and pass opaque config to the plugin
   std::unique_ptr<IStage> create_stage(
       const LoadedPlugin& plugin,
-      const google::protobuf::Any* config_any);
+      const google::protobuf::Struct* config);
 
 private:
   std::string resolve_path(const std::string& plugin_name);

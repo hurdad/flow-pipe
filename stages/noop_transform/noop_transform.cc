@@ -4,8 +4,12 @@
 
 #include "noop_transform.pb.h"
 
+#include <google/protobuf/struct.pb.h>
+#include <google/protobuf/util/json_util.h>
+
 #include <thread>
 #include <chrono>
+#include <string>
 
 using namespace flowpipe;
 
@@ -14,7 +18,7 @@ using NoopTransformConfig =
 
 class NoopTransform final
     : public ITransformStage
-    , public IConfigurableStage {
+    , public ConfigurableStage {
 public:
   std::string name() const override {
     return "noop_transform";
@@ -29,16 +33,28 @@ public:
   }
 
   // ------------------------------------------------------------
-  // IConfigurableStage
+  // ConfigurableStage
   // ------------------------------------------------------------
-  bool set_config(const google::protobuf::Message& msg) override {
-    const auto* cfg = dynamic_cast<const NoopTransformConfig*>(&msg);
-    if (!cfg) {
-      FP_LOG_ERROR("noop_transform invalid config type");
+  bool Configure(const google::protobuf::Struct& config) override {
+    std::string json;
+    auto status =
+        google::protobuf::util::MessageToJsonString(config, &json);
+
+    if (!status.ok()) {
+      FP_LOG_ERROR("noop_transform failed to serialize config");
       return false;
     }
 
-    config_ = *cfg;
+    NoopTransformConfig cfg;
+    status =
+        google::protobuf::util::JsonStringToMessage(json, &cfg);
+
+    if (!status.ok()) {
+      FP_LOG_ERROR("noop_transform invalid config");
+      return false;
+    }
+
+    config_ = std::move(cfg);
 
     FP_LOG_INFO("noop_transform configured");
 
@@ -53,6 +69,9 @@ public:
     return true;
   }
 
+  // ------------------------------------------------------------
+  // ITransformStage
+  // ------------------------------------------------------------
   void process(StageContext& ctx,
                const Payload& input,
                Payload& output) override {
@@ -65,26 +84,28 @@ public:
     }
 
     if (config_.delay_ms() > 0) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(config_.delay_ms()));
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(config_.delay_ms()));
     }
 
+    // Pass-through
     output = input;
   }
 
 private:
-  NoopTransformConfig config_;
+  NoopTransformConfig config_{};
 };
 
 extern "C" {
 
-  IStage* flowpipe_create_stage() {
-    FP_LOG_INFO("creating noop_transform stage");
-    return new NoopTransform();
-  }
-
-  void flowpipe_destroy_stage(IStage* stage) {
-    FP_LOG_INFO("destroying noop_transform stage");
-    delete stage;
-  }
-
+IStage* flowpipe_create_stage() {
+  FP_LOG_INFO("creating noop_transform stage");
+  return new NoopTransform();
 }
+
+void flowpipe_destroy_stage(IStage* stage) {
+  FP_LOG_INFO("destroying noop_transform stage");
+  delete stage;
+}
+
+}  // extern "C"

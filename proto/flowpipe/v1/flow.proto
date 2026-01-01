@@ -4,7 +4,7 @@ package flowpipe.v1;
 
 option go_package = "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1";
 
-import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "flowpipe/v1/observability.proto";
 
@@ -120,8 +120,8 @@ message StageSpec {
   // Output queue name (if any).
   optional string output_queue = 5;
 
-  // Strongly-typed stage configuration payload.
-  google.protobuf.Any config = 6;
+  // Opaque, plugin-owned config
+  google.protobuf.Struct config = 6;
 
   // Optional plugin implementation override.
   optional string plugin = 7;

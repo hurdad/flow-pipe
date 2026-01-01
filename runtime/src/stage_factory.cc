@@ -1,17 +1,16 @@
 #include "flowpipe/stage_factory.h"
 
 #include <dlfcn.h>
+#include <google/protobuf/struct.pb.h>
+
 #include <sstream>
 #include <stdexcept>
-
-#include <google/protobuf/any.pb.h>
 
 #include "flowpipe/configurable_stage.h"
 
 namespace flowpipe {
 
-StageFactory::StageFactory(std::string plugin_dir)
-    : plugin_dir_(std::move(plugin_dir)) {}
+StageFactory::StageFactory(std::string plugin_dir) : plugin_dir_(std::move(plugin_dir)) {}
 
 LoadedPlugin StageFactory::load(const std::string& plugin_name) {
   std::string path = resolve_path(plugin_name);
@@ -21,10 +20,8 @@ LoadedPlugin StageFactory::load(const std::string& plugin_name) {
     throw std::runtime_error(dlerror());
   }
 
-  auto create =
-      reinterpret_cast<CreateStageFn>(dlsym(handle, FLOWPIPE_CREATE_STAGE_SYMBOL));
-  auto destroy =
-      reinterpret_cast<DestroyStageFn>(dlsym(handle, FLOWPIPE_DESTROY_STAGE_SYMBOL));
+  auto create = reinterpret_cast<CreateStageFn>(dlsym(handle, FLOWPIPE_CREATE_STAGE_SYMBOL));
+  auto destroy = reinterpret_cast<DestroyStageFn>(dlsym(handle, FLOWPIPE_DESTROY_STAGE_SYMBOL));
 
   if (!create || !destroy) {
     dlclose(handle);
@@ -47,22 +44,21 @@ void StageFactory::unload(LoadedPlugin& plugin) {
 }
 
 // ------------------------------------------------------------
-// Create + configure a stage instance (GENERIC)
+// Create + configure a stage instance (OPAQUE CONFIG)
 // ------------------------------------------------------------
-std::unique_ptr<IStage> StageFactory::create_stage(
-    const LoadedPlugin& plugin,
-    const google::protobuf::Any* config_any) {
-
+std::unique_ptr<IStage> StageFactory::create_stage(const LoadedPlugin& plugin,
+                                                   const google::protobuf::Struct* config) {
   IStage* stage = plugin.create();
   if (!stage) {
     throw std::runtime_error("stage plugin returned null");
   }
 
-  // If the stage supports config, forward Any verbatim
-  if (config_any && !config_any->type_url().empty()) {
-    if (auto* configurable = dynamic_cast<IConfigurableStage*>(stage)) {
-      if (!configurable->set_config(*config_any)) {
-        throw std::runtime_error("stage rejected config");
+  // Forward config verbatim if the stage supports it
+  if (config) {
+    if (auto* configurable = dynamic_cast<ConfigurableStage*>(stage)) {
+      if (!configurable->Configure(*config)) {
+        plugin.destroy(stage);
+        throw std::runtime_error("stage rejected configuration");
       }
     }
   }
@@ -74,6 +70,7 @@ std::string StageFactory::resolve_path(const std::string& plugin_name) {
   if (!plugin_name.empty() && plugin_name[0] == '/') {
     return plugin_name;
   }
+
   std::ostringstream oss;
   oss << plugin_dir_ << "/" << plugin_name;
   return oss.str();
