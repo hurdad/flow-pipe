@@ -8,107 +8,122 @@ import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "flowpipe/v1/observability.proto";
 
+// ============================================================
+// Flow (desired + observed state)
+// ============================================================
+
+message Flow {
+  // Unique flow identifier.
+  string name = 1;
+
+  // Current spec version.
+  uint64 version = 2;
+
+  // Desired configuration.
+  FlowSpec spec = 3;
+
+  // Observed runtime state.
+  FlowStatus status = 4;
+}
 
 // ============================================================
-// Top-level Flow specification (desired state)
+// Flow specification (desired state)
 // ============================================================
 
 message FlowSpec {
-  // Logical flow name (identifier and K8s resource prefix).
+  // Logical flow name.
   string name = 1;
 
-  // Immutable version assigned by the Flow API / controller.
+  // Immutable version assigned by the controller.
   uint64 version = 2;
 
-  // Runtime environment for this flow.
+  // Runtime environment selection.
   FlowRuntime runtime = 3;
 
-  // Container image reference when runtime == FLOW_RUNTIME_CONTAINER.
+  // Container image when using container runtime.
   optional string image = 4;
 
-  // Execution model (streaming vs job).
+  // Execution semantics for the flow.
   optional Execution execution = 5;
 
-  // Pipeline definition.
+  // Ordered pipeline stages.
   repeated StageSpec stages = 6;
+
+  // Queues connecting stages.
   repeated QueueSpec queues = 7;
 
-  // Optional CPU pinning hints per stage (best-effort).
-  // Key MUST match StageSpec.name.
+  // Optional CPU affinity per stage.
   map<string, CpuSet> cpu_pinning = 8;
 
-  // Optional resource intent for the whole flow.
+  // Aggregate resource intent.
   optional Resources resources = 9;
 
-  // Optional metadata (team, env, cost-center, etc.).
+  // User-defined metadata labels.
   map<string, string> labels = 10;
 
-  // Optional flow-level observability configuration
+  // Flow-level observability overrides.
   optional ObservabilityConfig observability = 11;
 }
 
-
 // ============================================================
-// Flow runtime environment
+// Runtime environment
 // ============================================================
 
 enum FlowRuntime {
+  // Runtime not specified.
   FLOW_RUNTIME_UNSPECIFIED = 0;
 
-  // All stages execute as builtins inside the runtime binary.
+  // Built-in stages linked into runtime binary.
   FLOW_RUNTIME_BUILTIN = 1;
 
-  // All stages execute inside the same container image.
+  // Stages executed inside a container image.
   FLOW_RUNTIME_CONTAINER = 2;
 }
-
 
 // ============================================================
 // Execution model
 // ============================================================
 
 message Execution {
+  // Selected execution mode.
   ExecutionMode mode = 1;
 }
 
 enum ExecutionMode {
+  // Execution mode not specified.
   EXECUTION_MODE_UNSPECIFIED = 0;
 
-  // Long-running, continuous pipeline (Kubernetes Deployment).
+  // Long-running streaming pipeline.
   EXECUTION_MODE_STREAMING = 1;
 
-  // Run-to-completion pipeline (Kubernetes Job).
+  // Run-to-completion batch job.
   EXECUTION_MODE_JOB = 2;
 }
 
-
 // ============================================================
-// Stage definition (logical unit of execution)
+// Stage definition
 // ============================================================
 
 message StageSpec {
   // Unique stage name within the flow.
   string name = 1;
 
-  // Stage type (resolved via runtime registry).
-  // Interpretation depends on FlowSpec.runtime.
+  // Stage type identifier.
   string type = 2;
 
-  // Number of worker threads for this stage.
+  // Number of worker threads.
   uint32 threads = 3;
 
-  // Optional input queue name:
-  // - unset => source or side-effect stage.
+  // Input queue name (if any).
   optional string input_queue = 4;
 
-  // Optional output queue name:
-  // - unset => sink or side-effect stage.
+  // Output queue name (if any).
   optional string output_queue = 5;
 
-  // Strongly-typed stage configuration.
+  // Strongly-typed stage configuration payload.
   google.protobuf.Any config = 6;
 
-  // Optional implementation override
+  // Optional plugin implementation override.
   optional string plugin = 7;
 }
 
@@ -117,121 +132,153 @@ message StageSpec {
 // ============================================================
 
 message QueueSpec {
+  // Queue name.
   string name = 1;
+
+  // Queue concurrency model.
   QueueType type = 2;
+
+  // Maximum buffered elements.
   uint32 capacity = 3;
 }
 
 enum QueueType {
+  // Queue type not specified.
   QUEUE_TYPE_UNSPECIFIED = 0;
 
-  // Multi-producer, single-consumer.
+  // Multi-producer, single-consumer queue.
   QUEUE_TYPE_MPSC = 1;
 
-  // Multi-producer, multi-consumer.
+  // Multi-producer, multi-consumer queue.
   QUEUE_TYPE_MPMC = 2;
 }
 
-
 // ============================================================
-// Resource intent (controller maps to Kubernetes)
+// Resource intent
 // ============================================================
 
 message Resources {
   // Preferred total CPU cores.
   optional uint32 cpu_cores = 1;
 
-  // Preferred memory in MB.
+  // Preferred memory allocation in MB.
   optional uint32 memory_mb = 2;
 
-  // Optional named profile (e.g. "high-throughput").
+  // Named resource profile hint.
   optional string profile = 3;
 }
-
 
 // ============================================================
 // CPU pinning hint
 // ============================================================
 
 message CpuSet {
-  // CPU core IDs.
+  // CPU core identifiers.
   repeated uint32 cpu = 1;
 }
 
-
 // ============================================================
-// Flow wrapper (spec + observed state)
+// Flow status (observed state)
 // ============================================================
-
-message Flow {
-  // Unique flow identifier.
-  string name = 1;
-
-  // Active spec version.
-  uint64 version = 2;
-
-  // Desired flow configuration.
-  FlowSpec spec = 3;
-
-  // Observed runtime state.
-  FlowStatus status = 4;
-}
 
 message FlowStatus {
+  // Current lifecycle state.
   FlowState state = 1;
 
-  // Human-readable message.
+  // Human-readable status message.
   string message = 2;
 
   // Currently active version.
   uint64 active_version = 3;
 
-  // Kubernetes workload name (Deployment or Job).
+  // Kubernetes workload name.
   string workload = 4;
 
-  // Last controller update time.
+  // Last controller reconciliation time.
   google.protobuf.Timestamp last_updated = 5;
 }
 
 enum FlowState {
+  // State not specified.
   FLOW_STATE_UNSPECIFIED = 0;
+
+  // Awaiting scheduling or resources.
   FLOW_STATE_PENDING = 1;
+
+  // Being deployed or updated.
   FLOW_STATE_DEPLOYING = 2;
+
+  // Actively running.
   FLOW_STATE_RUNNING = 3;
-  FLOW_STATE_SUCCEEDED = 4; // Jobs only.
+
+  // Completed successfully (jobs only).
+  FLOW_STATE_SUCCEEDED = 4;
+
+  // Execution failed.
   FLOW_STATE_FAILED = 5;
+
+  // Explicitly stopped.
   FLOW_STATE_STOPPED = 6;
 }
 
-
 // ============================================================
-// Generic Value type for stage parameters
+// Generic typed value
 // ============================================================
 
 message Value {
+  // Concrete value type.
   oneof kind {
+    // String scalar.
     string string_value = 1;
+
+    // Signed integer scalar.
     int64 int_value = 2;
+
+    // Unsigned integer scalar.
     uint64 uint_value = 3;
+
+    // Floating-point scalar.
     double double_value = 4;
+
+    // Boolean scalar.
     bool bool_value = 5;
 
+    // List of strings.
     StringList string_list = 6;
+
+    // List of signed integers.
     IntList int_list = 7;
+
+    // List of unsigned integers.
     UIntList uint_list = 8;
+
+    // List of doubles.
     DoubleList double_list = 9;
+
+    // List of booleans.
     BoolList bool_list = 10;
 
+    // Nested structured value.
     Struct struct_value = 11;
   }
 }
 
 message Struct {
+  // Named structured fields.
   map<string, Value> fields = 1;
 }
 
+// List of strings.
 message StringList {repeated string values = 1;}
-message IntList    {repeated int64 values = 1;}
-message UIntList   {repeated uint64 values = 1;}
+
+// List of signed integers.
+message IntList {repeated int64 values = 1;}
+
+// List of unsigned integers.
+message UIntList {repeated uint64 values = 1;}
+
+// List of doubles.
 message DoubleList {repeated double values = 1;}
-message BoolList   {repeated bool values = 1;}
+
+// List of booleans.
+message BoolList {repeated bool values = 1;}
