@@ -1,5 +1,8 @@
 #include "flowpipe/observability/logging.h"
 
+#include <spdlog/spdlog.h>
+
+#include "flowpipe/observability/local_logging.h"
 #include "flowpipe/observability/observability_state.h"
 
 #if FLOWPIPE_ENABLE_OTEL
@@ -36,7 +39,7 @@ namespace otlp = opentelemetry::exporter::otlp;
 namespace flowpipe::observability {
 
 // ------------------------------------------------------------
-// Severity mapping
+// Severity mapping (runtime → OTEL)
 // ------------------------------------------------------------
 static opentelemetry::logs::Severity ToOtelSeverity(LogLevel level) {
   using S = opentelemetry::logs::Severity;
@@ -84,7 +87,7 @@ static logs_sdk::BatchLogRecordProcessorOptions CreateBatchLoggingOptions(
 }
 
 // ------------------------------------------------------------
-// Init logging (SDK setup)
+// Init logging (SDK setup only)
 // ------------------------------------------------------------
 void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
                  const GlobalDefaults& global, bool debug) {
@@ -129,9 +132,33 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
 }
 
 // ------------------------------------------------------------
-// Emit log record (CreateLogRecord + EmitLogRecord)
+// Emit log record (dual logging: spdlog + OTEL)
 // ------------------------------------------------------------
 void Log(LogLevel level, const std::string& message, const char* file, int line) {
+  // ----------------------------------------------------------
+  // 1) Local logging (always on)
+  // ----------------------------------------------------------
+  switch (level) {
+    case LogLevel::Debug:
+      spdlog::debug(message);
+      break;
+    case LogLevel::Info:
+      spdlog::info(message);
+      break;
+    case LogLevel::Warn:
+      spdlog::warn(message);
+      break;
+    case LogLevel::Error:
+      spdlog::error(message);
+      break;
+    case LogLevel::Fatal:
+      spdlog::critical(message);
+      break;
+  }
+
+  // ----------------------------------------------------------
+  // 2) OTEL logging (guarded)
+  // ----------------------------------------------------------
   auto provider = opentelemetry::logs::Provider::GetLoggerProvider();
   if (!provider)
     return;
@@ -171,12 +198,33 @@ void Log(LogLevel level, const std::string& message, const char* file, int line)
 
 #else  // FLOWPIPE_ENABLE_OTEL
 
+#include <spdlog/spdlog.h>
+
 namespace flowpipe::observability {
 
 void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig*, const GlobalDefaults&,
                  bool) {}
 
-void Log(LogLevel, const std::string&, const char*, int) {}
+void Log(LogLevel level, const std::string& message, const char*, int) {
+  // Local logging still works even without OTEL
+  switch (level) {
+    case LogLevel::Debug:
+      spdlog::debug(message);
+      break;
+    case LogLevel::Info:
+      spdlog::info(message);
+      break;
+    case LogLevel::Warn:
+      spdlog::warn(message);
+      break;
+    case LogLevel::Error:
+      spdlog::error(message);
+      break;
+    case LogLevel::Fatal:
+      spdlog::critical(message);
+      break;
+  }
+}
 
 }  // namespace flowpipe::observability
 

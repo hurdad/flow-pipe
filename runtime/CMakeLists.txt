@@ -9,6 +9,7 @@ find_library(JEMALLOC_LIB
         NAMES jemalloc
         REQUIRED
 )
+find_package(spdlog REQUIRED)
 
 # =========================
 # Runtime library
@@ -32,6 +33,7 @@ add_library(flowpipe_runtime
         src/observability/metrics.cc
         src/observability/tracing.cc
         src/observability/logging.cc
+        src/observability/local_logging.cc
 )
 
 # Runtime depends on:
@@ -43,6 +45,7 @@ target_link_libraries(flowpipe_runtime
         flowpipe_proto
         dl
         ${JEMALLOC_LIB}
+        spdlog::spdlog
 )
 
 if(FLOWPIPE_ENABLE_OTEL)
