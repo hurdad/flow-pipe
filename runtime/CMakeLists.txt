@@ -5,6 +5,10 @@ project(flowpipe_runtime
         LANGUAGES CXX
 )
 
+# -------------------------------------------------
+# Dependencies
+# -------------------------------------------------
+find_package(Protobuf REQUIRED)          # ✅ ADD THIS
 find_library(JEMALLOC_LIB
         NAMES jemalloc
         REQUIRED
@@ -37,11 +41,13 @@ add_library(flowpipe_runtime
         src/observability/local_logging.cc
 )
 
-# Runtime depends on:
-# - flowpipe_proto (for FlowSpec, StageSpec, etc.)
-# - dl (for dlopen/dlsym)
-# - jemalloc (for memory pool)
+# -------------------------------------------------
+# Runtime dependencies
+# -------------------------------------------------
 target_link_libraries(flowpipe_runtime
+        PUBLIC
+        protobuf::libprotobuf
+
         PRIVATE
         flowpipe_proto
         dl
@@ -106,33 +112,20 @@ target_link_libraries(flow_runtime
         PRIVATE flowpipe_proto yaml-cpp
 )
 
-
 # =========================
 # Install rules
 # =========================
-
 include(GNUInstallDirs)
 
-# ---- Runtime library ----
-#install(TARGETS flowpipe_runtime
-#        EXPORT flowpipeTargets
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#)
-
-# ---- Runtime executable ----
 install(TARGETS flow_runtime
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# ---- Public headers ----
 install(
         DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# ---- Export targets for downstream consumers ----
 install(EXPORT flowpipeTargets
         NAMESPACE flowpipe::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe

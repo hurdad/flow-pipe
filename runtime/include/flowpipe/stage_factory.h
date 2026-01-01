@@ -1,8 +1,11 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <google/protobuf/any.pb.h>
 
 #include "flowpipe/plugin.h"
+#include "flowpipe/stage.h"
 
 namespace flowpipe {
 
@@ -14,13 +17,16 @@ struct LoadedPlugin {
 };
 
 class StageFactory {
- public:
+public:
   explicit StageFactory(std::string plugin_dir = "/opt/flow-pipe/plugins");
 
   LoadedPlugin load(const std::string& plugin_name);
   void unload(LoadedPlugin& plugin);
+  std::unique_ptr<IStage> create_stage(
+      const LoadedPlugin& plugin,
+      const google::protobuf::Any* config_any);
 
- private:
+private:
   std::string resolve_path(const std::string& plugin_name);
 
   std::string plugin_dir_;

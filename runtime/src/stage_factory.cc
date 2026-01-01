@@ -1,15 +1,17 @@
 #include "flowpipe/stage_factory.h"
 
 #include <dlfcn.h>
-
 #include <sstream>
 #include <stdexcept>
+
+#include <google/protobuf/any.pb.h>
 
 #include "flowpipe/configurable_stage.h"
 
 namespace flowpipe {
 
-StageFactory::StageFactory(std::string plugin_dir) : plugin_dir_(std::move(plugin_dir)) {}
+StageFactory::StageFactory(std::string plugin_dir)
+    : plugin_dir_(std::move(plugin_dir)) {}
 
 LoadedPlugin StageFactory::load(const std::string& plugin_name) {
   std::string path = resolve_path(plugin_name);
@@ -19,8 +21,10 @@ LoadedPlugin StageFactory::load(const std::string& plugin_name) {
     throw std::runtime_error(dlerror());
   }
 
-  auto create = reinterpret_cast<CreateStageFn>(dlsym(handle, FLOWPIPE_CREATE_STAGE_SYMBOL));
-  auto destroy = reinterpret_cast<DestroyStageFn>(dlsym(handle, FLOWPIPE_DESTROY_STAGE_SYMBOL));
+  auto create =
+      reinterpret_cast<CreateStageFn>(dlsym(handle, FLOWPIPE_CREATE_STAGE_SYMBOL));
+  auto destroy =
+      reinterpret_cast<DestroyStageFn>(dlsym(handle, FLOWPIPE_DESTROY_STAGE_SYMBOL));
 
   if (!create || !destroy) {
     dlclose(handle);
@@ -43,29 +47,21 @@ void StageFactory::unload(LoadedPlugin& plugin) {
 }
 
 // ------------------------------------------------------------
-// NEW: create + configure a stage instance
+// Create + configure a stage instance (GENERIC)
 // ------------------------------------------------------------
-std::unique_ptr<IStage> StageFactory::create_stage(const LoadedPlugin& plugin,
-                                                   const google::protobuf::Any* config_any) {
+std::unique_ptr<IStage> StageFactory::create_stage(
+    const LoadedPlugin& plugin,
+    const google::protobuf::Any* config_any) {
+
   IStage* stage = plugin.create();
   if (!stage) {
     throw std::runtime_error("stage plugin returned null");
   }
 
-  // If stage supports config, apply it
+  // If the stage supports config, forward Any verbatim
   if (config_any && !config_any->type_url().empty()) {
     if (auto* configurable = dynamic_cast<IConfigurableStage*>(stage)) {
-      // Let the stage decide what message it expects
-      google::protobuf::Message* msg = configurable->mutable_config_message();
-      if (!msg) {
-        throw std::runtime_error("stage returned null config message");
-      }
-
-      if (!config_any->UnpackTo(msg)) {
-        throw std::runtime_error("failed to unpack stage config");
-      }
-
-      if (!configurable->set_config(*msg)) {
+      if (!configurable->set_config(*config_any)) {
         throw std::runtime_error("stage rejected config");
       }
     }
