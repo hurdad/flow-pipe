@@ -1,4 +1,5 @@
 #include "flowpipe/stage.h"
+#include "flowpipe/plugin.h"
 
 // Logging (plugin-safe)
 #include "flowpipe/observability/logging.h"
@@ -41,12 +42,12 @@ public:
 
 extern "C" {
 
-  IStage* flowpipe_create_stage() {
+  FLOWPIPE_PLUGIN_API IStage* flowpipe_create_stage() {
     FP_LOG_INFO("creating noop_source stage");
     return new NoopSource();
   }
 
-  void flowpipe_destroy_stage(IStage* stage) {
+  FLOWPIPE_PLUGIN_API void flowpipe_destroy_stage(IStage* stage) {
     FP_LOG_INFO("destroying noop_source stage");
     delete stage;
   }
