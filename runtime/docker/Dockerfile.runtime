@@ -45,8 +45,11 @@ FROM ubuntu:24.04
 # Install runtime-only shared libraries
 RUN apt-get update && apt-get install -y \
     libyaml-cpp0.8 \
+    libgrpc++1.51t64 \
     libprotobuf32 \
-    libgrpc++1.51 \
+    libspdlog1.12 \
+    libcurl4t64 \
+    libjemalloc2 \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
