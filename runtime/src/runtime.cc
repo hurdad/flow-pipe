@@ -11,7 +11,7 @@
 #include "flowpipe/stage_runner.h"
 
 // Logging
-#include "flowpipe/observability/logging.h"
+#include "flowpipe/observability/logging_runtime.h"
 
 namespace flowpipe {
 

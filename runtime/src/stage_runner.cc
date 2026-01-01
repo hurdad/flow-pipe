@@ -3,6 +3,8 @@
 #include <chrono>
 #include <cstring>
 
+#include "flowpipe/observability/logging_runtime.h"
+
 #if FLOWPIPE_ENABLE_OTEL
 #include <opentelemetry/trace/provider.h>
 #include <opentelemetry/trace/span_context.h>
@@ -77,6 +79,8 @@ static inline void WriteSpanToPayload(const opentelemetry::trace::SpanContext& c
 // ------------------------------------------------------------
 void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output,
                     StageMetrics* metrics) {
+  FP_LOG_DEBUG_FMT("source stage '{}' runner started", stage->name());
+
   while (!ctx.stop.stop_requested()) {
     Payload payload;
 
@@ -103,6 +107,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 #endif
 
     if (!produced) {
+      FP_LOG_DEBUG_FMT("source stage '{}' returned no payload (terminating)", stage->name());
       break;
     }
 
@@ -112,6 +117,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 
     payload.meta.enqueue_ts_ns = now_ns();
     if (!output.queue->push(std::move(payload), ctx.stop)) {
+      FP_LOG_DEBUG_FMT("source stage '{}' output queue closed or stop requested", stage->name());
       break;
     }
 
@@ -119,6 +125,8 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
       metrics->RecordQueueEnqueue(output);
     }
   }
+
+  FP_LOG_DEBUG_FMT("source stage '{}' closing output queue", stage->name());
 
   output.queue->close();
 }
@@ -128,9 +136,12 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 // ------------------------------------------------------------
 void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& input,
                        QueueRuntime& output, StageMetrics* metrics) {
+  FP_LOG_DEBUG_FMT("transform stage '{}' runner started", stage->name());
+
   while (!ctx.stop.stop_requested()) {
     auto item = input.queue->pop(ctx.stop);
     if (!item.has_value()) {
+      FP_LOG_DEBUG_FMT("transform stage '{}' input queue closed", stage->name());
       break;
     }
 
@@ -177,6 +188,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 
     out_payload.meta.enqueue_ts_ns = now_ns();
     if (!output.queue->push(std::move(out_payload), ctx.stop)) {
+      FP_LOG_DEBUG_FMT("transform stage '{}' output queue closed or stop requested", stage->name());
       break;
     }
 
@@ -184,6 +196,8 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
       metrics->RecordQueueEnqueue(output);
     }
   }
+
+  FP_LOG_DEBUG_FMT("transform stage '{}' closing output queue", stage->name());
 
   output.queue->close();
 }
@@ -193,9 +207,12 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 // ------------------------------------------------------------
 void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
                   StageMetrics* metrics) {
+  FP_LOG_DEBUG_FMT("sink stage '{}' runner started", stage->name());
+
   while (!ctx.stop.stop_requested()) {
     auto item = input.queue->pop(ctx.stop);
     if (!item.has_value()) {
+      FP_LOG_DEBUG_FMT("sink stage '{}' input queue closed", stage->name());
       break;
     }
 
@@ -237,6 +254,8 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
       metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
     }
   }
+
+  FP_LOG_DEBUG_FMT("sink stage '{}' runner exiting", stage->name());
 }
 
 }  // namespace flowpipe

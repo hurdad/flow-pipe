@@ -4,7 +4,7 @@
 #include "flowpipe/observability/observability_state.h"
 
 #if FLOWPIPE_ENABLE_OTEL
-#include "flowpipe/observability/logging.h"
+#include "flowpipe/observability/logging_runtime.h"
 #include "flowpipe/observability/metrics.h"
 #include "flowpipe/observability/tracing.h"
 #endif

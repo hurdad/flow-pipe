@@ -1,6 +1,7 @@
 #include "flowpipe/stage.h"
 
-#include <iostream>
+// Logging (plugin-safe)
+#include "flowpipe/observability/logging.h"
 
 using namespace flowpipe;
 
@@ -10,28 +11,35 @@ public:
     return "stdout_sink";
   }
 
+  StdoutSink() {
+    FP_LOG_INFO("stdout_sink constructed");
+  }
+
+  ~StdoutSink() override {
+    FP_LOG_INFO("stdout_sink destroyed");
+  }
+
   // Called once per payload by the runtime
-  void consume(StageContext& ctx, const Payload& payload) override {
+  void consume(StageContext& ctx, const Payload& /*payload*/) override {
     if (ctx.stop.stop_requested()) {
+      FP_LOG_DEBUG("stdout_sink stop requested, skipping payload");
       return;
     }
 
-    // Example usage
-    std::cout << "payload received (size=" << payload.size << ")\n";
-
-    // You may inspect metadata if you want:
-    // payload.meta.enqueue_ts_ns
-    // payload.meta.trace_id / span_id
+    // Plugin-safe per-payload intent log (no formatting)
+    FP_LOG_DEBUG("stdout_sink consumed payload");
   }
 };
 
 extern "C" {
 
   IStage* flowpipe_create_stage() {
+    FP_LOG_INFO("creating stdout_sink stage");
     return new StdoutSink();
   }
 
   void flowpipe_destroy_stage(IStage* stage) {
+    FP_LOG_INFO("destroying stdout_sink stage");
     delete stage;
   }
 

@@ -33,6 +33,7 @@ add_library(flowpipe_runtime
         src/observability/metrics.cc
         src/observability/tracing.cc
         src/observability/logging.cc
+        src/observability/logging_runtime.cc
         src/observability/local_logging.cc
 )
 
