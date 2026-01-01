@@ -16,6 +16,11 @@ target_include_directories(stage_stdout_sink
         ${PROJECT_SOURCE_DIR}/../../runtime/include
 )
 
+target_link_libraries(stage_stdout_sink
+        PRIVATE
+        flowpipe_runtime
+)
+
 target_compile_features(stage_stdout_sink
         PRIVATE cxx_std_20
 )

@@ -16,6 +16,11 @@ target_include_directories(stage_noop_source
         ${PROJECT_SOURCE_DIR}/../../runtime/include
 )
 
+target_link_libraries(stage_noop_source
+        PRIVATE
+        flowpipe_runtime
+)
+
 target_compile_features(stage_noop_source
         PRIVATE cxx_std_20
 )
