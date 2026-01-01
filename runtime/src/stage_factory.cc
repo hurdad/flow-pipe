@@ -5,6 +5,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "flowpipe/configurable_stage.h"
+
 namespace flowpipe {
 
 StageFactory::StageFactory(std::string plugin_dir) : plugin_dir_(std::move(plugin_dir)) {}
@@ -38,6 +40,38 @@ void StageFactory::unload(LoadedPlugin& plugin) {
     dlclose(plugin.handle);
     plugin.handle = nullptr;
   }
+}
+
+// ------------------------------------------------------------
+// NEW: create + configure a stage instance
+// ------------------------------------------------------------
+std::unique_ptr<IStage> StageFactory::create_stage(const LoadedPlugin& plugin,
+                                                   const google::protobuf::Any* config_any) {
+  IStage* stage = plugin.create();
+  if (!stage) {
+    throw std::runtime_error("stage plugin returned null");
+  }
+
+  // If stage supports config, apply it
+  if (config_any && !config_any->type_url().empty()) {
+    if (auto* configurable = dynamic_cast<IConfigurableStage*>(stage)) {
+      // Let the stage decide what message it expects
+      google::protobuf::Message* msg = configurable->mutable_config_message();
+      if (!msg) {
+        throw std::runtime_error("stage returned null config message");
+      }
+
+      if (!config_any->UnpackTo(msg)) {
+        throw std::runtime_error("failed to unpack stage config");
+      }
+
+      if (!configurable->set_config(*msg)) {
+        throw std::runtime_error("stage rejected config");
+      }
+    }
+  }
+
+  return std::unique_ptr<IStage>(stage);
 }
 
 std::string StageFactory::resolve_path(const std::string& plugin_name) {

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package flowpipe.stages.noop.v1;
+
+// Configuration for NoopTransform stage
+message NoopTransformConfig {
+  // If true, logs every payload processed
+  bool verbose = 1;
+
+  // Optional artificial delay (for testing backpressure)
+  uint32 delay_ms = 2;
+}
