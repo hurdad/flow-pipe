@@ -7,7 +7,9 @@
 #
 # Contains:
 # - flow_runtime (from runtime image)
-# - runtime shared libraries (grpc, protobuf, yaml)
+# - libflowpipe_runtime.so
+# - in-tree stage plugins
+# - runtime shared-library dependencies
 #
 # Does NOT contain:
 # - headers
@@ -18,15 +20,19 @@
 #   nvidia/cuda:<ver>-base
 # ============================================================
 
-# The runtime tag is injected by CLI or CI so that
+# The runtime tag is injected by CI / CLI so that
 # runtime, base, and dev always share the same ABI.
 ARG FLOW_PIPE_RUNTIME_TAG
 
-# Base directly on the matching runtime image
+# Base directly on the matching runtime image (ABI provider)
 FROM ghcr.io/hurdad/flow-pipe-runtime:${FLOW_PIPE_RUNTIME_TAG}
 
-# Install runtime-only shared libraries required by
-# flow_runtime and dynamically-loaded stage plugins.
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ------------------------------------------------------------
+# Runtime-only shared library dependencies
+# (must match what runtime + stages were linked against)
+# ------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     libyaml-cpp0.8 \
     libgrpc++1.51t64 \
@@ -37,10 +43,21 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# ------------------------------------------------------------
+# Environment (safe defaults for downstream images)
+# ------------------------------------------------------------
+ENV FLOW_PIPE_ROOT=/opt/flow-pipe
+ENV FLOW_PIPE_PLUGIN_PATH=/opt/flow-pipe/plugins
+ENV LD_LIBRARY_PATH=/opt/flow-pipe/lib
+ENV PATH=/opt/flow-pipe/bin:${PATH}
+
+# ------------------------------------------------------------
 # No ENTRYPOINT is defined here.
+#
 # The runtime image already defines:
-#   ENTRYPOINT ["flow_runtime"]
+#   ENTRYPOINT ["/opt/flow-pipe/bin/flow_runtime"]
 #
 # This image is intended to be extended by:
-# - flow-pipe-dev (SDK)
-# - plugin/runtime images
+# - flow-pipe-dev (SDK image)
+# - custom plugin/runtime images
+# ------------------------------------------------------------

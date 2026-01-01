@@ -1,9 +1,13 @@
 # ============================================================
-# Stage 1: Build flow_runtime
+# Stage 1: Build + install flow-pipe runtime & stages
 # ============================================================
 FROM ubuntu:24.04 AS builder
 
-# Install build toolchain + build-time dependencies
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ------------------------------------------------------------
+# Build dependencies
+# ------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -21,28 +25,42 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# ------------------------------------------------------------
 # Build workspace
+# ------------------------------------------------------------
 WORKDIR /build
 
-# Copy the entire repository (runtime + core libs)
+# Copy source tree
 COPY . .
 
-# Configure & build only the runtime target
-# (adjust path if your CMake layout differs)
+# ------------------------------------------------------------
+# Configure
+# ------------------------------------------------------------
 RUN cmake -S . -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release -DFLOWPIPE_ENABLE_OTEL=ON \
-  && cmake --build build --target flow_runtime \
-  && cmake --build build --target stage_noop_source \
-  && cmake --build build --target stage_noop_transform \
-  && cmake --build build --target stage_stdout_sink
+      -DCMAKE_BUILD_TYPE=Release \
+      -DFLOWPIPE_ENABLE_OTEL=ON \
+      -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe
 
+# ------------------------------------------------------------
+# Build everything (runtime + in-tree stages)
+# ------------------------------------------------------------
+RUN cmake --build build
+
+# ------------------------------------------------------------
+# Install runtime, shared libs, headers, plugins
+# ------------------------------------------------------------
+RUN cmake --install build
 
 # ============================================================
 # Stage 2: Minimal runtime image
 # ============================================================
 FROM ubuntu:24.04
 
-# Install runtime-only shared libraries
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ------------------------------------------------------------
+# Runtime-only shared library deps
+# ------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     libyaml-cpp0.8 \
     libgrpc++1.51t64 \
@@ -53,35 +71,27 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Create plugin directory
-RUN mkdir -p /opt/flow-pipe/plugins
+# ------------------------------------------------------------
+# Copy installed runtime from builder
+# ------------------------------------------------------------
+COPY --from=builder /opt/flow-pipe /opt/flow-pipe
 
-# Copy built in stages from the builder stage
-COPY --from=builder \
-    /build/build/stages/noop_source/libstage_noop_source.so \
-    /opt/flow-pipe/plugins/
-
-COPY --from=builder \
-    /build/build/stages/noop_transform/libstage_noop_transform.so \
-    /opt/flow-pipe/plugins/
-
-COPY --from=builder \
-    /build/build/stages/stdout_sink/libstage_stdout_sink.so \
-    /opt/flow-pipe/plugins/
-
-# Create bin directory
-RUN mkdir -p /opt/flow-pipe/bin
-
-# Copy the runtime binary from the builder stage
-COPY --from=builder \
-    /build/build/runtime/flow_runtime \
-   /opt/flow-pipe/bin/flow_runtime
-
-# Ensure executable
-RUN chmod +x /opt/flow-pipe/bin/flow_runtime
-
-# Default plugin path
+# ------------------------------------------------------------
+# Environment
+# ------------------------------------------------------------
+ENV FLOW_PIPE_ROOT=/opt/flow-pipe
 ENV FLOW_PIPE_PLUGIN_PATH=/opt/flow-pipe/plugins
+ENV LD_LIBRARY_PATH=/opt/flow-pipe/lib
+ENV PATH=/opt/flow-pipe/bin:${PATH}
 
-# Entrypoint for containers
+# ------------------------------------------------------------
+# Sanity checks (fail fast)
+# ------------------------------------------------------------
+RUN test -f /opt/flow-pipe/bin/flow_runtime
+RUN test -f /opt/flow-pipe/lib/libflowpipe_runtime.so
+RUN ls /opt/flow-pipe/plugins/libstage_*.so
+
+# ------------------------------------------------------------
+# Entrypoint
+# ------------------------------------------------------------
 ENTRYPOINT ["/opt/flow-pipe/bin/flow_runtime"]

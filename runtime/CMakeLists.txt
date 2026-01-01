@@ -6,19 +6,26 @@ project(flowpipe_runtime
 )
 
 # -------------------------------------------------
+# Global RPATH (plugins live in ../plugins, runtime in ../lib)
+# -------------------------------------------------
+set(CMAKE_BUILD_RPATH "$ORIGIN/../lib")
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# -------------------------------------------------
 # Dependencies
 # -------------------------------------------------
-find_package(Protobuf REQUIRED)          # ✅ ADD THIS
+find_package(Protobuf REQUIRED)
+find_package(spdlog REQUIRED)
 find_library(JEMALLOC_LIB
         NAMES jemalloc
         REQUIRED
 )
-find_package(spdlog REQUIRED)
 
-# =========================
-# Runtime library
-# =========================
-add_library(flowpipe_runtime
+# =================================================
+# Runtime shared library
+# =================================================
+add_library(flowpipe_runtime SHARED
         src/runtime.cc
         src/signal_handler.cc
 
@@ -26,7 +33,7 @@ add_library(flowpipe_runtime
         src/stage_factory.cc
         src/stage_registry.cc
 
-        # Stage stuff
+        # Stage execution
         src/stage_metrics.cc
         src/stage_runner.cc
 
@@ -55,6 +62,9 @@ target_link_libraries(flowpipe_runtime
         spdlog::spdlog
 )
 
+# -------------------------------------------------
+# Optional OpenTelemetry
+# -------------------------------------------------
 if(FLOWPIPE_ENABLE_OTEL)
     target_link_libraries(flowpipe_runtime
             PRIVATE
@@ -63,12 +73,12 @@ if(FLOWPIPE_ENABLE_OTEL)
             opentelemetry_logs
             opentelemetry_resources
 
-            # grpc exporter
+            # gRPC exporters
             opentelemetry_exporter_otlp_grpc
             opentelemetry_exporter_otlp_grpc_metrics
             opentelemetry_exporter_otlp_grpc_log
 
-            # http exporter
+            # HTTP exporters
             opentelemetry_ext
             opentelemetry_exporter_otlp_http
             opentelemetry_exporter_otlp_http_metric
@@ -80,19 +90,22 @@ target_compile_definitions(flowpipe_runtime
         PUBLIC $<$<BOOL:${FLOWPIPE_ENABLE_OTEL}>:FLOWPIPE_ENABLE_OTEL>
 )
 
-# Public headers (build vs install)
+# -------------------------------------------------
+# Headers
+# -------------------------------------------------
 target_include_directories(flowpipe_runtime
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-# C++ standard
+# -------------------------------------------------
+# C++ standard + warnings
+# -------------------------------------------------
 target_compile_features(flowpipe_runtime
         PUBLIC cxx_std_20
 )
 
-# Warnings (local to runtime only)
 target_compile_options(flowpipe_runtime
         PRIVATE
         -Wall
@@ -100,32 +113,44 @@ target_compile_options(flowpipe_runtime
         -Wpedantic
 )
 
-# =========================
+# =================================================
 # Runtime executable
-# =========================
+# =================================================
 add_executable(flow_runtime
         cmd/flow_runtime/main.cc
 )
 
 target_link_libraries(flow_runtime
-        PUBLIC flowpipe_runtime
-        PRIVATE flowpipe_proto yaml-cpp
+        PUBLIC
+        flowpipe_runtime
+        PRIVATE
+        flowpipe_proto
+        yaml-cpp
 )
 
-# =========================
+# =================================================
 # Install rules
-# =========================
+# =================================================
 include(GNUInstallDirs)
 
+# Runtime executable
 install(TARGETS flow_runtime
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# Runtime shared library
+install(TARGETS flowpipe_runtime
+        EXPORT flowpipeTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+# Public headers
 install(
         DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+# CMake package export (for in-tree stages)
 install(EXPORT flowpipeTargets
         NAMESPACE flowpipe::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/flowpipe

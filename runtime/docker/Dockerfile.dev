@@ -9,7 +9,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # -----------------------------------------------------
 # System dependencies
 # -----------------------------------------------------
-
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -30,42 +29,49 @@ RUN apt-get update && apt-get install -y \
 # -----------------------------------------------------
 # Workdir
 # -----------------------------------------------------
-
 WORKDIR /src
 
 # -----------------------------------------------------
 # Copy source (expects submodules already present)
 # -----------------------------------------------------
-
 COPY . .
 
 # -----------------------------------------------------
-# Configure + build specific target
+# Configure
 # -----------------------------------------------------
-
 RUN cmake -S . -B build -G Ninja \
-      -DCMAKE_BUILD_TYPE=Debug -DFLOWPIPE_ENABLE_OTEL=ON \
-      -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe \
- && cmake --build build --target flow_runtime
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DFLOWPIPE_ENABLE_OTEL=ON \
+      -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe
 
 # -----------------------------------------------------
-# Install SDK (headers + libs)
+# Build (runtime + all stages)
 # -----------------------------------------------------
+RUN cmake --build build
 
+# -----------------------------------------------------
+# Install SDK (runtime, libs, headers, plugins)
+# -----------------------------------------------------
 RUN cmake --install build
 
 # -----------------------------------------------------
 # Sanity checks (fail fast)
 # -----------------------------------------------------
-
-RUN test -f /opt/flow-pipe/include/flowpipe/stage.h
+# Runtime
 RUN test -f /opt/flow-pipe/bin/flow_runtime
+RUN test -f /opt/flow-pipe/lib/libflowpipe_runtime.so
+
+# Headers
+RUN test -f /opt/flow-pipe/include/flowpipe/stage.h
+RUN test -f /opt/flow-pipe/include/flowpipe/plugin.h
+
+# Plugins (examples)
+RUN ls /opt/flow-pipe/plugins/libstage_*.so
 
 # -----------------------------------------------------
-# Environment (nice for dev & downstream plugin builds)
+# Environment (dev + downstream stage builds)
 # -----------------------------------------------------
-
 ENV FLOW_PIPE_ROOT=/opt/flow-pipe
 ENV CMAKE_PREFIX_PATH=/opt/flow-pipe
-ENV LD_LIBRARY_PATH=/opt/flow-pipe/lib:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=/opt/flow-pipe/lib
 ENV PATH=/opt/flow-pipe/bin:${PATH}
