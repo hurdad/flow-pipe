@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+
+# Import exported Flow-Pipe targets
+include("${CMAKE_CURRENT_LIST_DIR}/flowpipeTargets.cmake")
