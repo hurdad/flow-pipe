@@ -1,7 +1,14 @@
 queues:
+  # source → transform
+  # 1 producer (source), 2 consumers (transform threads)
   - name: q1
+    type: QUEUE_TYPE_MPMC
     capacity: 256
+
+  # transform → sink
+  # 2 producers (transform threads), 1 consumer (sink)
   - name: q2
+    type: QUEUE_TYPE_MPSC
     capacity: 256
 
 stages:

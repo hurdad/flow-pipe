@@ -94,10 +94,11 @@ All flows follow the same structure:
 ```yaml
 queues:
   - name: q1
-    capacity: 256
+    type: QUEUE_TYPE_MPSC
+    capacity: 128
 
 stages:
-  - name: source
+  - name: src
     type: noop_source
     threads: 1
     output_queue: q1
@@ -106,6 +107,7 @@ stages:
     type: stdout_sink
     threads: 1
     input_queue: q1
+
 ```
 
 ### Queues
