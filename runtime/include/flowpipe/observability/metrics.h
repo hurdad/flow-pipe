@@ -15,20 +15,4 @@ namespace flowpipe::observability {
 void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
                  const GlobalDefaults& global, bool debug);
 
-// ------------------------------------------------------------
-// Runtime capability helpers
-// ------------------------------------------------------------
-
-// // True if any metrics pipeline is enabled.
-// bool MetricsEnabled();
-//
-// // Granularity controls
-// bool StageMetricsEnabled();
-// bool QueueMetricsEnabled();
-// bool FlowMetricsEnabled();
-//
-// // Cost / cardinality controls
-// bool LatencyHistogramsEnabled();
-// bool MetricsCountersOnly();
-
 }  // namespace flowpipe::observability

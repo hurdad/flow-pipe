@@ -8,6 +8,7 @@
 
 #include "flowpipe/queue_runtime.h"
 #include "flowpipe/signal_handler.h"
+#include "flowpipe/stage_runner.h"
 
 namespace flowpipe {
 
@@ -43,11 +44,16 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     queues.emplace(qr->name, std::move(qr));
   }
 
+  // ------------------------------------------------------------
+  // Shared context + metrics
+  // ------------------------------------------------------------
   StageContext ctx{stop};
+  StageMetrics metrics;  // runtime-owned metrics facade
+
   std::vector<std::thread> threads;
 
   // ------------------------------------------------------------
-  // Wire stages
+  // Wire stages (runtime owns execution)
   // ------------------------------------------------------------
   for (const auto& s : spec.stages()) {
     const bool has_input = s.has_input_queue();
@@ -56,18 +62,25 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     IStage* stage =
         registry_.create_stage(s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so");
 
+    // ----------------------------
+    // Source stage
+    // ----------------------------
     if (auto* src = dynamic_cast<ISourceStage*>(stage)) {
       if (has_input || !has_output) {
         throw std::runtime_error("invalid source stage wiring: " + s.name());
       }
 
       auto out = queues.at(s.output_queue());
+
       for (uint32_t i = 0; i < s.threads(); ++i) {
-        threads.emplace_back([&, src, out] { src->run(ctx, *out->queue); });
+        threads.emplace_back([&, src, out]() { RunSourceStage(src, ctx, *out, &metrics); });
       }
       continue;
     }
 
+    // ----------------------------
+    // Transform stage
+    // ----------------------------
     if (auto* xf = dynamic_cast<ITransformStage*>(stage)) {
       if (!has_input || !has_output) {
         throw std::runtime_error("invalid transform stage wiring: " + s.name());
@@ -75,20 +88,26 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
       auto in = queues.at(s.input_queue());
       auto out = queues.at(s.output_queue());
+
       for (uint32_t i = 0; i < s.threads(); ++i) {
-        threads.emplace_back([&, xf, in, out] { xf->run(ctx, *in->queue, *out->queue); });
+        threads.emplace_back(
+            [&, xf, in, out]() { RunTransformStage(xf, ctx, *in, *out, &metrics); });
       }
       continue;
     }
 
+    // ----------------------------
+    // Sink stage
+    // ----------------------------
     if (auto* sink = dynamic_cast<ISinkStage*>(stage)) {
       if (!has_input || has_output) {
         throw std::runtime_error("invalid sink stage wiring: " + s.name());
       }
 
       auto in = queues.at(s.input_queue());
+
       for (uint32_t i = 0; i < s.threads(); ++i) {
-        threads.emplace_back([&, sink, in] { sink->run(ctx, *in->queue); });
+        threads.emplace_back([&, sink, in]() { RunSinkStage(sink, ctx, *in, &metrics); });
       }
       continue;
     }

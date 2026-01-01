@@ -21,6 +21,10 @@ add_library(flowpipe_runtime
         src/stage_factory.cc
         src/stage_registry.cc
 
+        # Stage stuff
+        src/stage_metrics.cc
+        src/stage_runner.cc
+
         # Observability
         src/observability/defaults.cc
         src/observability/observability.cc
