@@ -15,25 +15,17 @@ There is **no code** in this directory.
 
 ### Local binary
 
-From the project root:
+From the project root (after building the runtime):
 
 ```bash
-flow_runtime flows/noop.yaml
+./cmake-build/runtime/cmd/flow_runtime/flow_runtime flows/noop.yaml
 ```
 
-Flows assume that the required **stage plugins** are available on the system.
-
-By default, the runtime loads plugins from:
-
-```
-/opt/flow-pipe/plugins
-```
+The runtime loads stage plugins from `/opt/flow-pipe/plugins` by default. Ensure the built plugins are installed there (for local builds, `make install` places them under the chosen prefix).
 
 ### Docker runtime image
 
-Prebuilt runtime images live in [`runtime/docker`](../runtime/docker/README.md) and
-expose `flow_runtime` as the container entrypoint. To run a flow without
-installing the binary locally:
+Prebuilt runtime images live in [`runtime/docker`](../runtime/docker/README.md) and expose `flow_runtime` as the container entrypoint. To run a flow without installing the binary locally:
 
 ```bash
 # Pull or build the runtime image first (all images share the same tag)
@@ -46,18 +38,14 @@ docker run --rm \
   ${IMAGE} /flows/noop.yaml
 ```
 
-The runtime image already bundles the built-in stage plugins in
-`/opt/flow-pipe/plugins` and sets `FLOW_PIPE_PLUGIN_PATH` accordingly. To use
-custom plugins, mount an additional directory and override the path:
+The runtime image bundles the built-in stage plugins under `/opt/flow-pipe/plugins`. To use custom plugins, mount an additional directory and point the runtime at it by rebuilding with a different install prefix or by replacing the mounted `/opt/flow-pipe/plugins` path:
 
 ```bash
 docker run --rm \
   # Flow definitions
   -v "$(pwd)/flows:/flows" \
   # Custom plugins
-  -v "$(pwd)/my-plugins:/plugins" \
-  # Point runtime to mounted plugins
-  -e FLOW_PIPE_PLUGIN_PATH=/plugins \
+  -v "$(pwd)/my-plugins:/opt/flow-pipe/plugins" \
   ${IMAGE} /flows/simple_pipeline.yaml
 ```
 
@@ -107,7 +95,6 @@ stages:
     type: stdout_sink
     threads: 1
     input_queue: q1
-
 ```
 
 ### Queues
@@ -162,15 +149,8 @@ If you see:
 dlopen failed: libstage_xxx.so: cannot open shared object file
 ```
 
-Ensure the plugin exists in:
-
-```
-/opt/flow-pipe/plugins
-```
-
-and has the correct name.
+Ensure the plugin exists in `/opt/flow-pipe/plugins` (or your custom install prefix) and has the correct name.
 
 ### Invalid wiring
 
-If a stage has incompatible inputs or outputs, the runtime will fail
-to start. Verify queues, inputs, and outputs line up between stages.
+If a stage has incompatible inputs or outputs, the runtime will fail to start. Verify queues, inputs, and outputs line up between stages.

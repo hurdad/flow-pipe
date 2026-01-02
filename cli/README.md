@@ -23,15 +23,13 @@ cli/
 │       ├── submit.go
 │       └── validate.go
 ├── internal/
-│   └── ...              # CLI-only helpers
+│   └── loader/           # YAML → FlowSpec loader
 ├── go.mod
 ├── go.sum
 └── Dockerfile
 ```
 
-The CLI is a **separate Go module** with its own dependencies.
-
-Shared protobuf types are imported from the repository root under `gen/`.
+The CLI is a **separate Go module** with its own dependencies. Shared protobuf types and validation helpers are imported from the repository root (`gen/` and `pkg/`).
 
 ---
 
@@ -97,7 +95,7 @@ Validate a flow definition without executing it.
 flowctl validate flow.yaml
 ```
 
-Intended behavior:
+Behavior:
 - load and normalize the flow definition
 - perform semantic validation
 - exit non-zero on failure
@@ -114,12 +112,12 @@ Run a flow locally using the flow-pipe runtime.
 flowctl run flow.yaml
 ```
 
-Intended behavior:
-- validate the flow
-- convert to protobuf
-- execute via the local C++ runtime
+What happens:
+- `flowctl` loads, normalizes, and validates the flow
+- the normalized `FlowSpec` is encoded to JSON
+- JSON is streamed to a `flow_runtime` executable on your `PATH`
 
-> Local execution wiring is under active development.
+Ensure `flow_runtime` and the stage plugins are installed locally (see `runtime/` and `stages/`).
 
 ---
 
@@ -128,13 +126,17 @@ Intended behavior:
 Submit a flow to the flow-pipe API.
 
 ```bash
-flowctl submit flow.yaml --api http://flow-pipe-api:8080
+flowctl submit flow.yaml --api localhost:9090
 ```
 
-Intended behavior:
-- validate the flow
-- submit it to the API
-- the controller schedules execution
+Behavior:
+- validate the flow locally
+- send it to the API over gRPC
+- print a success message if the request completes
+
+Flags:
+- `--api` – API address (defaults to `localhost:9090`)
+- `--timeout` – gRPC request timeout (default 5s)
 
 ---
 
@@ -158,6 +160,7 @@ module github.com/hurdad/flow-pipe/cli
 
 It:
 - depends on generated protobufs in `gen/`
+- depends on shared flow helpers in `pkg/`
 - does **not** depend on API or controller internals
 - has isolated dependencies via its own `go.mod`
 
@@ -190,4 +193,3 @@ go build ./cli/cmd/flowctl
 ## License
 
 Apache 2.0 (see repository root `LICENSE`).
-
