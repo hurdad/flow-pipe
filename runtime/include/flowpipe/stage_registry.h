@@ -2,6 +2,7 @@
 
 #include <google/protobuf/struct.pb.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -11,9 +12,9 @@
 
 namespace flowpipe {
 
-class StageRegistry {
+ class StageRegistry {
  public:
-  StageRegistry() = default;
+  explicit StageRegistry(std::unique_ptr<StageLoader> loader = nullptr);
   ~StageRegistry();
 
   StageRegistry(const StageRegistry&) = delete;
@@ -30,7 +31,7 @@ class StageRegistry {
     IStage* stage = nullptr;
   };
 
-  StageFactory factory_;
+  std::unique_ptr<StageLoader> loader_;
   std::unordered_map<std::string, LoadedPlugin> plugins_;
   std::vector<StageInstance> instances_;
 };

@@ -1,5 +1,7 @@
 #include "flowpipe/stage_registry.h"
 
+#include <memory>
+#include <utility>
 #include <stdexcept>
 
 #include "flowpipe/configurable_stage.h"
@@ -10,11 +12,18 @@ StageRegistry::~StageRegistry() {
   shutdown();
 }
 
+StageRegistry::StageRegistry(std::unique_ptr<StageLoader> loader)
+    : loader_(std::move(loader)) {
+  if (!loader_) {
+    loader_ = std::make_unique<StageFactory>();
+  }
+}
+
 IStage* StageRegistry::create_stage(const std::string& plugin_name,
                                     const google::protobuf::Struct* config) {
   auto it = plugins_.find(plugin_name);
   if (it == plugins_.end()) {
-    auto plugin = factory_.load(plugin_name);
+    auto plugin = loader_->load(plugin_name);
     it = plugins_.emplace(plugin_name, std::move(plugin)).first;
   }
 
@@ -60,7 +69,7 @@ void StageRegistry::shutdown() {
   instances_.clear();
 
   for (auto& kv : plugins_) {
-    factory_.unload(kv.second);
+    loader_->unload(kv.second);
   }
   plugins_.clear();
 }
