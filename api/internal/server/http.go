@@ -95,8 +95,8 @@ func httpMiddleware(next http.Handler, tracer trace.Tracer, counter metric.Int64
 		}
 
 		duration := float64(time.Since(start).Milliseconds())
-		counter.Add(ctx, 1, attributes...)
-		latency.Record(ctx, duration, attributes...)
+		counter.Add(ctx, 1, metric.WithAttributes(attributes...))
+		latency.Record(ctx, duration, metric.WithAttributes(attributes...))
 		span.SetAttributes(attributes...)
 		if recorder.status >= http.StatusInternalServerError {
 			span.SetStatus(codes.Error, http.StatusText(recorder.status))
