@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/hurdad/flow-pipe/controller/internal/config"
 	"github.com/hurdad/flow-pipe/controller/internal/controller"
+	"github.com/hurdad/flow-pipe/controller/internal/observability"
 	"github.com/hurdad/flow-pipe/controller/internal/store"
 )
 
@@ -17,6 +18,19 @@ func main() {
 	// Load configuration
 	// --------------------------------------------------
 	cfg := config.Load()
+
+	// --------------------------------------------------
+	// Initialize OpenTelemetry (traces/metrics/logs)
+	// --------------------------------------------------
+	shutdownTelemetry, logger, err := observability.Setup(context.Background(), cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := shutdownTelemetry(context.Background()); err != nil {
+			logger.Error(context.Background(), "failed to shutdown telemetry", slog.Any("error", err))
+		}
+	}()
 
 	// --------------------------------------------------
 	// Controller identity (used for HA / ownership)
@@ -31,7 +45,8 @@ func main() {
 	// --------------------------------------------------
 	st, err := store.NewEtcd(cfg.EtcdEndpoints)
 	if err != nil {
-		log.Fatalf("failed to connect to etcd: %v", err)
+		logger.Error(context.Background(), "failed to connect to etcd", slog.Any("error", err))
+		os.Exit(1)
 	}
 	defer st.Close()
 
@@ -43,7 +58,7 @@ func main() {
 	// --------------------------------------------------
 	// Create controller
 	// --------------------------------------------------
-	ctrl := controller.New(st, queue, nodeName)
+	ctrl := controller.New(st, queue, nodeName, logger)
 
 	// --------------------------------------------------
 	// Signal-aware context
@@ -55,14 +70,15 @@ func main() {
 	)
 	defer cancel()
 
-	log.Println("flow-controller starting")
+	logger.Info(ctx, "flow-controller starting")
 
 	// --------------------------------------------------
 	// Run controller (blocks until shutdown)
 	// --------------------------------------------------
 	if err := ctrl.Run(ctx); err != nil {
-		log.Fatalf("flow-controller exited with error: %v", err)
+		logger.Error(ctx, "flow-controller exited with error", slog.Any("error", err))
+		os.Exit(1)
 	}
 
-	log.Println("flow-controller stopped")
+	logger.Info(ctx, "flow-controller stopped")
 }

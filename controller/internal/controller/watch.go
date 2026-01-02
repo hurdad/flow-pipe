@@ -2,7 +2,10 @@ package controller
 
 import (
 	"context"
-	"log"
+	"log/slog"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/hurdad/flow-pipe/controller/internal/store"
 )
@@ -18,7 +21,7 @@ func (c *Controller) enqueueExisting(ctx context.Context) error {
 		c.queue.Add(f.Name)
 	}
 
-	log.Printf("[watch] seeded %d existing flows", len(flows))
+	c.logger.Info(ctx, "seeded existing flows", slog.Int("count", len(flows)))
 	return nil
 }
 
@@ -34,7 +37,7 @@ func (c *Controller) runWatch(ctx context.Context) {
 
 		case ev, ok := <-watch.Events():
 			if !ok {
-				log.Printf("[watch] stream closed")
+				c.logger.Info(ctx, "watch stream closed")
 				return
 			}
 
@@ -42,10 +45,15 @@ func (c *Controller) runWatch(ctx context.Context) {
 				continue
 			}
 
-			log.Printf(
-				"[watch] event=%s flow=%s",
-				ev.Type,
-				ev.Flow.Name,
+			c.watchEvents.Add(ctx, 1, metric.WithAttributes(
+				attribute.String("flow.name", ev.Flow.Name),
+				attribute.String("event.type", string(ev.Type)),
+			))
+			c.logger.Info(
+				ctx,
+				"watch event received",
+				slog.String("event", string(ev.Type)),
+				slog.String("flow", ev.Flow.Name),
 			)
 
 			switch ev.Type {
