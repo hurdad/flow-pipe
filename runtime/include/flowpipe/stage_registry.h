@@ -1,5 +1,7 @@
 #pragma once
 
+#include <google/protobuf/struct.pb.h>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -17,7 +19,8 @@ class StageRegistry {
   StageRegistry(const StageRegistry&) = delete;
   StageRegistry& operator=(const StageRegistry&) = delete;
 
-  IStage* create_stage(const std::string& plugin_name);
+  IStage* create_stage(const std::string& plugin_name,
+                       const google::protobuf::Struct* config = nullptr);
   void destroy_stage(IStage* stage);
   void shutdown();
 
