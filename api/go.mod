@@ -9,7 +9,6 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
 github.com/hurdad/flow-pipe v0.0.0-00010101000000-000000000000
 go.etcd.io/etcd/client/v3 v3.5.15
 go.opentelemetry.io/otel v1.34.0
-go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v1.34.0
 go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.34.0
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.34.0
 go.opentelemetry.io/otel/metric v1.34.0
