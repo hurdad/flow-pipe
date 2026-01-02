@@ -22,3 +22,4 @@ observability:
   metrics_enabled: true
   tracing_enabled: true
   logs_enabled: true
+  debug: true
