@@ -46,10 +46,54 @@ jobs:
           echo "Computed tag: ${TAG}"
 
   # ------------------------------------------------------------
-  # 2. Build & push runtime image (root of tree)
+  # 2. Build & run runtime tests (gates image builds)
+  # ------------------------------------------------------------
+  tests:
+    needs: meta
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            git \
+            libyaml-cpp-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            protobuf-compiler-grpc \
+            libgrpc++-dev \
+            libgtest-dev \
+            libcurl4-openssl-dev \
+            libspdlog-dev \
+            libjemalloc-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON \
+            -DFLOWPIPE_ENABLE_OTEL=OFF
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run runtime tests
+        run: ctest --test-dir build/runtime/tests --output-on-failure
+
+  # ------------------------------------------------------------
+  # 3. Build & push runtime image (root of tree)
   # ------------------------------------------------------------
   runtime:
-    needs: meta
+    needs: [meta, tests]
     runs-on: ubuntu-latest
 
     steps:
@@ -72,7 +116,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}
 
   # ------------------------------------------------------------
-  # 3. Build & push base image (depends on runtime)
+  # 4. Build & push base image (depends on runtime)
   # ------------------------------------------------------------
   base:
     needs: [meta, runtime]
@@ -98,7 +142,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}
 
   # ------------------------------------------------------------
-  # 4. Build & push dev (SDK) image (depends on base)
+  # 5. Build & push dev (SDK) image (depends on base)
   # ------------------------------------------------------------
   dev:
     needs: [meta, base]
