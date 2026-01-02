@@ -22,6 +22,10 @@ stages:
     type: noop_source
     threads: 1
     output_queue: q_in
+    config:
+      delay_ms: 100
+      message: "FOOBAR"
+      max_messages: 20
 
   - name: transform_a
     type: noop_transform

@@ -53,13 +53,14 @@ std::unique_ptr<IStage> StageFactory::create_stage(const LoadedPlugin& plugin,
     throw std::runtime_error("stage plugin returned null");
   }
 
-  // Forward config verbatim if the stage supports it
-  if (config) {
-    if (auto* configurable = dynamic_cast<ConfigurableStage*>(stage)) {
-      if (!configurable->Configure(*config)) {
-        plugin.destroy(stage);
-        throw std::runtime_error("stage rejected configuration");
-      }
+  // 🔒 ALWAYS call Configure() if supported
+  if (auto* configurable = dynamic_cast<ConfigurableStage*>(stage)) {
+    google::protobuf::Struct empty;
+    const google::protobuf::Struct& cfg = config ? *config : empty;
+
+    if (!configurable->Configure(cfg)) {
+      plugin.destroy(stage);
+      throw std::runtime_error("stage rejected configuration");
     }
   }
 
