@@ -2,13 +2,16 @@
 
 #include <stdexcept>
 
+#include "flowpipe/configurable_stage.h"
+
 namespace flowpipe {
 
 StageRegistry::~StageRegistry() {
   shutdown();
 }
 
-IStage* StageRegistry::create_stage(const std::string& plugin_name) {
+IStage* StageRegistry::create_stage(const std::string& plugin_name,
+                                    const google::protobuf::Struct* config) {
   auto it = plugins_.find(plugin_name);
   if (it == plugins_.end()) {
     auto plugin = factory_.load(plugin_name);
@@ -18,6 +21,16 @@ IStage* StageRegistry::create_stage(const std::string& plugin_name) {
   IStage* stage = it->second.create();
   if (!stage) {
     throw std::runtime_error("plugin returned null stage");
+  }
+
+  if (auto* configurable = dynamic_cast<ConfigurableStage*>(stage)) {
+    google::protobuf::Struct empty;
+    const auto& cfg = config ? *config : empty;
+
+    if (!configurable->Configure(cfg)) {
+      it->second.destroy(stage);
+      throw std::runtime_error("stage rejected configuration: " + plugin_name);
+    }
   }
 
   instances_.push_back(StageInstance{
