@@ -21,7 +21,7 @@ struct QueueRuntime;
 class StageMetrics {
  public:
   StageMetrics() = default;
-  ~StageMetrics() = default;
+  virtual ~StageMetrics() = default;
 
   StageMetrics(const StageMetrics&) = delete;
   StageMetrics& operator=(const StageMetrics&) = delete;
@@ -31,20 +31,20 @@ class StageMetrics {
   // ------------------------------------------------------------
 
   // Called when a payload is dequeued from a queue
-  void RecordQueueDequeue(const QueueRuntime& queue, const Payload& payload) noexcept;
+  virtual void RecordQueueDequeue(const QueueRuntime& queue, const Payload& payload) noexcept;
 
   // Called when a payload is enqueued into a queue
-  void RecordQueueEnqueue(const QueueRuntime& queue) noexcept;
+  virtual void RecordQueueEnqueue(const QueueRuntime& queue) noexcept;
 
   // ------------------------------------------------------------
   // Stage metrics
   // ------------------------------------------------------------
 
   // Called after a stage processes a payload
-  void RecordStageLatency(const char* stage_name, uint64_t latency_ns) noexcept;
+  virtual void RecordStageLatency(const char* stage_name, uint64_t latency_ns) noexcept;
 
   // Called when a stage reports an error
-  void RecordStageError(const char* stage_name) noexcept;
+  virtual void RecordStageError(const char* stage_name) noexcept;
 };
 
 }  // namespace flowpipe

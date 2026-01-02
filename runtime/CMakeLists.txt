@@ -123,6 +123,10 @@ target_link_libraries(flow_runtime
         spdlog::spdlog
 )
 
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
 # ============================================================
 # Install + CMake package config
 # ============================================================
