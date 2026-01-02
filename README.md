@@ -1,8 +1,6 @@
 # flow-pipe
 
-**flow-pipe** is a Kubernetes-native pipeline runtime for **streaming** and **run-to-completion** data flows.
-
-It provides a high-performance **C++ data plane** for executing pipelines and a **Go-based control plane** that deploys and manages those pipelines on Kubernetes using declarative configuration.
+**flow-pipe** is a Kubernetes-native pipeline runtime for **streaming** and **run-to-completion** data flows. It combines a high-performance **C++ data plane** with a **Go-based control plane** that deploys and manages flows declaratively on Kubernetes.
 
 flow-pipe is designed to be simple, predictable, and operationally boring.
 
@@ -28,12 +26,12 @@ A pipe can:
 
 ## Core Concepts
 
-- **Flow** – A declarative pipeline definition
-- **Stage** – A unit of work (source, transform, sink, or side-effect)
-- **Queue** – A bounded in-memory channel between stages
-- **Runtime** – A stateless C++ process that executes a flow
-- **Controller** – A Kubernetes reconciler that deploys flows
-- **Flow API** – A control-plane API for managing flow specs
+- **Flow** – Declarative pipeline definition
+- **Stage** – Unit of work (source, transform, sink, or side-effect)
+- **Queue** – Bounded in-memory channel between stages
+- **Runtime** – Stateless C++ process that executes a flow
+- **Controller** – Kubernetes reconciler that deploys flows
+- **Flow API** – Control-plane API for managing flow specs
 
 ---
 
@@ -46,8 +44,7 @@ flow-pipe supports two execution modes:
 | Streaming | Deployment | Long-running, continuously processing |
 | Job | Job | Run once, drain, and exit |
 
-The pipeline definition is identical in both cases.  
-Only the lifecycle differs.
+The pipeline definition is identical in both cases; only the lifecycle differs.
 
 ---
 
@@ -86,8 +83,7 @@ User / CI / Git
 +------------------+
 ```
 
-The runtime is **Kubernetes-agnostic**.  
-Kubernetes is used only for lifecycle and scheduling.
+The runtime is **Kubernetes-agnostic**. Kubernetes is used only for lifecycle and scheduling.
 
 ---
 
@@ -159,30 +155,46 @@ These exclusions are deliberate.
 
 ```
 flow-pipe/
-├── runtime/        # C++ data plane
-├── examples/       # Standalone runtime examples and custom stages
-├── controller/     # Go Kubernetes controller
-├── api/            # Go Flow API
-├── proto/          # Protobuf schemas
-├── deploy/         # Kubernetes manifests
-├── docs/           # Design documentation
+├── api/           # Go control-plane API (gRPC + HTTP)
+├── cli/           # flowctl CLI module
+├── controller/    # Go Kubernetes controller
+├── deploy/        # Helm chart + Argo CD manifests
+├── docs/          # Design documentation
+├── flows/         # Example flow definitions (YAML)
+├── gen/           # Generated protobuf code
+├── proto/         # Protobuf schemas
+├── runtime/       # C++ data plane and runtime executable
+├── stages/        # Built-in example stage plugins
+├── tools/         # Build helpers and scripts
 ```
 
 ---
 
-## Examples
+## Building
 
-The `examples/` directory contains **standalone, buildable C++ programs** that demonstrate how to use and extend the flow-pipe runtime.
+The repository includes a top-level `Makefile` that wires together CMake and Go builds:
 
-Examples:
-- Register custom stages
-- Build pipelines programmatically
-- Demonstrate queue and concurrency semantics
-- Run without Kubernetes or the control plane
+```bash
+# Generate protobufs and build all components
+make all
 
-These examples:
-- Link directly against the C++ runtime
-- Do not depend on the controller or API
-- Reflect how real runtime integrations are expected to work
+# Build just the C++ runtime
+make runtime
 
-They are intended as **reference implementations
+# Build Go components individually
+make api
+make controller
+make cli
+```
+
+CMake defaults to installing the runtime under `/opt/flow-pipe` inside the Docker images. Use `make install` (after `make configure`) to install locally with your chosen prefix.
+
+---
+
+## Examples and Assets
+
+- Sample flow definitions live in [`flows/`](flows/README.md).
+- Example stage plugins live in [`stages/`](stages/).
+- Docker images for the runtime and SDK are documented in [`runtime/docker/README.md`](runtime/docker/README.md).
+
+These assets are intended as reference implementations for building and running your own pipelines.

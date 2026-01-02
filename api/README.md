@@ -1,6 +1,6 @@
 # flow-pipe API
 
-This directory contains the **flow-pipe control plane API**.
+This directory contains the **flow-pipe control plane API** implemented in Go.
 
 The API is responsible for:
 - accepting **FlowSpec** definitions over gRPC / REST
@@ -34,7 +34,7 @@ This mirrors the Kubernetes API / controller separation.
 - writes `/status`
 - talks to the runtime
 - watches etcd
-- parses YAML internally
+- parses YAML internally (the CLI handles YAML → protobuf)
 
 ---
 
@@ -43,22 +43,19 @@ This mirrors the Kubernetes API / controller separation.
 ```
 api/
 ├── cmd/
-│   └── flow-api/
-│       └── main.go        # gRPC + grpc-gateway entrypoint
-│
-├── flow/
-│   └── server.go          # FlowService implementation
-│
-├── store/
-│   ├── store.go           # Store interface
-│   ├── etcd_store.go      # etcd-backed implementation
-│   └── keys.go            # etcd key schema (authoritative)
-│
-├── model/
-│   └── meta.go            # Flow metadata
-│
+│   └── flow-api/          # Entry point (main.go)
+├── internal/
+│   ├── config/            # Flag + environment configuration
+│   ├── model/             # Flow metadata types
+│   ├── server/            # gRPC + HTTP servers
+│   ├── service/           # FlowService implementation
+│   └── store/             # etcd-backed storage layer
+├── go.mod
+├── go.sum
 └── README.md
 ```
+
+The API uses generated protobuf types from `gen/` in the repository root.
 
 ---
 
@@ -109,7 +106,7 @@ Body contains **only** `FlowSpec`.
 
 ### Required
 - Go ≥ 1.22
-- Docker
+- Docker (for etcd)
 - etcd ≥ 3.5
 
 ### Optional (for local dev)
@@ -155,9 +152,7 @@ docker build -t flow-pipe-api:latest -f api/Dockerfile .
 
 ## Configuration
 
-The API can be configured using **environment variables** or **CLI flags**.
-
-Environment variables are recommended for Docker and Kubernetes deployments.
+The API can be configured using **environment variables** or **CLI flags**. Environment variables are recommended for Docker and Kubernetes deployments.
 
 ### Environment Variables
 
@@ -166,7 +161,6 @@ Environment variables are recommended for Docker and Kubernetes deployments.
 | `FLOW_HTTP_ADDR` | HTTP (grpc-gateway) listen address | `:8080` |
 | `FLOW_GRPC_ADDR` | gRPC listen address | `:9090` |
 | `ETCD_ENDPOINTS` | Comma-separated etcd endpoints | `http://127.0.0.1:2379` |
-| `FLOW_ENV` | Environment label (informational) | _unset_ |
 
 ### CLI Flags
 
@@ -176,7 +170,23 @@ Environment variables are recommended for Docker and Kubernetes deployments.
 | `-grpc-addr` | gRPC listen address |
 | `-etcd` | Comma-separated etcd endpoints |
 
-Environment variables override defaults; flags may be used for local debugging.
+Environment variables provide the defaults; flags override for local debugging.
+
+---
+
+## Running Locally
+
+With etcd running:
+
+```bash
+cd api
+FLOW_HTTP_ADDR=:8080 \
+FLOW_GRPC_ADDR=:9090 \
+ETCD_ENDPOINTS=http://127.0.0.1:2379 \
+go run ./cmd/flow-api
+```
+
+The process listens on both gRPC and HTTP ports concurrently and shuts down cleanly on SIGINT/SIGTERM.
 
 ---
 
@@ -198,35 +208,7 @@ flow-api:
       condition: service_healthy
   environment:
     ETCD_ENDPOINTS: "http://etcd:2379"
-    FLOW_HTTP_ADDR: ":8080"
-    FLOW_GRPC_ADDR: ":9090"
-    FLOW_ENV: "local"
-  restart: unless-stopped
 ```
-
----
-
-## Example REST Call
-
-```bash
-curl -X POST http://localhost:8080/v1/flows \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "example",
-    "mode": "JOB",
-    "queues": [],
-    "stages": []
-  }'
-```
-
----
-
-## Operational Notes
-
-- API is **stateless**
-- Multiple replicas are safe
-- etcd provides serialization
-- Controllers react to `/active` changes
 
 ---
 
@@ -247,4 +229,3 @@ Those live outside this directory.
 - ❌ Never accept client-provided version
 - ✅ All writes go through etcd transactions
 - ✅ Rollback = pointer update only
-
