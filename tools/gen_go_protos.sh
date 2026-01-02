@@ -44,6 +44,7 @@ protoc \
   --go-grpc_out="${OUT_GO}" \
   --go-grpc_opt=paths=source_relative \
   "${PROTO_V1}/flow.proto" \
+  "${PROTO_V1}/observability.proto" \
   "${PROTO_V1}/service.proto"
 
 # --------------------------------------------------

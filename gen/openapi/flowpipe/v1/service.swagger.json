@@ -239,6 +239,216 @@
     }
   },
   "definitions": {
+    "LoggingConfigLogProcessorType": {
+      "type": "string",
+      "enum": [
+        "LOG_PROCESSOR_UNSPECIFIED",
+        "LOG_PROCESSOR_SIMPLE",
+        "LOG_PROCESSOR_BATCH"
+      ],
+      "default": "LOG_PROCESSOR_UNSPECIFIED",
+      "description": " - LOG_PROCESSOR_UNSPECIFIED: Runtime default.\n - LOG_PROCESSOR_SIMPLE: Synchronous export.\n - LOG_PROCESSOR_BATCH: Asynchronous batch export."
+    },
+    "ObservabilityConfigLoggingConfig": {
+      "type": "object",
+      "properties": {
+        "otlpEndpoint": {
+          "type": "string",
+          "description": "Optional OTLP endpoint override for logs (host:port).\nIf unset, the global runtime logging endpoint is used."
+        },
+        "transport": {
+          "$ref": "#/definitions/v1OtlpTransport",
+          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
+        },
+        "processor": {
+          "$ref": "#/definitions/LoggingConfigLogProcessorType",
+          "description": "Log processor selection."
+        },
+        "batch": {
+          "$ref": "#/definitions/ObservabilityConfigLoggingConfigBatchConfig",
+          "description": "Batch processor configuration."
+        }
+      },
+      "title": "==========================================================\nLogging configuration\n=========================================================="
+    },
+    "ObservabilityConfigLoggingConfigBatchConfig": {
+      "type": "object",
+      "properties": {
+        "maxQueueSize": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Max queued log records"
+        },
+        "maxExportBatchSize": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Max records per export"
+        },
+        "scheduleDelayMs": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Delay before export"
+        },
+        "exportTimeoutMs": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Export timeout"
+        }
+      }
+    },
+    "ObservabilityConfigMetricsConfig": {
+      "type": "object",
+      "properties": {
+        "otlpEndpoint": {
+          "type": "string",
+          "description": "Optional OTLP endpoint override for metrics (host:port).\nIf unset, the global runtime metrics endpoint is used."
+        },
+        "transport": {
+          "$ref": "#/definitions/v1OtlpTransport",
+          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
+        },
+        "stageMetricsEnabled": {
+          "type": "boolean",
+          "description": "Emit per-stage metrics."
+        },
+        "queueMetricsEnabled": {
+          "type": "boolean",
+          "description": "Emit queue-level metrics."
+        },
+        "flowMetricsEnabled": {
+          "type": "boolean",
+          "description": "Emit flow-level aggregate metrics."
+        },
+        "latencyHistogramsEnabled": {
+          "type": "boolean",
+          "description": "Emit latency histogram metrics."
+        },
+        "countersOnly": {
+          "type": "boolean",
+          "description": "Emit counters only (no gauges or histograms)."
+        },
+        "minCollectionIntervalMs": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Minimum metrics emission interval (milliseconds)."
+        },
+        "collectionIntervalMs": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Preferred metrics emission interval (milliseconds)."
+        },
+        "latencyBudgetMs": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Expected latency budget for metric tagging and alerting."
+        }
+      },
+      "title": "==========================================================\nMetrics configuration\n=========================================================="
+    },
+    "ObservabilityConfigTracingConfig": {
+      "type": "object",
+      "properties": {
+        "otlpEndpoint": {
+          "type": "string",
+          "description": "Optional OTLP endpoint override for tracing (host:port).\nIf unset, the global runtime tracing endpoint is used."
+        },
+        "transport": {
+          "$ref": "#/definitions/v1OtlpTransport",
+          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
+        },
+        "traceHint": {
+          "$ref": "#/definitions/TracingConfigTraceHint",
+          "description": "Sampling intent hint for this flow."
+        },
+        "processor": {
+          "$ref": "#/definitions/TracingConfigTraceProcessorType",
+          "description": "Trace processor selection."
+        },
+        "batch": {
+          "$ref": "#/definitions/ObservabilityConfigTracingConfigBatchConfig",
+          "description": "Batch processor configuration."
+        },
+        "stageSpansEnabled": {
+          "type": "boolean",
+          "description": "Emit spans for stage execution."
+        },
+        "queueSpansEnabled": {
+          "type": "boolean",
+          "description": "Emit spans for queue wait and dequeue."
+        },
+        "recordSpansEnabled": {
+          "type": "boolean",
+          "description": "Emit per-record spans (high overhead)."
+        },
+        "attributeLevel": {
+          "$ref": "#/definitions/TracingConfigAttributeLevel",
+          "description": "Attribute verbosity level for tracing."
+        },
+        "latencyBudgetMs": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Expected end-to-end latency budget (milliseconds).\nUsed for observability context only (not enforced)."
+        }
+      },
+      "title": "==========================================================\nTracing configuration\n=========================================================="
+    },
+    "ObservabilityConfigTracingConfigBatchConfig": {
+      "type": "object",
+      "properties": {
+        "maxQueueSize": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Maximum number of spans queued in memory.\nSpans are dropped once this limit is reached."
+        },
+        "maxExportBatchSize": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Maximum number of spans sent per export.\nMust be \u003c= max_queue_size."
+        },
+        "scheduleDelayMs": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Delay between two consecutive exports (milliseconds)."
+        },
+        "exportTimeoutMs": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Maximum time allowed for an export attempt (milliseconds).\nNOTE: Currently ignored by the OTEL C++ SDK but preserved\nfor forward compatibility."
+        }
+      }
+    },
+    "TracingConfigAttributeLevel": {
+      "type": "string",
+      "enum": [
+        "ATTRIBUTES_UNSPECIFIED",
+        "ATTRIBUTES_MINIMAL",
+        "ATTRIBUTES_STANDARD",
+        "ATTRIBUTES_VERBOSE"
+      ],
+      "default": "ATTRIBUTES_UNSPECIFIED",
+      "description": " - ATTRIBUTES_UNSPECIFIED: Runtime default.\n - ATTRIBUTES_MINIMAL: IDs and timing only.\n - ATTRIBUTES_STANDARD: Safe default attributes.\n - ATTRIBUTES_VERBOSE: Debug-level verbosity."
+    },
+    "TracingConfigTraceHint": {
+      "type": "string",
+      "enum": [
+        "TRACE_HINT_UNSPECIFIED",
+        "TRACE_HINT_DEFAULT",
+        "TRACE_HINT_ALWAYS",
+        "TRACE_HINT_NEVER"
+      ],
+      "default": "TRACE_HINT_UNSPECIFIED",
+      "description": " - TRACE_HINT_UNSPECIFIED: Use runtime default behavior.\n - TRACE_HINT_DEFAULT: Normal sampling behavior.\n - TRACE_HINT_ALWAYS: Force tracing for this flow.\n - TRACE_HINT_NEVER: Suppress tracing for this flow."
+    },
+    "TracingConfigTraceProcessorType": {
+      "type": "string",
+      "enum": [
+        "TRACE_PROCESSOR_UNSPECIFIED",
+        "TRACE_PROCESSOR_SIMPLE",
+        "TRACE_PROCESSOR_BATCH"
+      ],
+      "default": "TRACE_PROCESSOR_UNSPECIFIED",
+      "description": " - TRACE_PROCESSOR_UNSPECIFIED: Runtime default.\n - TRACE_PROCESSOR_SIMPLE: Synchronous export.\n - TRACE_PROCESSOR_BATCH: Asynchronous batch export."
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -247,6 +457,14 @@
         }
       },
       "additionalProperties": {}
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "rpcStatus": {
       "type": "object",
@@ -267,17 +485,6 @@
         }
       }
     },
-    "v1BoolList": {
-      "type": "object",
-      "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "boolean"
-          }
-        }
-      }
-    },
     "v1CpuSet": {
       "type": "object",
       "properties": {
@@ -287,19 +494,7 @@
             "type": "integer",
             "format": "int64"
           },
-          "description": "CPU core IDs."
-        }
-      }
-    },
-    "v1DoubleList": {
-      "type": "object",
-      "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "double"
-          }
+          "description": "CPU core identifiers."
         }
       }
     },
@@ -307,7 +502,8 @@
       "type": "object",
       "properties": {
         "mode": {
-          "$ref": "#/definitions/v1ExecutionMode"
+          "$ref": "#/definitions/v1ExecutionMode",
+          "description": "Selected execution mode."
         }
       }
     },
@@ -319,7 +515,7 @@
         "EXECUTION_MODE_JOB"
       ],
       "default": "EXECUTION_MODE_UNSPECIFIED",
-      "description": " - EXECUTION_MODE_STREAMING: Long-running, continuous pipeline (Kubernetes Deployment).\n - EXECUTION_MODE_JOB: Run-to-completion pipeline (Kubernetes Job)."
+      "description": " - EXECUTION_MODE_UNSPECIFIED: Execution mode not specified.\n - EXECUTION_MODE_STREAMING: Long-running streaming pipeline.\n - EXECUTION_MODE_JOB: Run-to-completion batch job."
     },
     "v1Flow": {
       "type": "object",
@@ -331,11 +527,11 @@
         "version": {
           "type": "string",
           "format": "uint64",
-          "description": "Active spec version."
+          "description": "Current spec version."
         },
         "spec": {
           "$ref": "#/definitions/v1FlowSpec",
-          "description": "Desired flow configuration."
+          "description": "Desired configuration."
         },
         "status": {
           "$ref": "#/definitions/v1FlowStatus",
@@ -351,31 +547,31 @@
         "FLOW_RUNTIME_CONTAINER"
       ],
       "default": "FLOW_RUNTIME_UNSPECIFIED",
-      "description": " - FLOW_RUNTIME_BUILTIN: All stages execute as builtins inside the runtime binary.\n - FLOW_RUNTIME_CONTAINER: All stages execute inside the same container image."
+      "description": " - FLOW_RUNTIME_UNSPECIFIED: Runtime not specified.\n - FLOW_RUNTIME_BUILTIN: Built-in stages linked into runtime binary.\n - FLOW_RUNTIME_CONTAINER: Stages executed inside a container image."
     },
     "v1FlowSpec": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string",
-          "description": "Logical flow name (identifier and K8s resource prefix)."
+          "description": "Logical flow name."
         },
         "version": {
           "type": "string",
           "format": "uint64",
-          "description": "Immutable version assigned by the Flow API / controller."
+          "description": "Immutable version assigned by the controller."
         },
         "runtime": {
           "$ref": "#/definitions/v1FlowRuntime",
-          "description": "Runtime environment for this flow."
+          "description": "Runtime environment selection."
         },
         "image": {
           "type": "string",
-          "description": "Container image reference when runtime == FLOW_RUNTIME_CONTAINER."
+          "description": "Container image when using container runtime."
         },
         "execution": {
           "$ref": "#/definitions/v1Execution",
-          "description": "Execution model (streaming vs job)."
+          "description": "Execution semantics for the flow."
         },
         "stages": {
           "type": "array",
@@ -383,32 +579,37 @@
             "type": "object",
             "$ref": "#/definitions/v1StageSpec"
           },
-          "description": "Pipeline definition."
+          "description": "Ordered pipeline stages."
         },
         "queues": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1QueueSpec"
-          }
+          },
+          "description": "Queues connecting stages."
         },
         "cpuPinning": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/v1CpuSet"
           },
-          "description": "Optional CPU pinning hints per stage (best-effort).\nKey MUST match StageSpec.name."
+          "description": "Optional CPU affinity per stage."
         },
         "resources": {
           "$ref": "#/definitions/v1Resources",
-          "description": "Optional resource intent for the whole flow."
+          "description": "Aggregate resource intent."
         },
         "labels": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Optional metadata (team, env, cost-center, etc.)."
+          "description": "User-defined metadata labels."
+        },
+        "observability": {
+          "$ref": "#/definitions/v1ObservabilityConfig",
+          "description": "Flow-level observability overrides."
         }
       }
     },
@@ -424,17 +625,18 @@
         "FLOW_STATE_STOPPED"
       ],
       "default": "FLOW_STATE_UNSPECIFIED",
-      "description": " - FLOW_STATE_SUCCEEDED: Jobs only."
+      "description": " - FLOW_STATE_UNSPECIFIED: State not specified.\n - FLOW_STATE_PENDING: Awaiting scheduling or resources.\n - FLOW_STATE_DEPLOYING: Being deployed or updated.\n - FLOW_STATE_RUNNING: Actively running.\n - FLOW_STATE_SUCCEEDED: Completed successfully (jobs only).\n - FLOW_STATE_FAILED: Execution failed.\n - FLOW_STATE_STOPPED: Explicitly stopped."
     },
     "v1FlowStatus": {
       "type": "object",
       "properties": {
         "state": {
-          "$ref": "#/definitions/v1FlowState"
+          "$ref": "#/definitions/v1FlowState",
+          "description": "Current lifecycle state."
         },
         "message": {
           "type": "string",
-          "description": "Human-readable message."
+          "description": "Human-readable status message."
         },
         "activeVersion": {
           "type": "string",
@@ -443,24 +645,12 @@
         },
         "workload": {
           "type": "string",
-          "description": "Kubernetes workload name (Deployment or Job)."
+          "description": "Kubernetes workload name."
         },
         "lastUpdated": {
           "type": "string",
           "format": "date-time",
-          "description": "Last controller update time."
-        }
-      }
-    },
-    "v1IntList": {
-      "type": "object",
-      "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "int64"
-          }
+          "description": "Last controller reconciliation time."
         }
       }
     },
@@ -476,18 +666,65 @@
         }
       }
     },
+    "v1ObservabilityConfig": {
+      "type": "object",
+      "properties": {
+        "metricsEnabled": {
+          "type": "boolean",
+          "description": "Allow metrics emission for this flow."
+        },
+        "tracingEnabled": {
+          "type": "boolean",
+          "description": "Allow tracing emission for this flow."
+        },
+        "logsEnabled": {
+          "type": "boolean",
+          "description": "Allow log emission for this flow."
+        },
+        "tracing": {
+          "$ref": "#/definitions/ObservabilityConfigTracingConfig",
+          "description": "Tracing configuration block."
+        },
+        "metrics": {
+          "$ref": "#/definitions/ObservabilityConfigMetricsConfig",
+          "description": "Metrics configuration block."
+        },
+        "logging": {
+          "$ref": "#/definitions/ObservabilityConfigLoggingConfig",
+          "description": "Logging configuration block."
+        },
+        "debug": {
+          "type": "boolean",
+          "description": "Indicates this flow is under investigation and may emit\nhigher-cost observability signals."
+        }
+      }
+    },
+    "v1OtlpTransport": {
+      "type": "string",
+      "enum": [
+        "OTLP_TRANSPORT_UNSPECIFIED",
+        "OTLP_TRANSPORT_GRPC",
+        "OTLP_TRANSPORT_HTTP"
+      ],
+      "default": "OTLP_TRANSPORT_UNSPECIFIED",
+      "description": "Defines which OTLP transport should be used when exporting\ntelemetry. This is a hint only and may be ignored by runtime\npolicy.\n\n - OTLP_TRANSPORT_UNSPECIFIED: Runtime default (typically gRPC)\n - OTLP_TRANSPORT_GRPC: OTLP over gRPC\n - OTLP_TRANSPORT_HTTP: OTLP over HTTP/protobuf",
+      "title": "------------------------------------------------------------\nOTLP transport selection\n------------------------------------------------------------"
+    },
     "v1QueueSpec": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Queue name."
         },
         "type": {
-          "$ref": "#/definitions/v1QueueType"
+          "$ref": "#/definitions/v1QueueType",
+          "description": "Queue concurrency model."
         },
         "capacity": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "Maximum buffered elements."
         }
       }
     },
@@ -499,7 +736,7 @@
         "QUEUE_TYPE_MPMC"
       ],
       "default": "QUEUE_TYPE_UNSPECIFIED",
-      "description": " - QUEUE_TYPE_MPSC: Multi-producer, single-consumer.\n - QUEUE_TYPE_MPMC: Multi-producer, multi-consumer."
+      "description": " - QUEUE_TYPE_UNSPECIFIED: Queue type not specified.\n - QUEUE_TYPE_MPSC: Multi-producer, single-consumer queue.\n - QUEUE_TYPE_MPMC: Multi-producer, multi-consumer queue."
     },
     "v1Resources": {
       "type": "object",
@@ -512,11 +749,11 @@
         "memoryMb": {
           "type": "integer",
           "format": "int64",
-          "description": "Preferred memory in MB."
+          "description": "Preferred memory allocation in MB."
         },
         "profile": {
           "type": "string",
-          "description": "Optional named profile (e.g. \"high-throughput\")."
+          "description": "Named resource profile hint."
         }
       }
     },
@@ -529,106 +766,28 @@
         },
         "type": {
           "type": "string",
-          "description": "Stage type (resolved via runtime registry).\nInterpretation depends on FlowSpec.runtime."
+          "description": "Stage type identifier."
         },
         "threads": {
           "type": "integer",
           "format": "int64",
-          "description": "Number of worker threads for this stage."
+          "description": "Number of worker threads."
         },
         "inputQueue": {
           "type": "string",
-          "description": "Optional input queue name:\n- unset =\u003e source or side-effect stage."
+          "description": "Input queue name (if any)."
         },
         "outputQueue": {
           "type": "string",
-          "description": "Optional output queue name:\n- unset =\u003e sink or side-effect stage."
+          "description": "Output queue name (if any)."
         },
-        "params": {
+        "config": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/v1Value"
-          },
-          "description": "Stage-specific parameters."
+          "title": "Opaque, plugin-owned config"
         },
         "plugin": {
           "type": "string",
-          "title": "Optional implementation override"
-        }
-      }
-    },
-    "v1StringList": {
-      "type": "object",
-      "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "v1Struct": {
-      "type": "object",
-      "properties": {
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/v1Value"
-          }
-        }
-      }
-    },
-    "v1UIntList": {
-      "type": "object",
-      "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        }
-      }
-    },
-    "v1Value": {
-      "type": "object",
-      "properties": {
-        "stringValue": {
-          "type": "string"
-        },
-        "intValue": {
-          "type": "string",
-          "format": "int64"
-        },
-        "uintValue": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "doubleValue": {
-          "type": "number",
-          "format": "double"
-        },
-        "boolValue": {
-          "type": "boolean"
-        },
-        "stringList": {
-          "$ref": "#/definitions/v1StringList"
-        },
-        "intList": {
-          "$ref": "#/definitions/v1IntList"
-        },
-        "uintList": {
-          "$ref": "#/definitions/v1UIntList"
-        },
-        "doubleList": {
-          "$ref": "#/definitions/v1DoubleList"
-        },
-        "boolList": {
-          "$ref": "#/definitions/v1BoolList"
-        },
-        "structValue": {
-          "$ref": "#/definitions/v1Struct"
+          "description": "Optional plugin implementation override."
         }
       }
     }
