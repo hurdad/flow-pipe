@@ -18,18 +18,17 @@ struct LoadedPlugin {
 };
 
 class StageFactory {
-public:
+ public:
   explicit StageFactory(std::string plugin_dir = "/opt/flow-pipe/plugins");
 
   LoadedPlugin load(const std::string& plugin_name);
   void unload(LoadedPlugin& plugin);
 
   // Create a stage instance and pass opaque config to the plugin
-  std::unique_ptr<IStage> create_stage(
-      const LoadedPlugin& plugin,
-      const google::protobuf::Struct* config);
+  std::unique_ptr<IStage> create_stage(const LoadedPlugin& plugin,
+                                       const google::protobuf::Struct* config);
 
-private:
+ private:
   std::string resolve_path(const std::string& plugin_name);
 
   std::string plugin_dir_;

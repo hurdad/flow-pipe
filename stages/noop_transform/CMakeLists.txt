@@ -16,21 +16,21 @@ set(PROTO_FILES
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
-add_library(stage_noop_proto STATIC
+add_library(stage_noop_transform_proto STATIC
         ${PROTO_SRCS}
         ${PROTO_HDRS}
 )
 
-target_link_libraries(stage_noop_proto
+target_link_libraries(stage_noop_transform_proto
         PUBLIC protobuf::libprotobuf
 )
 
-target_include_directories(stage_noop_proto
+target_include_directories(stage_noop_transform_proto
         PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_compile_features(stage_noop_proto
+target_compile_features(stage_noop_transform_proto
         PUBLIC cxx_std_20
 )
 
@@ -55,7 +55,7 @@ target_include_directories(stage_noop_transform
 target_link_libraries(stage_noop_transform
         PRIVATE
         flowpipe_runtime
-        stage_noop_proto
+        stage_noop_transform_proto
 )
 
 target_compile_features(stage_noop_transform

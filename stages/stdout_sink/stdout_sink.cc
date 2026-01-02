@@ -4,6 +4,9 @@
 // Logging (plugin-safe)
 #include "flowpipe/observability/logging.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 using namespace flowpipe;
 
 class StdoutSink final : public ISinkStage {
@@ -21,14 +24,28 @@ public:
   }
 
   // Called once per payload by the runtime
-  void consume(StageContext& ctx, const Payload& /*payload*/) override {
+  void consume(StageContext& ctx, const Payload& payload) override {
     if (ctx.stop.stop_requested()) {
       FP_LOG_DEBUG("stdout_sink stop requested, skipping payload");
       return;
     }
 
-    // Plugin-safe per-payload intent log (no formatting)
-    FP_LOG_DEBUG("stdout_sink consumed payload");
+    if (payload.empty()) {
+      FP_LOG_DEBUG("stdout_sink received empty payload");
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // Write payload bytes to stdout
+    // ----------------------------------------------------------
+    std::fwrite(payload.data, 1, payload.size, stdout);
+    std::fwrite("\n", 1, 1, stdout);
+    std::fflush(stdout);
+
+    // ----------------------------------------------------------
+    // Free payload (runtime ownership contract)
+    // ----------------------------------------------------------
+    std::free(const_cast<uint8_t*>(payload.data));
   }
 };
 

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package flowpipe.stages.noop.source.v1;
+
+// ============================================================
+// NoopSource configuration
+// ============================================================
+//
+// Controls emission rate and payload content for the noop source
+//
+message NoopSourceConfig {
+
+  // Fixed delay between emitted payloads (milliseconds).
+  // Example: 500 => emit twice per second.
+  uint32 delay_ms = 1;
+
+  // Base string to emit as payload.
+  // Runtime or stage may append counters or metadata.
+  string message = 2;
+
+  // Optional maximum number of messages to emit.
+  // 0 = unlimited (default).
+  uint64 max_messages = 3;
+}
