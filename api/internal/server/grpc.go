@@ -87,8 +87,8 @@ func unaryTracingInterceptor(tracer trace.Tracer, counter metric.Int64Counter, l
 		attributes := []attribute.KeyValue{attribute.String("rpc.method", info.FullMethod)}
 		duration := float64(time.Since(start).Milliseconds())
 
-		counter.Add(ctx, 1, attributes...)
-		latency.Record(ctx, duration, attributes...)
+		counter.Add(ctx, 1, metric.WithAttributes(attributes...))
+		latency.Record(ctx, duration, metric.WithAttributes(attributes...))
 		span.SetAttributes(attributes...)
 		if err != nil {
 			span.RecordError(err)
