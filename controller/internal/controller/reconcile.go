@@ -2,8 +2,13 @@ package controller
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -23,9 +28,11 @@ func (c *Controller) worker(ctx context.Context) {
 			}
 
 			if err := c.reconcile(ctx, name); err != nil {
-				log.Printf("reconcile failed for %s: %v", name, err)
+				c.logger.Error(ctx, "reconcile failed", slog.String("flow", name), slog.Any("error", err))
+				c.reconcileFailure.Add(ctx, 1, metric.WithAttributes(attribute.String("flow.name", name)))
 				c.queue.Retry(name)
 			} else {
+				c.reconcileSuccess.Add(ctx, 1, metric.WithAttributes(attribute.String("flow.name", name)))
 				c.queue.Forget(name)
 			}
 		}
@@ -33,16 +40,23 @@ func (c *Controller) worker(ctx context.Context) {
 }
 
 func (c *Controller) reconcile(ctx context.Context, name string) error {
-	log.Printf("[reconcile] flow=%s", name)
+	ctx, span := c.tracer.Start(ctx,
+		"controller.reconcile",
+		trace.WithAttributes(attribute.String("flow.name", name)),
+	)
+	defer span.End()
 
 	spec, version, err := c.store.GetActiveFlow(ctx, name)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
 	if spec == nil {
 		// Flow deleted or not yet fully written
-		log.Printf("[reconcile] flow=%s not found or incomplete", name)
+		c.logger.Info(ctx, "flow not found or incomplete", slog.String("flow", name))
+		span.SetAttributes(attribute.String("result", "missing"))
 		return nil
 	}
 
@@ -55,9 +69,16 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 	}
 
 	if err := c.store.UpdateStatus(ctx, name, status); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
-	log.Printf("[reconcile] flow=%s status updated (version=%d)", name, version)
+	span.SetAttributes(
+		attribute.Int64("flow.version", int64(version)),
+		attribute.String("status.state", status.State.String()),
+	)
+	span.SetStatus(codes.Ok, "status updated")
+	c.logger.Info(ctx, "flow status updated", slog.String("flow", name), slog.Int64("version", int64(version)))
 	return nil
 }

@@ -2,9 +2,15 @@ package controller
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/noop"
+	"go.opentelemetry.io/otel/trace"
+
+	"github.com/hurdad/flow-pipe/controller/internal/observability"
 	"github.com/hurdad/flow-pipe/controller/internal/store"
 )
 
@@ -14,6 +20,13 @@ type Controller struct {
 	store  store.Store
 	queue  WorkQueue
 	prefix string
+
+	logger observability.Logger
+	tracer trace.Tracer
+
+	reconcileSuccess metric.Int64Counter
+	reconcileFailure metric.Int64Counter
+	watchEvents      metric.Int64Counter
 }
 
 // New creates a new controller instance.
@@ -21,11 +34,31 @@ type Controller struct {
 // store: desired-state store (etcd-backed, abstracted)
 // queue: work queue for reconciliation keys
 // prefix: etcd path prefix to monitor
-func New(store store.Store, queue WorkQueue, prefix string) *Controller {
+func New(store store.Store, queue WorkQueue, prefix string, logger observability.Logger) *Controller {
+	meter := otelMeter()
+
+	reconcileSuccess, _ := meter.Int64Counter(
+		"flow_controller_reconcile_success_total",
+		metric.WithDescription("number of successful reconcile executions"),
+	)
+	reconcileFailure, _ := meter.Int64Counter(
+		"flow_controller_reconcile_failure_total",
+		metric.WithDescription("number of failed reconcile executions"),
+	)
+	watchEvents, _ := meter.Int64Counter(
+		"flow_controller_watch_events_total",
+		metric.WithDescription("number of watch events received"),
+	)
+
 	return &Controller{
-		store:  store,
-		queue:  queue,
-		prefix: prefix,
+		store:            store,
+		queue:            queue,
+		prefix:           prefix,
+		logger:           logger,
+		tracer:           observability.Tracer("github.com/hurdad/flow-pipe/controller"),
+		reconcileSuccess: reconcileSuccess,
+		reconcileFailure: reconcileFailure,
+		watchEvents:      watchEvents,
 	}
 }
 
@@ -33,7 +66,7 @@ func New(store store.Store, queue WorkQueue, prefix string) *Controller {
 func (c *Controller) Run(ctx context.Context) error {
 	const workers = 1 // keep minimal for now
 
-	log.Println("[controller] starting")
+	c.logger.Info(ctx, "controller starting")
 
 	// ------------------------------------------------------------
 	// Seed existing flows
@@ -46,9 +79,9 @@ func (c *Controller) Run(ctx context.Context) error {
 	// Start watch loop (ONLY source of new work)
 	// ------------------------------------------------------------
 	go func() {
-		log.Println("[watch] started")
+		c.logger.Info(ctx, "watch started")
 		c.runWatch(ctx)
-		log.Println("[watch] stopped")
+		c.logger.Info(ctx, "watch stopped")
 	}()
 
 	// ------------------------------------------------------------
@@ -60,9 +93,9 @@ func (c *Controller) Run(ctx context.Context) error {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			log.Printf("[worker %d] started", id)
+			c.logger.Info(ctx, "worker started", slog.Int("id", id))
 			c.worker(ctx)
-			log.Printf("[worker %d] stopped", id)
+			c.logger.Info(ctx, "worker stopped", slog.Int("id", id))
 		}(i)
 	}
 
@@ -70,7 +103,7 @@ func (c *Controller) Run(ctx context.Context) error {
 	// Block until shutdown
 	// ------------------------------------------------------------
 	<-ctx.Done()
-	log.Println("[controller] shutdown requested")
+	c.logger.Info(ctx, "controller shutdown requested")
 
 	// Stop accepting new work
 	c.queue.Shutdown()
@@ -78,6 +111,15 @@ func (c *Controller) Run(ctx context.Context) error {
 	// Wait for workers to drain
 	wg.Wait()
 
-	log.Println("[controller] stopped")
+	c.logger.Info(ctx, "controller stopped")
 	return nil
+}
+
+func otelMeter() metric.Meter {
+	provider := otel.GetMeterProvider()
+	if provider == nil {
+		return noop.NewMeterProvider().Meter("github.com/hurdad/flow-pipe/controller")
+	}
+
+	return provider.Meter("github.com/hurdad/flow-pipe/controller")
 }
