@@ -120,6 +120,7 @@ target_link_libraries(flow_runtime
         flowpipe_runtime
         flowpipe_proto
         yaml-cpp
+        spdlog::spdlog
 )
 
 # ============================================================

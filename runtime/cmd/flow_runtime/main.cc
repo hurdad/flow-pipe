@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 
+#include "flowpipe/observability/logging_runtime.h"
 #include "flowpipe/observability/observability.h"
 #include "flowpipe/runtime.h"
 #include "flowpipe/util/yaml_to_json.h"
@@ -18,11 +19,9 @@
 // ------------------------------------------------------------
 // Load flow spec from YAML
 // ------------------------------------------------------------
-// YAML is first converted to JSON text and then parsed into
-// the protobuf FlowSpec. This allows us to reuse protobuf's
-// JSON mapping logic and keep YAML handling minimal.
-//
 static bool LoadFromYaml(const std::string& path, flowpipe::v1::FlowSpec& flow) {
+  FP_LOG_DEBUG_FMT("loading flow spec from YAML: %s", path.c_str());
+
   YAML::Node root;
   try {
     root = YAML::LoadFile(path);
@@ -31,11 +30,15 @@ static bool LoadFromYaml(const std::string& path, flowpipe::v1::FlowSpec& flow) 
     return false;
   }
 
+  FP_LOG_DEBUG("yaml parsed successfully, converting to JSON");
+
   std::stringstream json;
   flowpipe::util::yaml_to_json(root, json);
 
   google::protobuf::util::JsonParseOptions opts;
   opts.ignore_unknown_fields = false;
+
+  FP_LOG_DEBUG("parsing JSON into FlowSpec protobuf");
 
   auto status = google::protobuf::util::JsonStringToMessage(json.str(), &flow, opts);
 
@@ -44,16 +47,16 @@ static bool LoadFromYaml(const std::string& path, flowpipe::v1::FlowSpec& flow) 
     return false;
   }
 
+  FP_LOG_DEBUG("flow spec loaded successfully from YAML");
   return true;
 }
 
 // ------------------------------------------------------------
 // Load flow spec from JSON
 // ------------------------------------------------------------
-// JSON is parsed directly into the protobuf FlowSpec using
-// protobuf's JSON utilities.
-//
 static bool LoadFromJson(const std::string& path, flowpipe::v1::FlowSpec& flow) {
+  FP_LOG_DEBUG_FMT("loading flow spec from JSON: %s", path.c_str());
+
   std::ifstream in(path);
   if (!in) {
     std::cerr << "failed to open json file: " << path << "\n";
@@ -66,6 +69,8 @@ static bool LoadFromJson(const std::string& path, flowpipe::v1::FlowSpec& flow) 
   google::protobuf::util::JsonParseOptions opts;
   opts.ignore_unknown_fields = false;
 
+  FP_LOG_DEBUG("parsing JSON into FlowSpec protobuf");
+
   auto status = google::protobuf::util::JsonStringToMessage(buffer.str(), &flow, opts);
 
   if (!status.ok()) {
@@ -73,6 +78,7 @@ static bool LoadFromJson(const std::string& path, flowpipe::v1::FlowSpec& flow) 
     return false;
   }
 
+  FP_LOG_DEBUG("flow spec loaded successfully from JSON");
   return true;
 }
 
@@ -81,35 +87,24 @@ static bool LoadFromJson(const std::string& path, flowpipe::v1::FlowSpec& flow) 
 // ============================================================
 
 int main(int argc, char** argv) {
+  FP_LOG_DEBUG("flow_runtime starting");
+
   // ----------------------------------------------------------
   // Argument parsing
   // ----------------------------------------------------------
-  //
-  // The runtime expects exactly one argument:
-  //   - a flow specification file (YAML or JSON)
-  //
-  // Keeping the CLI minimal makes the runtime easy to script,
-  // embed, and run inside containers.
-  //
   if (argc != 2) {
     std::cerr << "usage: flow_runtime <flow.yaml|flow.json>\n";
     return 1;
   }
 
   const std::string path = argv[1];
+  FP_LOG_DEBUG_FMT("flow spec path: %s", path.c_str());
+
   flowpipe::v1::FlowSpec flow;
 
   // ----------------------------------------------------------
   // Load flow specification
   // ----------------------------------------------------------
-  //
-  // Supported formats:
-  //   - YAML (.yaml / .yml): human-friendly, ConfigMaps, files
-  //   - JSON (.json): API-driven, tooling, gateways
-  //
-  // Regardless of input format, the runtime operates purely
-  // on the protobuf FlowSpec.
-  //
   bool ok = false;
   if (path.ends_with(".yaml") || path.ends_with(".yml")) {
     ok = LoadFromYaml(path, flow);
@@ -125,51 +120,33 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  FP_LOG_DEBUG("flow spec loaded successfully");
+
   // ----------------------------------------------------------
   // Observability initialization
   // ----------------------------------------------------------
-  //
-  // Observability is initialized ONCE per process, before any
-  // runtime work begins.
-  //
-  // - Global defaults are loaded from the environment
-  // - Flow-level intent (if present) is merged with policy
-  // - Logs, traces, and metrics are wired up as needed
-  //
-  // Passing nullptr means:
-  //   "no flow-specific overrides, use runtime defaults"
-  //
+  FP_LOG_DEBUG("initializing observability");
+
   flowpipe::observability::InitFromProto(flow.has_observability() ? &flow.observability()
                                                                   : nullptr);
 
   // ----------------------------------------------------------
   // Runtime execution
   // ----------------------------------------------------------
-  //
-  // The runtime consumes a fully-validated FlowSpec and
-  // executes it according to its declared execution mode
-  // (job, service, etc.).
-  //
-  // All observability signals emitted during execution are
-  // captured via the providers initialized above.
-  //
+  FP_LOG_DEBUG("starting runtime execution");
+
   flowpipe::Runtime runtime;
   int result = runtime.run(flow);
+
+  FP_LOG_DEBUG_FMT("runtime execution complete (exit_code=%d)", result);
 
   // ----------------------------------------------------------
   // Observability shutdown
   // ----------------------------------------------------------
-  //
-  // Graceful shutdown is critical for:
-  //   - flushing batch logs and spans
-  //   - stopping periodic metric readers
-  //   - preventing background threads from leaking
-  //
-  // Shutdown order is handled internally:
-  //   Logs → Traces → Metrics
-  //
+  FP_LOG_DEBUG("shutting down observability");
+
   flowpipe::observability::ShutdownObservability();
 
-  // Propagate the runtime's exit code to the OS.
+  FP_LOG_DEBUG("flow_runtime exiting");
   return result;
 }
