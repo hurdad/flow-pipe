@@ -1,0 +1,28 @@
+{{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
+{{- $loki := include "flow-pipe.loki.endpoint" . -}}
+{{- $tempo := include "flow-pipe.tempo.endpoint" . -}}
+{{- $alloy := include "flow-pipe.alloy.endpoint" . -}}
+{{- $grafana := include "flow-pipe.grafana.endpoint" . -}}
+{{- if or $prom $loki $tempo $alloy $grafana }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flow-pipe-observability
+  namespace: {{ include "flowpipe.namespace" . }}
+data:
+  {{- if $prom }}
+  prometheusEndpoint: "{{ $prom }}"
+  {{- end }}
+  {{- if $loki }}
+  lokiEndpoint: "{{ $loki }}"
+  {{- end }}
+  {{- if $tempo }}
+  tempoEndpoint: "{{ $tempo }}"
+  {{- end }}
+  {{- if $alloy }}
+  alloyEndpoint: "{{ $alloy }}"
+  {{- end }}
+  {{- if $grafana }}
+  grafanaEndpoint: "{{ $grafana }}"
+  {{- end }}
+{{- end }}

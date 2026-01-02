@@ -7,3 +7,6 @@ API:
   kubectl port-forward svc/flow-pipe-api {{ .Values.api.port }}
 
 Runtime pods are created dynamically by the controller.
+
+Observability endpoints (when enabled or provided externally) are exported in the
+`flow-pipe-observability` ConfigMap within the release namespace.
