@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/hurdad/flow-pipe/api/internal/config"
+	"github.com/hurdad/flow-pipe/api/internal/observability"
 	"github.com/hurdad/flow-pipe/api/internal/server"
 	"github.com/hurdad/flow-pipe/api/internal/store"
 )
@@ -19,11 +20,25 @@ func main() {
 	cfg := config.Load()
 
 	// --------------------------------------------------
+	// Initialize OpenTelemetry (traces/metrics/logs)
+	// --------------------------------------------------
+	shutdownTelemetry, logger, err := observability.Setup(context.Background(), cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := shutdownTelemetry(context.Background()); err != nil {
+			logger.Error(context.Background(), "failed to shutdown telemetry", slog.Any("error", err))
+		}
+	}()
+
+	// --------------------------------------------------
 	// Create etcd store
 	// --------------------------------------------------
 	st, err := store.NewEtcd(cfg.EtcdEndpoints)
 	if err != nil {
-		log.Fatalf("failed to connect to etcd: %v", err)
+		logger.Error(context.Background(), "failed to connect to etcd", slog.Any("error", err))
+		os.Exit(1)
 	}
 	defer st.Close()
 
@@ -32,7 +47,8 @@ func main() {
 	// --------------------------------------------------
 	srv, err := server.New(cfg, st)
 	if err != nil {
-		log.Fatalf("failed to create server: %v", err)
+		logger.Error(context.Background(), "failed to create server", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	// --------------------------------------------------
@@ -45,14 +61,15 @@ func main() {
 	)
 	defer cancel()
 
-	log.Println("flow-api starting")
+	logger.Info(ctx, "flow-api starting")
 
 	// --------------------------------------------------
 	// Run server (blocks until shutdown)
 	// --------------------------------------------------
 	if err := srv.Run(ctx); err != nil {
-		log.Fatalf("flow-api exited with error: %v", err)
+		logger.Error(ctx, "flow-api exited with error", slog.Any("error", err))
+		os.Exit(1)
 	}
 
-	log.Println("flow-api stopped")
+	logger.Info(ctx, "flow-api stopped")
 }

@@ -10,4 +10,10 @@ type Config struct {
 
 	// Comma-separated etcd endpoints parsed into a slice
 	EtcdEndpoints []string
+
+	// OTLP endpoint used for OpenTelemetry exporters (e.g. "localhost:4317")
+	OTLPEndpoint string
+
+	// Logical service name used in observability signals
+	ServiceName string
 }
