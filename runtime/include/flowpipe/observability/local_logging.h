@@ -12,6 +12,6 @@ namespace flowpipe::observability {
 // Params:
 //   debug: enables debug-level logging
 // ------------------------------------------------------------
-void InitLocalLogger(bool debug);
+void InitLocalLogging(bool debug);
 
 }  // namespace flowpipe::observability
