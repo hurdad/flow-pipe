@@ -13,7 +13,7 @@ stages:
     threads: 1
     output_queue: q1
     config:
-      delay_ms: 100
+      delay_ms: 200
       message: "DEADBEEF"
       max_messages: 20
 

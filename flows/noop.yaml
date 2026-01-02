@@ -9,9 +9,9 @@ stages:
     threads: 1
     output_queue: q1
     config:
-      delay_ms: 500
+      delay_ms: 200
       message: "DEADBEEF"
-      #max_messages: 0
+      max_messages: 0
 
   - name: sink
     type: stdout_sink
