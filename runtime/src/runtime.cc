@@ -74,8 +74,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     const bool has_output = s.has_output_queue();
 
     IStage* stage = registry_.create_stage(
-        s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so",
-        &s.config());
+        s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so", &s.config());
 
     // ----------------------------
     // Source stage

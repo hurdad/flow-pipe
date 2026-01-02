@@ -1,0 +1,24 @@
+queues:
+  - name: q1
+    type: QUEUE_TYPE_MPSC
+    capacity: 128
+
+stages:
+  - name: src
+    type: noop_source
+    threads: 1
+    output_queue: q1
+    config:
+      delay_ms: 200
+      message: "DEADBEEF"
+      max_messages: 0
+
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: q1
+
+observability:
+  metrics_enabled: true
+  tracing_enabled: true
+  logs_enabled: true
