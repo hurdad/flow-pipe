@@ -5,17 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"time"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	otellog "go.opentelemetry.io/otel/log"
-	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
-	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -25,48 +19,30 @@ import (
 	"github.com/hurdad/flow-pipe/api/internal/config"
 )
 
-// Logger wraps a slog.Logger and an OpenTelemetry logger to emit records to both stdout and OTLP.
+// Logger wraps a slog.Logger for structured logging to stdout.
 type Logger struct {
-	slog       *slog.Logger
-	otel       otellog.Logger
-	attributes []attribute.KeyValue
+	slog *slog.Logger
 }
 
 // Info writes an informational log entry.
 func (l Logger) Info(ctx context.Context, msg string, attrs ...slog.Attr) {
-	l.write(ctx, otellog.SeverityInfo, slog.LevelInfo, msg, attrs...)
+	l.write(ctx, slog.LevelInfo, msg, attrs...)
 }
 
 // Error writes an error log entry.
 func (l Logger) Error(ctx context.Context, msg string, attrs ...slog.Attr) {
-	l.write(ctx, otellog.SeverityError, slog.LevelError, msg, attrs...)
+	l.write(ctx, slog.LevelError, msg, attrs...)
 }
 
-func (l Logger) write(ctx context.Context, severity otellog.Severity, level slog.Level, msg string, attrs ...slog.Attr) {
+func (l Logger) write(ctx context.Context, level slog.Level, msg string, attrs ...slog.Attr) {
 	if l.slog != nil {
 		l.slog.LogAttrs(ctx, level, msg, attrs...)
 	}
-
-	if l.otel == nil {
-		return
-	}
-
-	rec := otellog.Record{}
-	rec.SetTimestamp(time.Now())
-	rec.SetSeverity(severity)
-	rec.SetBody(otellog.StringValue(msg))
-	rec.AddAttributes(l.attributes...)
-
-	for _, a := range attrs {
-		rec.AddAttributes(attribute.String(a.Key, fmt.Sprint(a.Value.Any())))
-	}
-
-	l.otel.Emit(ctx, rec)
 }
 
-// Setup configures OpenTelemetry exporters for traces, metrics, and logs using the provided configuration.
-// It returns a shutdown function that should be called on process exit, and a logger that mirrors messages
-// to stdout and the OTLP log exporter.
+// Setup configures OpenTelemetry exporters for traces and metrics using the provided configuration.
+// It returns a shutdown function that should be called on process exit, and a logger that emits messages
+// to stdout.
 func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error, Logger, error) {
 	res, err := resource.New(
 		ctx,
@@ -98,14 +74,6 @@ func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error,
 		return nil, Logger{}, fmt.Errorf("metric exporter: %w", err)
 	}
 
-	logExporter, err := otlploggrpc.New(ctx,
-		otlploggrpc.WithEndpoint(cfg.OTLPEndpoint),
-		otlploggrpc.WithInsecure(),
-	)
-	if err != nil {
-		return nil, Logger{}, fmt.Errorf("log exporter: %w", err)
-	}
-
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExporter),
 		sdktrace.WithResource(res),
@@ -119,19 +87,9 @@ func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error,
 	)
 	otel.SetMeterProvider(meterProvider)
 
-	loggerProvider := sdklog.NewLoggerProvider(
-		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
-		sdklog.WithResource(res),
-	)
-	global.SetLoggerProvider(loggerProvider)
-
 	slogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	otelLogger := loggerProvider.Logger(cfg.ServiceName)
-
 	lg := Logger{
-		slog:       slogger,
-		otel:       otelLogger,
-		attributes: []attribute.KeyValue{semconv.ServiceName(cfg.ServiceName)},
+		slog: slogger,
 	}
 
 	shutdown := func(ctx context.Context) error {
@@ -142,10 +100,6 @@ func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error,
 
 		if err := meterProvider.Shutdown(ctx); err != nil && shutdownErr == nil {
 			shutdownErr = fmt.Errorf("metric shutdown: %w", err)
-		}
-
-		if err := loggerProvider.Shutdown(ctx); err != nil && shutdownErr == nil {
-			shutdownErr = fmt.Errorf("log shutdown: %w", err)
 		}
 
 		return shutdownErr
