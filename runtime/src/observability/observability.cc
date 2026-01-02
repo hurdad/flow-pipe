@@ -1,6 +1,7 @@
 #include "flowpipe/observability/observability.h"
 
 #include "flowpipe/observability/defaults.h"
+#include "flowpipe/observability/local_logging.h"
 #include "flowpipe/observability/observability_state.h"
 
 // Plugin-safe logging
@@ -18,6 +19,12 @@ namespace flowpipe::observability {
 // InitFromProto
 // ------------------------------------------------------------
 void InitFromProto(const flowpipe::v1::ObservabilityConfig* cfg) {
+  const bool debug_intent = cfg && cfg->debug();
+
+  // Always initialize local logging so runtime logs reach stdout even when
+  // OTEL is disabled or not configured.
+  InitLocalLogging(debug_intent);
+
 #if !FLOWPIPE_ENABLE_OTEL
   FP_LOG_DEBUG("observability: OTEL disabled at compile time");
   (void)cfg;
@@ -37,8 +44,8 @@ void InitFromProto(const flowpipe::v1::ObservabilityConfig* cfg) {
   bool tracing = global.tracing_enabled;
   bool logs = global.logs_enabled;
 
-  // Debug intent defaults to false
-  bool debug = false;
+  // Debug intent defaults to flow-level preference
+  bool debug = debug_intent;
 
   // ----------------------------------------------------------
   // Apply flow-level intent (if provided)
@@ -49,6 +56,7 @@ void InitFromProto(const flowpipe::v1::ObservabilityConfig* cfg) {
     metrics &= cfg->metrics_enabled();
     tracing &= cfg->tracing_enabled();
     logs &= cfg->logs_enabled();
+    // Honor flow-level debug intent for OTEL exporters
     debug = cfg->debug();
   } else {
     FP_LOG_DEBUG("observability: no flow-level config provided");

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 
+#include "flowpipe/observability/local_logging.h"
 #include "flowpipe/observability/logging_runtime.h"
 #include "flowpipe/observability/observability.h"
 #include "flowpipe/runtime.h"
@@ -87,6 +88,9 @@ static bool LoadFromJson(const std::string& path, flowpipe::v1::FlowSpec& flow) 
 // ============================================================
 
 int main(int argc, char** argv) {
+  // Ensure spdlog is configured before emitting any FP_LOG_* macros.
+  flowpipe::observability::InitLocalLogging(/*debug=*/false);
+
   FP_LOG_DEBUG("flow_runtime starting");
 
   // ----------------------------------------------------------
@@ -121,6 +125,11 @@ int main(int argc, char** argv) {
   }
 
   FP_LOG_DEBUG("flow spec loaded successfully");
+
+  // Honor any debug intent in the flow config before initializing OTEL signals.
+  if (flow.has_observability()) {
+    flowpipe::observability::InitLocalLogging(flow.observability().debug());
+  }
 
   // ----------------------------------------------------------
   // Observability initialization
