@@ -26,6 +26,7 @@ add_executable(stage_registry_test
 target_link_libraries(stage_registry_test
     PRIVATE
         flowpipe_runtime
+        flowpipe_proto
         ${GTEST_MAIN_TARGET}
 )
 gtest_discover_tests(stage_registry_test)
@@ -36,6 +37,7 @@ add_executable(stage_runner_test
 target_link_libraries(stage_runner_test
     PRIVATE
         flowpipe_runtime
+        flowpipe_proto
         ${GTEST_MAIN_TARGET}
 )
 gtest_discover_tests(stage_runner_test)

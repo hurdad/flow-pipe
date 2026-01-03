@@ -1,3 +1,5 @@
+#include "flowpipe/stage_runner.h"
+
 #include <gtest/gtest.h>
 
 #include <atomic>
@@ -11,7 +13,6 @@
 #include "flowpipe/queue_runtime.h"
 #include "flowpipe/stage.h"
 #include "flowpipe/stage_metrics.h"
-#include "flowpipe/stage_runner.h"
 #include "flowpipe/v1/flow.pb.h"
 
 namespace flowpipe {
@@ -35,7 +36,9 @@ class RecordingStageMetrics : public StageMetrics {
     last_latency = latency_ns;
   }
 
-  void RecordStageError(const char*) noexcept override { ++error_calls; }
+  void RecordStageError(const char*) noexcept override {
+    ++error_calls;
+  }
 
   int queue_dequeues = 0;
   int queue_enqueues = 0;
@@ -50,7 +53,9 @@ class FakeSourceStage : public ISourceStage {
  public:
   explicit FakeSourceStage(std::vector<Payload> payloads) : payloads_(std::move(payloads)) {}
 
-  std::string name() const override { return "fake_source"; }
+  std::string name() const override {
+    return "fake_source";
+  }
 
   bool produce(StageContext&, Payload& out) override {
     if (index_ >= payloads_.size()) {
@@ -67,7 +72,9 @@ class FakeSourceStage : public ISourceStage {
 
 class FakeTransformStage : public ITransformStage {
  public:
-  std::string name() const override { return "fake_transform"; }
+  std::string name() const override {
+    return "fake_transform";
+  }
 
   void process(StageContext&, const Payload& input, Payload& output) override {
     seen_inputs.push_back(input.meta);
@@ -88,7 +95,7 @@ QueueRuntime MakeQueueRuntime(const std::string& name, uint32_t capacity,
 }
 
 TEST(RunSourceStageTest, EnqueuesPayloadsAndRecordsMetrics) {
-  auto output = MakeQueueRuntime("out", 4, flowpipe::v1::QUEUE_TYPE_BUFFERED);
+  auto output = MakeQueueRuntime("out", 4, flowpipe::v1::QUEUE_TYPE_MPMC);
   std::atomic<bool> stop_flag{false};
   StageContext ctx{StopToken(&stop_flag)};
 
@@ -113,7 +120,7 @@ TEST(RunSourceStageTest, EnqueuesPayloadsAndRecordsMetrics) {
 }
 
 TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
-  auto output = MakeQueueRuntime("out", 2, flowpipe::v1::QUEUE_TYPE_BUFFERED);
+  auto output = MakeQueueRuntime("out", 2, flowpipe::v1::QUEUE_TYPE_MPMC);
   std::atomic<bool> stop_flag{true};
   StageContext ctx{StopToken(&stop_flag)};
 
@@ -128,8 +135,8 @@ TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
 }
 
 TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
-  auto input = MakeQueueRuntime("in", 2, flowpipe::v1::QUEUE_TYPE_BUFFERED);
-  auto output = MakeQueueRuntime("out", 2, flowpipe::v1::QUEUE_TYPE_BUFFERED);
+  auto input = MakeQueueRuntime("in", 2, flowpipe::v1::QUEUE_TYPE_MPMC);
+  auto output = MakeQueueRuntime("out", 2, flowpipe::v1::QUEUE_TYPE_MPMC);
 
   Payload input_payload;
   input_payload.meta.trace_id[0] = 0xAA;
@@ -164,8 +171,8 @@ TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
 }
 
 TEST(RunTransformStageTest, StopsWhenCancelledBeforeWork) {
-  auto input = MakeQueueRuntime("in", 1, flowpipe::v1::QUEUE_TYPE_BUFFERED);
-  auto output = MakeQueueRuntime("out", 1, flowpipe::v1::QUEUE_TYPE_BUFFERED);
+  auto input = MakeQueueRuntime("in", 1, flowpipe::v1::QUEUE_TYPE_MPMC);
+  auto output = MakeQueueRuntime("out", 1, flowpipe::v1::QUEUE_TYPE_MPMC);
 
   std::atomic<bool> stop_flag{true};
   StageContext ctx{StopToken(&stop_flag)};

@@ -1,8 +1,8 @@
 #include "flowpipe/stage_registry.h"
 
 #include <memory>
-#include <utility>
 #include <stdexcept>
+#include <utility>
 
 #include "flowpipe/configurable_stage.h"
 
@@ -12,8 +12,7 @@ StageRegistry::~StageRegistry() {
   shutdown();
 }
 
-StageRegistry::StageRegistry(std::unique_ptr<StageLoader> loader)
-    : loader_(std::move(loader)) {
+StageRegistry::StageRegistry(std::unique_ptr<StageLoader> loader) : loader_(std::move(loader)) {
   if (!loader_) {
     loader_ = std::make_unique<StageFactory>();
   }

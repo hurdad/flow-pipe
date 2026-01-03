@@ -12,7 +12,7 @@
 
 namespace flowpipe {
 
- class StageRegistry {
+class StageRegistry {
  public:
   explicit StageRegistry(std::unique_ptr<StageLoader> loader = nullptr);
   ~StageRegistry();

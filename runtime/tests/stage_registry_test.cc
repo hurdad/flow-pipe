@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
+#include "flowpipe/stage_registry.h"
 
 #include <google/protobuf/struct.pb.h>
+#include <gtest/gtest.h>
 
 #include <memory>
 #include <stdexcept>
@@ -11,7 +12,6 @@
 #include "flowpipe/configurable_stage.h"
 #include "flowpipe/stage.h"
 #include "flowpipe/stage_factory.h"
-#include "flowpipe/stage_registry.h"
 
 namespace flowpipe {
 namespace {
@@ -37,6 +37,7 @@ class RecordingLoader : public StageLoader {
       .destroy = nullptr,
       .path = "fake.so",
   };
+
   bool throw_on_load = false;
   int unload_calls = 0;
   std::string last_unloaded_path;
@@ -46,8 +47,9 @@ class RecordingLoader : public StageLoader {
 class DummyStage : public IStage {
  public:
   explicit DummyStage(std::string name = "dummy") : name_(std::move(name)) {}
-
-  std::string name() const override { return name_; }
+  std::string name() const override {
+    return name_;
+  }
 
  private:
   std::string name_;
@@ -62,7 +64,9 @@ class RejectingConfigStage : public ConfigurableStage, public IStage {
     return accept_;
   }
 
-  std::string name() const override { return "rejecting"; }
+  std::string name() const override {
+    return "rejecting";
+  }
 
   int configure_calls = 0;
 
@@ -70,20 +74,34 @@ class RejectingConfigStage : public ConfigurableStage, public IStage {
   bool accept_;
 };
 
-IStage* CreateNullStage() { return nullptr; }
-
-IStage* CreateDummyStage() { return new DummyStage(); }
-
-IStage* CreateRejectingStage() { return new RejectingConfigStage(false); }
+IStage* CreateNullStage() {
+  return nullptr;
+}
+IStage* CreateDummyStage() {
+  return new DummyStage();
+}
+IStage* CreateRejectingStage() {
+  return new RejectingConfigStage(false);
+}
 
 struct DestroyCounter {
   void operator()(IStage* stage) {
     ++count;
     delete stage;
   }
-
   int count = 0;
 };
+
+// ------------------------------------------------------------------
+// Function-pointer-friendly destroy thunk (no captures).
+// ------------------------------------------------------------------
+static DestroyCounter* g_destroy_counter = nullptr;
+
+static void DestroyStageThunk(IStage* stage) {
+  // In these tests we always set this before using the plugin.
+  EXPECT_NE(g_destroy_counter, nullptr);
+  (*g_destroy_counter)(stage);
+}
 
 TEST(StageRegistryTest, PropagatesPluginLoadFailures) {
   auto loader = std::make_unique<RecordingLoader>();
@@ -98,11 +116,11 @@ TEST(StageRegistryTest, PropagatesPluginLoadFailures) {
 
 TEST(StageRegistryTest, ThrowsWhenPluginCreateReturnsNull) {
   DestroyCounter destroy_counter;
+  g_destroy_counter = &destroy_counter;
+
   auto loader = std::make_unique<RecordingLoader>();
   loader->loaded_plugin.create = &CreateNullStage;
-  loader->loaded_plugin.destroy = +[&destroy_counter](IStage* stage) {
-    destroy_counter(stage);
-  };
+  loader->loaded_plugin.destroy = &DestroyStageThunk;
   auto* loader_ptr = loader.get();
 
   {
@@ -113,16 +131,17 @@ TEST(StageRegistryTest, ThrowsWhenPluginCreateReturnsNull) {
   EXPECT_EQ(loader_ptr->unload_calls, 1);
   EXPECT_EQ(loader_ptr->last_unloaded_path, "fake.so");
   EXPECT_EQ(destroy_counter.count, 0);
+
+  g_destroy_counter = nullptr;
 }
 
 TEST(StageRegistryTest, RejectsConfigurationAndDestroysInstance) {
   DestroyCounter destroy_counter;
+  g_destroy_counter = &destroy_counter;
 
   auto loader = std::make_unique<RecordingLoader>();
   loader->loaded_plugin.create = &CreateRejectingStage;
-  loader->loaded_plugin.destroy = +[&destroy_counter](IStage* stage) {
-    destroy_counter(stage);
-  };
+  loader->loaded_plugin.destroy = &DestroyStageThunk;
   auto* loader_ptr = loader.get();
 
   {
@@ -134,15 +153,17 @@ TEST(StageRegistryTest, RejectsConfigurationAndDestroysInstance) {
 
   EXPECT_EQ(destroy_counter.count, 1);
   EXPECT_EQ(loader_ptr->unload_calls, 1);
+
+  g_destroy_counter = nullptr;
 }
 
 TEST(StageRegistryTest, DestroyAndShutdownReleaseInstances) {
   DestroyCounter destroy_counter;
+  g_destroy_counter = &destroy_counter;
+
   auto loader = std::make_unique<RecordingLoader>();
   loader->loaded_plugin.create = &CreateDummyStage;
-  loader->loaded_plugin.destroy = +[&destroy_counter](IStage* stage) {
-    destroy_counter(stage);
-  };
+  loader->loaded_plugin.destroy = &DestroyStageThunk;
   auto* loader_ptr = loader.get();
 
   {
@@ -158,6 +179,8 @@ TEST(StageRegistryTest, DestroyAndShutdownReleaseInstances) {
 
   EXPECT_EQ(destroy_counter.count, 2);
   EXPECT_EQ(loader_ptr->unload_calls, 1);
+
+  g_destroy_counter = nullptr;
 }
 
 }  // namespace
