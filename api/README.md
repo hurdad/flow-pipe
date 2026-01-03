@@ -138,6 +138,12 @@ cd api
 go build ./cmd/flow-api
 ```
 
+Or use the top-level helper that ensures protobufs are generated first:
+
+```bash
+make api
+```
+
 ---
 
 ## Build Docker Image (Manual)

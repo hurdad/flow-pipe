@@ -15,7 +15,7 @@ There is **no code** in this directory.
 
 ### Local binary
 
-From the project root (after building the runtime):
+From the project root (after running `make configure` and `make runtime`):
 
 ```bash
 ./cmake-build/runtime/cmd/flow_runtime/flow_runtime flows/noop.yaml
