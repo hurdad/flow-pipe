@@ -11,11 +11,11 @@ dependencies:
     repository: https://prometheus-community.github.io/helm-charts
     condition: observability.prometheus.enabled
   - name: loki
-    version: 6.11.6
+    version: ">=6.0.0"
     repository: https://grafana.github.io/helm-charts
     condition: observability.loki.enabled
   - name: tempo
-    version: 1.16.1
+    version: ">=1.0.0"
     repository: https://grafana.github.io/helm-charts
     condition: observability.tempo.enabled
   - name: grafana
@@ -23,6 +23,6 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
     condition: observability.grafana.enabled
   - name: alloy
-    version: 0.7.2
+    version: ">=0.0.0"
     repository: https://grafana.github.io/helm-charts
     condition: observability.alloy.enabled
