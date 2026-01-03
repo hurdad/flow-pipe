@@ -1,10 +1,8 @@
 queues:
   - name: q1
-    type: QUEUE_TYPE_MPMC
     capacity: 256
 
   - name: q2
-    type: QUEUE_TYPE_MPSC
     capacity: 256
 
 stages:

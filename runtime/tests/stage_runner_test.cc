@@ -13,7 +13,6 @@
 #include "flowpipe/queue_runtime.h"
 #include "flowpipe/stage.h"
 #include "flowpipe/stage_metrics.h"
-#include "flowpipe/v1/flow.pb.h"
 
 namespace flowpipe {
 namespace {
@@ -84,18 +83,16 @@ class FakeTransformStage : public ITransformStage {
   std::vector<PayloadMeta> seen_inputs;
 };
 
-QueueRuntime MakeQueueRuntime(const std::string& name, uint32_t capacity,
-                              flowpipe::v1::QueueType type) {
+QueueRuntime MakeQueueRuntime(const std::string& name, uint32_t capacity) {
   return QueueRuntime{
       .name = name,
-      .type = type,
       .capacity = capacity,
       .queue = std::make_shared<BoundedQueue<Payload>>(capacity),
   };
 }
 
 TEST(RunSourceStageTest, EnqueuesPayloadsAndRecordsMetrics) {
-  auto output = MakeQueueRuntime("out", 4, flowpipe::v1::QUEUE_TYPE_MPMC);
+  auto output = MakeQueueRuntime("out", 4);
   std::atomic<bool> stop_flag{false};
   StageContext ctx{StopToken(&stop_flag)};
 
@@ -120,7 +117,7 @@ TEST(RunSourceStageTest, EnqueuesPayloadsAndRecordsMetrics) {
 }
 
 TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
-  auto output = MakeQueueRuntime("out", 2, flowpipe::v1::QUEUE_TYPE_MPMC);
+  auto output = MakeQueueRuntime("out", 2);
   std::atomic<bool> stop_flag{true};
   StageContext ctx{StopToken(&stop_flag)};
 
@@ -135,8 +132,8 @@ TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
 }
 
 TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
-  auto input = MakeQueueRuntime("in", 2, flowpipe::v1::QUEUE_TYPE_MPMC);
-  auto output = MakeQueueRuntime("out", 2, flowpipe::v1::QUEUE_TYPE_MPMC);
+  auto input = MakeQueueRuntime("in", 2);
+  auto output = MakeQueueRuntime("out", 2);
 
   Payload input_payload;
   input_payload.meta.trace_id[0] = 0xAA;
@@ -171,8 +168,8 @@ TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
 }
 
 TEST(RunTransformStageTest, StopsWhenCancelledBeforeWork) {
-  auto input = MakeQueueRuntime("in", 1, flowpipe::v1::QUEUE_TYPE_MPMC);
-  auto output = MakeQueueRuntime("out", 1, flowpipe::v1::QUEUE_TYPE_MPMC);
+  auto input = MakeQueueRuntime("in", 1);
+  auto output = MakeQueueRuntime("out", 1);
 
   std::atomic<bool> stop_flag{true};
   StageContext ctx{StopToken(&stop_flag)};

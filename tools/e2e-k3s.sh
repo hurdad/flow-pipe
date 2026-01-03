@@ -159,7 +159,6 @@ execution:
   mode: EXECUTION_MODE_STREAMING
 queues:
   - name: q1
-    type: QUEUE_TYPE_MPSC
     capacity: 128
 stages:
   - name: src
@@ -187,10 +186,8 @@ execution:
   mode: EXECUTION_MODE_JOB
 queues:
   - name: q1
-    type: QUEUE_TYPE_MPMC
     capacity: 256
   - name: q2
-    type: QUEUE_TYPE_MPSC
     capacity: 256
 stages:
   - name: source
