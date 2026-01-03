@@ -34,6 +34,10 @@ COPY controller ./controller
 # --------------------------------------------------
 RUN cd controller && \
     CGO_ENABLED=0 \
+    go test ./...
+
+RUN cd controller && \
+    CGO_ENABLED=0 \
     go build -o /flow-controller ./cmd/flow-controller
 
 # --------------------------------------------------
