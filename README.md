@@ -162,9 +162,11 @@ flow-pipe/
 ├── docs/          # Design documentation
 ├── flows/         # Example flow definitions (YAML)
 ├── gen/           # Generated protobuf code
+├── pkg/           # Shared Go helpers used by CLI/API/controller
 ├── proto/         # Protobuf schemas
 ├── runtime/       # C++ data plane and runtime executable
 ├── stages/        # Built-in example stage plugins
+├── third_party/   # External dependencies vendored for C++ builds
 ├── tools/         # Build helpers and scripts
 ```
 

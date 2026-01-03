@@ -41,6 +41,12 @@ From the **repository root**:
 go build ./cli/cmd/flowctl
 ```
 
+Or rely on the consolidated build that regenerates protobufs first:
+
+```bash
+make cli
+```
+
 Or from inside the CLI module:
 
 ```bash

@@ -23,4 +23,4 @@ make runtime     # build the runtime binaries
 make install     # optional: install runtime artifacts
 ```
 
-All build artifacts are produced under the top-level `build/` directory.
+All build artifacts are produced under the top-level `cmake-build/` directory created by `make configure`.
