@@ -135,22 +135,8 @@ message QueueSpec {
   // Queue name.
   string name = 1;
 
-  // Queue concurrency model.
-  QueueType type = 2;
-
   // Maximum buffered elements.
-  uint32 capacity = 3;
-}
-
-enum QueueType {
-  // Queue type not specified.
-  QUEUE_TYPE_UNSPECIFIED = 0;
-
-  // Multi-producer, single-consumer queue.
-  QUEUE_TYPE_MPSC = 1;
-
-  // Multi-producer, multi-consumer queue.
-  QUEUE_TYPE_MPMC = 2;
+  uint32 capacity = 2;
 }
 
 // ============================================================

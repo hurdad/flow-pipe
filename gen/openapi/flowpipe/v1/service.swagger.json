@@ -717,26 +717,12 @@
           "type": "string",
           "description": "Queue name."
         },
-        "type": {
-          "$ref": "#/definitions/v1QueueType",
-          "description": "Queue concurrency model."
-        },
         "capacity": {
           "type": "integer",
           "format": "int64",
           "description": "Maximum buffered elements."
         }
       }
-    },
-    "v1QueueType": {
-      "type": "string",
-      "enum": [
-        "QUEUE_TYPE_UNSPECIFIED",
-        "QUEUE_TYPE_MPSC",
-        "QUEUE_TYPE_MPMC"
-      ],
-      "default": "QUEUE_TYPE_UNSPECIFIED",
-      "description": " - QUEUE_TYPE_UNSPECIFIED: Queue type not specified.\n - QUEUE_TYPE_MPSC: Multi-producer, single-consumer queue.\n - QUEUE_TYPE_MPMC: Multi-producer, multi-consumer queue."
     },
     "v1Resources": {
       "type": "object",
