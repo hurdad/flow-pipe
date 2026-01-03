@@ -14,3 +14,5 @@ helm upgrade --install flow-pipe deploy/helm/flow-pipe
 ```
 
 Override values as needed for image tags, etcd endpoints, and Kubernetes namespaces.
+
+When enabling the bundled Grafana chart via `observability.grafana.enabled`, datasources for Prometheus, Loki, and Tempo are automatically provisioned using the configured endpoints for those services.
