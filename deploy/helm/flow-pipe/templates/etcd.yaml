@@ -66,7 +66,7 @@ metadata:
   name: flow-pipe-etcd
   namespace: {{ include "flowpipe.namespace" . }}
 spec:
-  type: LoadBalancer
+  type: {{ .Values.etcd.service.type | default "ClusterIP" }}
   selector:
     app: flow-pipe-etcd
   ports:
