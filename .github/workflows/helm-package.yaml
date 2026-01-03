@@ -1,4 +1,4 @@
-name: Package Helm Chart
+name: Package Helm chart
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
     types: [ published ]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   package:
@@ -22,26 +22,26 @@ jobs:
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
 
-      - name: Build chart dependencies
-        run: helm dependency update deploy/helm/flow-pipe
+      - name: Add Helm repositories
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
 
       - name: Lint chart
         run: helm lint deploy/helm/flow-pipe
 
-      - name: Package chart
-        run: helm package deploy/helm/flow-pipe --destination packaged
+      - name: Build dependencies
+        run: helm dependency update deploy/helm/flow-pipe
 
-      - name: Upload packaged chart artifact
+      - name: Package chart
+        run: helm package deploy/helm/flow-pipe --destination packaged-charts
+
+      - name: Upload packaged chart
         uses: actions/upload-artifact@v4
         with:
           name: flow-pipe-chart
-          path: packaged/*.tgz
-
-      - name: Attach packaged chart to release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: packaged/*.tgz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: packaged-charts/*.tgz
+          if-no-files-found: error
