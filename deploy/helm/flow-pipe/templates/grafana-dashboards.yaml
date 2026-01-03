@@ -1,0 +1,12 @@
+{{- if and .Values.observability.grafana.enabled .Values.observability.grafana.provisionDashboards }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flow-pipe-grafana-dashboards
+  namespace: {{ include "flowpipe.namespace" . }}
+  labels:
+    grafana_dashboard: "1"
+data:
+  flow-pipe-runtime.json: |
+{{ .Files.Get "deploy/helm/flow-pipe/dashboards/flow-pipe-runtime.json" | indent 4 }}
+{{- end }}
