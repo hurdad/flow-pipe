@@ -82,7 +82,6 @@ All flows follow the same structure:
 ```yaml
 queues:
   - name: q1
-    type: QUEUE_TYPE_MPSC
     capacity: 128
 
 stages:

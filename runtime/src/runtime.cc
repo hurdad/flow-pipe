@@ -30,25 +30,17 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   std::unordered_map<std::string, std::shared_ptr<QueueRuntime>> queues;
 
   for (const auto& q : spec.queues()) {
-    FP_LOG_DEBUG_FMT("configuring queue '{}' type={} capacity={}", q.name(), q.type(),
-                     q.capacity());
+    FP_LOG_DEBUG_FMT("configuring queue '{}' capacity={}", q.name(), q.capacity());
 
     if (q.capacity() == 0) {
       FP_LOG_ERROR_FMT("invalid queue '{}': capacity must be > 0", q.name());
       throw std::runtime_error("queue capacity must be > 0: " + q.name());
     }
 
-    if (q.type() == flowpipe::v1::QUEUE_TYPE_UNSPECIFIED) {
-      FP_LOG_ERROR_FMT("invalid queue '{}': type unspecified", q.name());
-      throw std::runtime_error("queue type unspecified: " + q.name());
-    }
-
     auto qr = std::make_shared<QueueRuntime>();
     qr->name = q.name();
-    qr->type = q.type();
     qr->capacity = q.capacity();
 
-    // For now both MPSC / MPMC map to the same implementation
     qr->queue = std::make_shared<BoundedQueue<Payload>>(q.capacity());
 
     queues.emplace(qr->name, std::move(qr));
