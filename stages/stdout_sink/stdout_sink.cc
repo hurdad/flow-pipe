@@ -5,7 +5,6 @@
 #include "flowpipe/observability/logging.h"
 
 #include <cstdio>
-#include <cstdlib>
 
 using namespace flowpipe;
 
@@ -38,14 +37,9 @@ public:
     // ----------------------------------------------------------
     // Write payload bytes to stdout
     // ----------------------------------------------------------
-    std::fwrite(payload.data, 1, payload.size, stdout);
+    std::fwrite(payload.data(), 1, payload.size, stdout);
     std::fwrite("\n", 1, 1, stdout);
     std::fflush(stdout);
-
-    // ----------------------------------------------------------
-    // Free payload (runtime ownership contract)
-    // ----------------------------------------------------------
-    std::free(const_cast<uint8_t*>(payload.data));
   }
 };
 
