@@ -20,6 +20,6 @@ spec:
           imagePullPolicy: {{ .Values.controller.imagePullPolicy | default "IfNotPresent" }}
           env:
             - name: ETCD_ENDPOINTS
-              value: {{ .Values.etcd.endpoints | quote }}
+              value: {{ join "," .Values.etcd.endpoints | quote }}
           resources:
             {{- toYaml .Values.controller.resources | nindent 12 }}
