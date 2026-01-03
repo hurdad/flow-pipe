@@ -101,6 +101,7 @@ observability:
     adminUser: admin
     adminPassword: admin
     provisionDatasources: true
+    provisionDashboards: true
     ingress: &grafanaIngress
       enabled: false
       # Provide annotations to be applied to the Grafana ingress.
@@ -143,6 +144,9 @@ grafana:
   sidecar:
     datasources:
       enabled: true
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
 
 alloy:
   controller: *alloyController
