@@ -73,6 +73,62 @@ func statusKey(name string) string {
 	return path.Join(flowPrefix(name), "status")
 }
 
+// buildWatchEvent converts an etcd event into a controller WatchEvent. The provided
+// fetchActive function allows the caller to supply a strategy for retrieving the
+// current active flow specification.
+func buildWatchEvent(
+	ctx context.Context,
+	ev *clientv3.Event,
+	fetchActive func(context.Context, string) (*flowpipev1.FlowSpec, uint64, error),
+) (WatchEvent, bool) {
+	var zero WatchEvent
+
+	if ev == nil || ev.Kv == nil {
+		return zero, false
+	}
+
+	key := string(ev.Kv.Key)
+
+	// Only react to changes in desired state
+	if !strings.HasSuffix(key, "/active") {
+		return zero, false
+	}
+
+	name := path.Base(path.Dir(key))
+
+	var eventType WatchEventType
+	switch ev.Type {
+	case clientv3.EventTypePut:
+		if ev.IsCreate() {
+			eventType = WatchAdded
+		} else {
+			eventType = WatchUpdated
+		}
+	case clientv3.EventTypeDelete:
+		eventType = WatchDeleted
+	default:
+		return zero, false
+	}
+
+	var spec *flowpipev1.FlowSpec
+
+	if eventType != WatchDeleted {
+		var err error
+		spec, _, err = fetchActive(ctx, name)
+		if err != nil {
+			return zero, false
+		}
+	}
+
+	return WatchEvent{
+		Type: eventType,
+		Flow: &flowpipev1.Flow{
+			Name: name,
+			Spec: spec,
+		},
+	}, true
+}
+
 // ============================================================
 // List flows (initial controller sync)
 // ============================================================
@@ -161,27 +217,12 @@ func (s *EtcdStore) WatchFlows(ctx context.Context) WatchStream {
 
 		for wr := range watchCh {
 			for _, ev := range wr.Events {
-				key := string(ev.Kv.Key)
-
-				// Only react to changes in desired state
-				if !strings.HasSuffix(key, "/active") {
+				event, ok := buildWatchEvent(ctx, ev, s.GetActiveFlow)
+				if !ok {
 					continue
 				}
 
-				name := path.Base(path.Dir(key))
-
-				spec, _, err := s.GetActiveFlow(ctx, name)
-				if err != nil {
-					continue
-				}
-
-				out <- WatchEvent{
-					Type: WatchUpdated,
-					Flow: &flowpipev1.Flow{
-						Name: name,
-						Spec: spec,
-					},
-				}
+				out <- event
 			}
 		}
 	}()
@@ -206,7 +247,7 @@ func (s *EtcdStore) GetActiveFlow(
 		return nil, 0, err
 	}
 	if len(activeResp.Kvs) == 0 {
-		return nil, 0, fmt.Errorf("flow %q not found", name)
+		return nil, 0, nil
 	}
 
 	version, err := strconv.ParseUint(string(activeResp.Kvs[0].Value), 10, 64)
@@ -219,7 +260,7 @@ func (s *EtcdStore) GetActiveFlow(
 		return nil, 0, err
 	}
 	if len(specResp.Kvs) == 0 {
-		return nil, 0, fmt.Errorf("spec missing for %q v%d", name, version)
+		return nil, version, nil
 	}
 
 	var spec flowpipev1.FlowSpec
