@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <new>
 
 namespace flowpipe {
 
@@ -34,17 +36,32 @@ struct PayloadMeta {
 
 /**
  * Runtime payload passed through queues.
- * Non-owning view of bytes plus per-record metadata.
+ * Owns its buffer via shared ownership to avoid manual lifetime management.
  */
 struct Payload {
-  const uint8_t* data = nullptr;
+  std::shared_ptr<uint8_t[]> buffer;
   size_t size = 0;
 
   PayloadMeta meta;
 
+  constexpr Payload() = default;
+
+  constexpr Payload(std::shared_ptr<uint8_t[]> buf, size_t buffer_size,
+                    PayloadMeta m = {})
+      : buffer(std::move(buf)), size(buffer_size), meta(m) {}
+
+  constexpr const uint8_t* data() const noexcept { return buffer.get(); }
+
+  constexpr uint8_t* data() noexcept { return buffer.get(); }
+
   constexpr bool empty() const noexcept {
-    return data == nullptr || size == 0;
+    return buffer == nullptr || size == 0;
   }
 };
+
+// Allocates a shared buffer for payload data using nothrow new.
+inline std::shared_ptr<uint8_t[]> AllocatePayloadBuffer(size_t size) {
+  return std::shared_ptr<uint8_t[]>(new (std::nothrow) uint8_t[size]);
+}
 
 }  // namespace flowpipe

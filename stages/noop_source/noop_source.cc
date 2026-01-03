@@ -9,8 +9,8 @@
 #include <google/protobuf/util/json_util.h>
 
 #include <chrono>
-#include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -105,18 +105,17 @@ public:
     const size_t size = msg.size();
 
     // ----------------------------------------------------------
-    // Allocate payload (runtime-owned)
+    // Allocate payload buffer with shared ownership
     // ----------------------------------------------------------
-    void* raw = std::malloc(size);
-    if (!raw) {
+    auto buffer = AllocatePayloadBuffer(size);
+    if (!buffer) {
       FP_LOG_ERROR("noop_source failed to allocate payload");
       return false;
     }
 
-    std::memcpy(raw, msg.data(), size);
+    std::memcpy(buffer.get(), msg.data(), size);
 
-    out.data = static_cast<const uint8_t*>(raw);
-    out.size = size;
+    out = Payload(std::move(buffer), size);
 
     // ----------------------------------------------------------
     // Debug: payload produced
