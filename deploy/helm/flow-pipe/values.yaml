@@ -97,6 +97,7 @@ observability:
     endpoint: ""
     adminUser: admin
     adminPassword: admin
+    provisionDatasources: true
     ingress: &grafanaIngress
       enabled: false
       # Provide annotations to be applied to the Grafana ingress.
@@ -136,6 +137,9 @@ grafana:
   adminUser: admin
   adminPassword: admin
   ingress: *grafanaIngress
+  sidecar:
+    datasources:
+      enabled: true
 
 alloy:
   controller: *alloyController
