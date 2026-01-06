@@ -73,18 +73,24 @@ api:
 observability:
   prometheus:
     enabled: false
+    # Optionally point to an existing Prometheus instance instead of installing one.
+    endpoint: ""
     server:
       persistentVolume:
         enabled: false
 
   loki:
     enabled: false
+    # Optionally point to an existing Loki instance instead of installing one.
+    endpoint: ""
     deploymentMode: SingleBinary
     loki:
       auth_enabled: false
 
   tempo:
     enabled: false
+    # Optionally point to an existing Tempo instance instead of installing one.
+    endpoint: ""
     tempo:
       auth_enabled: false
     traces:
@@ -104,6 +110,8 @@ observability:
 
   grafana:
     enabled: false
+    # Optionally point to an existing Grafana instance instead of installing one.
+    endpoint: ""
     adminUser: admin
     adminPassword: admin
     provisionDatasources: true
@@ -125,6 +133,8 @@ observability:
 
   alloy:
     enabled: false
+    # Optionally point to an existing Alloy collector instead of installing one.
+    endpoint: ""
     # Choose the Alloy workload type: "deployment" for a centralized collector or "daemonset" for per-node collection.
     controller: &alloyController
       type: deployment
