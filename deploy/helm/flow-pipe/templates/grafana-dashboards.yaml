@@ -8,5 +8,5 @@ metadata:
     grafana_dashboard: "1"
 data:
   flow-pipe-runtime.json: |
-{{ .Files.Get "deploy/helm/flow-pipe/dashboards/flow-pipe-runtime.json" | indent 4 }}
+{{ .Files.Get "dashboards/flow-pipe-runtime.json" | nindent 4 }}
 {{- end }}
