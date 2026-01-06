@@ -1,10 +1,4 @@
-{{/* =========================================================
-   Basic helpers
-   ========================================================= */}}
-
-{{- define "flowpipe.name" -}}
-flow-pipe
-{{- end }}
+{{- define "flowpipe.name" -}}flow-pipe{{- end }}
 
 {{- define "flowpipe.namespace" -}}
 {{- if .Values.namespace.create -}}
@@ -14,54 +8,75 @@ flow-pipe
 {{- end }}
 {{- end }}
 
-{{/* =========================================================
-   Endpoint helpers (nil-safe)
-   ========================================================= */}}
-
 {{- define "flow-pipe.prometheus.endpoint" -}}
-{{- $obs := default dict .Values.observability -}}
-{{- $p := default dict $obs.prometheus -}}
-{{- if $p.endpoint -}}
-{{ $p.endpoint }}
-{{- else if $p.enabled -}}
+{{- if .Values.observability.prometheus.endpoint -}}
+{{ .Values.observability.prometheus.endpoint }}
+{{- else if .Values.observability.prometheus.enabled -}}
 http://{{ .Release.Name }}-prometheus-server
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.loki.endpoint" -}}
-{{- $obs := default dict .Values.observability -}}
-{{- $l := default dict $obs.loki -}}
-{{- if $l.endpoint -}}
-{{ $l.endpoint }}
-{{- else if $l.enabled -}}
+{{- if .Values.observability.loki.endpoint -}}
+{{ .Values.observability.loki.endpoint }}
+{{- else if .Values.observability.loki.enabled -}}
 http://{{ .Release.Name }}-loki:3100
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.tempo.endpoint" -}}
-{{- $obs := default dict .Values.observability -}}
-{{- $t := default dict $obs.tempo -}}
-{{- if $t.endpoint -}}
-{{ $t.endpoint }}
-{{- else if $t.enabled -}}
+{{- if .Values.observability.tempo.endpoint -}}
+{{ .Values.observability.tempo.endpoint }}
+{{- else if .Values.observability.tempo.enabled -}}
 http://{{ .Release.Name }}-tempo:3200
 {{- end -}}
 {{- end }}
 
-{{/* =========================================================
-   Alloy River (NO early return, NO invalid funcs)
-   ========================================================= */}}
+{{- define "flow-pipe.grafana.endpoint" -}}
+{{- if .Values.observability.grafana.endpoint -}}
+{{- .Values.observability.grafana.endpoint -}}
+{{- else if and .Values.observability.grafana.enabled
+              .Values.grafana
+              .Values.grafana.ingress
+              .Values.grafana.ingress.enabled -}}
+{{- $scheme := ternary "https" "http" (gt (len .Values.grafana.ingress.tls) 0) -}}
+{{- if gt (len .Values.grafana.ingress.hosts) 0 -}}
+{{- printf "%s://%s" $scheme (index .Values.grafana.ingress.hosts 0) -}}
+{{- else -}}
+{{- printf "%s://%s-grafana" $scheme .Release.Name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+
+{{- define "flow-pipe.alloy.endpoint" -}}
+{{- if .Values.observability.alloy.endpoint -}}
+{{ .Values.observability.alloy.endpoint }}
+{{- else if .Values.observability.alloy.enabled -}}
+http://{{ .Release.Name }}-alloy:4317
+{{- end -}}
+{{- end }}
 
 {{- define "flow-pipe.alloy.river" -}}
-{{- $obs := default dict .Values.observability -}}
-{{- $alloy := default dict $obs.alloy -}}
-
-{{- if $alloy.enabled }}
-
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
 {{- $tempo := include "flow-pipe.tempo.endpoint" . -}}
-
+{{- $exporters := dict "prom" "" "loki" "" "tempo" "" -}}
+{{- if .Values.observability.alloy.exporters.prometheus.endpoint -}}
+{{- $_ := set $exporters "prom" .Values.observability.alloy.exporters.prometheus.endpoint -}}
+{{- else if $prom -}}
+{{- $_ := set $exporters "prom" (printf "%s/api/v1/write" $prom) -}}
+{{- end -}}
+{{- if .Values.observability.alloy.exporters.loki.endpoint -}}
+{{- $_ := set $exporters "loki" .Values.observability.alloy.exporters.loki.endpoint -}}
+{{- else if $loki -}}
+{{- $_ := set $exporters "loki" (printf "%s/loki/api/v1/push" $loki) -}}
+{{- end -}}
+{{- if .Values.observability.alloy.exporters.tempo.endpoint -}}
+{{- $_ := set $exporters "tempo" .Values.observability.alloy.exporters.tempo.endpoint -}}
+{{- else if $tempo -}}
+{{- $_ := set $exporters "tempo" $tempo -}}
+{{- end -}}
 logging {
   level = "info"
 }
@@ -69,50 +84,47 @@ logging {
 otel {
   receiver "otlp" {
     protocols = {
-      grpc = { endpoint = "0.0.0.0:4317" }
-      http = { endpoint = "0.0.0.0:4318" }
+      grpc = {
+        endpoint = "{{ .Values.observability.alloy.receivers.otlp.grpcEndpoint }}"
+      },
+      http = {
+        endpoint = "{{ .Values.observability.alloy.receivers.otlp.httpEndpoint }}"
+      }
     }
   }
-
-{{- if $prom }}
+{{- if (get $exporters "prom") }}
   exporter "prometheusremotewrite" {
-    endpoint = "{{ $prom }}/api/v1/write"
+    endpoint = "{{ get $exporters "prom" }}"
   }
 {{- end }}
-
-{{- if $loki }}
+{{- if (get $exporters "loki") }}
   exporter "loki" {
-    endpoint = "{{ $loki }}/loki/api/v1/push"
+    endpoint = "{{ get $exporters "loki" }}"
   }
 {{- end }}
-
-{{- if $tempo }}
+{{- if (get $exporters "tempo") }}
   exporter "otlp" {
     client {
-      endpoint = "{{ $tempo }}"
+      endpoint = "{{ get $exporters "tempo" }}"
     }
   }
 {{- end }}
-
   processor "batch" {}
-
-{{- if $prom }}
+{{- if (get $exporters "prom") }}
   pipeline "metrics" {
     receivers  = [otel.receiver.otlp]
     processors = [otel.processor.batch]
     exporters  = [otel.exporter.prometheusremotewrite]
   }
 {{- end }}
-
-{{- if $loki }}
+{{- if (get $exporters "loki") }}
   pipeline "logs" {
     receivers  = [otel.receiver.otlp]
     processors = [otel.processor.batch]
     exporters  = [otel.exporter.loki]
   }
 {{- end }}
-
-{{- if $tempo }}
+{{- if (get $exporters "tempo") }}
   pipeline "traces" {
     receivers  = [otel.receiver.otlp]
     processors = [otel.processor.batch]
@@ -120,6 +132,4 @@ otel {
   }
 {{- end }}
 }
-
-{{- end }}
 {{- end }}
