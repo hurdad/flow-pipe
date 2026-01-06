@@ -155,3 +155,18 @@ alloy:
       create: true
       content: |-
         {{- include "flow-pipe.alloy.river" . }}
+
+# Default Loki configuration for e2e installs.
+loki:
+  storage:
+    # Use filesystem storage to avoid external object storage dependencies in tests.
+    type: filesystem
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+  persistence:
+    enabled: false
