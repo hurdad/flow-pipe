@@ -1,5 +1,5 @@
 {{/* =========================================================
-   Basic chart helpers
+   Basic helpers
    ========================================================= */}}
 
 {{- define "flowpipe.name" -}}
@@ -15,85 +15,111 @@ flow-pipe
 {{- end }}
 
 {{/* =========================================================
-   Observability endpoint helpers
+   Endpoint helpers (nil-safe)
    ========================================================= */}}
 
 {{- define "flow-pipe.prometheus.endpoint" -}}
-{{- $observability := default dict .Values.observability -}}
-{{- $prometheus := default dict $observability.prometheus -}}
-{{- if $prometheus.endpoint -}}
-{{ $prometheus.endpoint }}
-{{- else if $prometheus.enabled -}}
+{{- $obs := default dict .Values.observability -}}
+{{- $p := default dict $obs.prometheus -}}
+{{- if $p.endpoint -}}
+{{ $p.endpoint }}
+{{- else if $p.enabled -}}
 http://{{ .Release.Name }}-prometheus-server
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.loki.endpoint" -}}
-{{- $observability := default dict .Values.observability -}}
-{{- $loki := default dict $observability.loki -}}
-{{- if $loki.endpoint -}}
-{{ $loki.endpoint }}
-{{- else if $loki.enabled -}}
+{{- $obs := default dict .Values.observability -}}
+{{- $l := default dict $obs.loki -}}
+{{- if $l.endpoint -}}
+{{ $l.endpoint }}
+{{- else if $l.enabled -}}
 http://{{ .Release.Name }}-loki:3100
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.tempo.endpoint" -}}
-{{- $observability := default dict .Values.observability -}}
-{{- $tempo := default dict $observability.tempo -}}
-{{- if $tempo.endpoint -}}
-{{ $tempo.endpoint }}
-{{- else if $tempo.enabled -}}
+{{- $obs := default dict .Values.observability -}}
+{{- $t := default dict $obs.tempo -}}
+{{- if $t.endpoint -}}
+{{ $t.endpoint }}
+{{- else if $t.enabled -}}
 http://{{ .Release.Name }}-tempo:3200
 {{- end -}}
 {{- end }}
 
-{{- define "flow-pipe.grafana.endpoint" -}}
-{{- $observability := default dict .Values.observability -}}
-{{- $grafana := default dict $observability.grafana -}}
-{{- $grafanaValues := default dict .Values.grafana -}}
-{{- $grafanaIngress := default dict $grafanaValues.ingress -}}
-{{- if $grafana.endpoint -}}
-{{- $grafana.endpoint -}}
-{{- else if and $grafana.enabled $grafanaIngress.enabled -}}
-{{- $scheme := ternary "https" "http" (gt (len $grafanaIngress.tls) 0) -}}
-{{- if gt (len $grafanaIngress.hosts) 0 -}}
-{{- printf "%s://%s" $scheme (index $grafanaIngress.hosts 0) -}}
-{{- else -}}
-{{- printf "%s://%s-grafana" $scheme .Release.Name -}}
-{{- end -}}
-{{- end -}}
-{{- end }}
-
-{{- define "flow-pipe.alloy.endpoint" -}}
-{{- $observability := default dict .Values.observability -}}
-{{- $alloy := default dict $observability.alloy -}}
-{{- if $alloy.endpoint -}}
-{{ $alloy.endpoint }}
-{{- else if $alloy.enabled -}}
-http://{{ .Release.Name }}-alloy:4317
-{{- end -}}
-{{- end }}
-
 {{/* =========================================================
-   Alloy River configuration
+   Alloy River (NO early return, NO invalid funcs)
    ========================================================= */}}
 
 {{- define "flow-pipe.alloy.river" -}}
-{{- $observability := default dict .Values.observability -}}
-{{- $alloy := default dict $observability.alloy -}}
-{{- if $alloy.enabled -}}
+{{- $obs := default dict .Values.observability -}}
+{{- $alloy := default dict $obs.alloy -}}
+
+{{- if $alloy.enabled }}
 
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
 {{- $tempo := include "flow-pipe.tempo.endpoint" . -}}
 
-{{- $exporters := dict "prom" "" "loki" "" "tempo" "" -}}
+logging {
+  level = "info"
+}
 
-{{- $alloyExporters := default dict $alloy.exporters -}}
-{{- $promExporter := default dict $alloyExporters.prometheus -}}
-{{- $lokiExporter := default dict $alloyExporters.loki -}}
-{{- $tempoExporter := default dict $alloyExporters.tempo -}}
+otel {
+  receiver "otlp" {
+    protocols = {
+      grpc = { endpoint = "0.0.0.0:4317" }
+      http = { endpoint = "0.0.0.0:4318" }
+    }
+  }
 
-{{- $alloyReceivers := default dict $alloy.receivers -}}
-{{- $otlp := default dict $alloyReceivers
+{{- if $prom }}
+  exporter "prometheusremotewrite" {
+    endpoint = "{{ $prom }}/api/v1/write"
+  }
+{{- end }}
+
+{{- if $loki }}
+  exporter "loki" {
+    endpoint = "{{ $loki }}/loki/api/v1/push"
+  }
+{{- end }}
+
+{{- if $tempo }}
+  exporter "otlp" {
+    client {
+      endpoint = "{{ $tempo }}"
+    }
+  }
+{{- end }}
+
+  processor "batch" {}
+
+{{- if $prom }}
+  pipeline "metrics" {
+    receivers  = [otel.receiver.otlp]
+    processors = [otel.processor.batch]
+    exporters  = [otel.exporter.prometheusremotewrite]
+  }
+{{- end }}
+
+{{- if $loki }}
+  pipeline "logs" {
+    receivers  = [otel.receiver.otlp]
+    processors = [otel.processor.batch]
+    exporters  = [otel.exporter.loki]
+  }
+{{- end }}
+
+{{- if $tempo }}
+  pipeline "traces" {
+    receivers  = [otel.receiver.otlp]
+    processors = [otel.processor.batch]
+    exporters  = [otel.exporter.otlp]
+  }
+{{- end }}
+}
+
+{{- end }}
+{{- end }}
