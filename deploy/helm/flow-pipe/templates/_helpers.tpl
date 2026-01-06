@@ -34,16 +34,20 @@ http://{{ .Release.Name }}-tempo:3200
 
 {{- define "flow-pipe.grafana.endpoint" -}}
 {{- if .Values.observability.grafana.endpoint -}}
-{{ .Values.observability.grafana.endpoint }}
-{{- else if .Values.observability.grafana.enabled -}}
-{{- if and .Values.grafana .Values.grafana.ingress .Values.grafana.ingress.enabled (gt (len .Values.grafana.ingress.hosts) 0) -}}
-{{- $scheme := ternary "https" "http" (and .Values.grafana.ingress.tls (gt (len .Values.grafana.ingress.tls) 0)) -}}
-{{ printf "%s://%s" $scheme (index .Values.grafana.ingress.hosts 0) }}
+{{- .Values.observability.grafana.endpoint -}}
+{{- else if and .Values.observability.grafana.enabled
+              .Values.grafana
+              .Values.grafana.ingress
+              .Values.grafana.ingress.enabled -}}
+{{- $scheme := ternary "https" "http" (gt (len .Values.grafana.ingress.tls) 0) -}}
+{{- if gt (len .Values.grafana.ingress.hosts) 0 -}}
+{{- printf "%s://%s" $scheme (index .Values.grafana.ingress.hosts 0) -}}
 {{- else -}}
-http://{{ .Release.Name }}-grafana
+{{- printf "%s://%s-grafana" $scheme .Release.Name -}}
 {{- end -}}
 {{- end -}}
-{{- end }}
+{{- end -}}
+
 
 {{- define "flow-pipe.alloy.endpoint" -}}
 {{- if .Values.observability.alloy.endpoint -}}
