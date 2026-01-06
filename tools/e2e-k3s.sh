@@ -127,6 +127,8 @@ for image in "${IMAGES[@]}"; do
 done
 
 info "Installing Helm chart"
+info "Fetching Helm chart dependencies"
+helm dependency build "${REPO_ROOT}/deploy/helm/flow-pipe"
 helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --namespace "${NAMESPACE}" \
   --create-namespace \
