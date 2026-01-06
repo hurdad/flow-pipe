@@ -1,4 +1,10 @@
-{{- define "flowpipe.name" -}}flow-pipe{{- end }}
+{{/* =========================================================
+   Basic chart helpers
+   ========================================================= */}}
+
+{{- define "flowpipe.name" -}}
+flow-pipe
+{{- end }}
 
 {{- define "flowpipe.namespace" -}}
 {{- if .Values.namespace.create -}}
@@ -8,9 +14,9 @@
 {{- end }}
 {{- end }}
 
-{{/* ---------------------------------------------------------
-   Observability Endpoints
-   --------------------------------------------------------- */}}
+{{/* =========================================================
+   Observability endpoint helpers
+   ========================================================= */}}
 
 {{- define "flow-pipe.prometheus.endpoint" -}}
 {{- $observability := default dict .Values.observability -}}
@@ -49,8 +55,7 @@ http://{{ .Release.Name }}-tempo:3200
 {{- $grafanaIngress := default dict $grafanaValues.ingress -}}
 {{- if $grafana.endpoint -}}
 {{- $grafana.endpoint -}}
-{{- else if and $grafana.enabled
-              $grafanaIngress.enabled -}}
+{{- else if and $grafana.enabled $grafanaIngress.enabled -}}
 {{- $scheme := ternary "https" "http" (gt (len $grafanaIngress.tls) 0) -}}
 {{- if gt (len $grafanaIngress.hosts) 0 -}}
 {{- printf "%s://%s" $scheme (index $grafanaIngress.hosts 0) -}}
@@ -70,16 +75,14 @@ http://{{ .Release.Name }}-alloy:4317
 {{- end -}}
 {{- end }}
 
-{{/* ---------------------------------------------------------
-   Alloy River Config
-   --------------------------------------------------------- */}}
+{{/* =========================================================
+   Alloy River configuration
+   ========================================================= */}}
 
 {{- define "flow-pipe.alloy.river" -}}
 {{- $observability := default dict .Values.observability -}}
 {{- $alloy := default dict $observability.alloy -}}
-{{- if not $alloy.enabled -}}
-{{- return -}}
-{{- end -}}
+{{- if $alloy.enabled -}}
 
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
@@ -93,86 +96,4 @@ http://{{ .Release.Name }}-alloy:4317
 {{- $tempoExporter := default dict $alloyExporters.tempo -}}
 
 {{- $alloyReceivers := default dict $alloy.receivers -}}
-{{- $otlp := default dict $alloyReceivers.otlp -}}
-
-{{- if $promExporter.endpoint -}}
-{{- $_ := set $exporters "prom" $promExporter.endpoint -}}
-{{- else if $prom -}}
-{{- $_ := set $exporters "prom" (printf "%s/api/v1/write" $prom) -}}
-{{- end -}}
-
-{{- if $lokiExporter.endpoint -}}
-{{- $_ := set $exporters "loki" $lokiExporter.endpoint -}}
-{{- else if $loki -}}
-{{- $_ := set $exporters "loki" (printf "%s/loki/api/v1/push" $loki) -}}
-{{- end -}}
-
-{{- if $tempoExporter.endpoint -}}
-{{- $_ := set $exporters "tempo" $tempoExporter.endpoint -}}
-{{- else if $tempo -}}
-{{- $_ := set $exporters "tempo" $tempo -}}
-{{- end -}}
-
-logging {
-  level = "info"
-}
-
-otel {
-  receiver "otlp" {
-    protocols = {
-      grpc = {
-        endpoint = "{{ default "0.0.0.0:4317" $otlp.grpcEndpoint }}"
-      },
-      http = {
-        endpoint = "{{ default "0.0.0.0:4318" $otlp.httpEndpoint }}"
-      }
-    }
-  }
-
-{{- if (get $exporters "prom") }}
-  exporter "prometheusremotewrite" {
-    endpoint = "{{ get $exporters "prom" }}"
-  }
-{{- end }}
-
-{{- if (get $exporters "loki") }}
-  exporter "loki" {
-    endpoint = "{{ get $exporters "loki" }}"
-  }
-{{- end }}
-
-{{- if (get $exporters "tempo") }}
-  exporter "otlp" {
-    client {
-      endpoint = "{{ get $exporters "tempo" }}"
-    }
-  }
-{{- end }}
-
-  processor "batch" {}
-
-{{- if (get $exporters "prom") }}
-  pipeline "metrics" {
-    receivers  = [otel.receiver.otlp]
-    processors = [otel.processor.batch]
-    exporters  = [otel.exporter.prometheusremotewrite]
-  }
-{{- end }}
-
-{{- if (get $exporters "loki") }}
-  pipeline "logs" {
-    receivers  = [otel.receiver.otlp]
-    processors = [otel.processor.batch]
-    exporters  = [otel.exporter.loki]
-  }
-{{- end }}
-
-{{- if (get $exporters "tempo") }}
-  pipeline "traces" {
-    receivers  = [otel.receiver.otlp]
-    processors = [otel.processor.batch]
-    exporters  = [otel.exporter.otlp]
-  }
-{{- end }}
-}
-{{- end }}
+{{- $otlp := default dict $alloyReceivers
