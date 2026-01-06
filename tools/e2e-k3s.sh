@@ -4,13 +4,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE_NAMESPACE="${IMAGE_NAMESPACE:-ghcr.io/${USER:-local}}"
 IMAGE_TAG="${IMAGE_TAG:-local-$(date +%s)}"
-CLUSTER_NAME="${CLUSTER_NAME:-flow-pipe-e2e}"
 NAMESPACE="${NAMESPACE:-flow-pipe}"
 K3S_IMAGE="${K3S_IMAGE:-rancher/k3s:v1.28.8-k3s1}"
 KEEP_CLUSTER="${KEEP_CLUSTER:-}"
-USE_COMPOSE_K3S="${USE_COMPOSE_K3S:-}"
 K3S_KUBECONFIG_DIR="${K3S_KUBECONFIG_DIR:-${REPO_ROOT}/.k3s-kubeconfig}"
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-flow-pipe}"
+K3S_CONTAINER="${COMPOSE_PROJECT_NAME}-k3s-1"
 
 info() { echo "[INFO] $*"; }
 append_summary() {
@@ -25,15 +24,8 @@ cleanup_cluster() {
     return
   fi
 
-  if [[ -n "${USE_COMPOSE_K3S}" ]]; then
-    info "Stopping docker compose k3s cluster"
-    COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" docker compose -f "${REPO_ROOT}/tools/k3s-compose.yaml" down --volumes || true
-  else
-    info "Deleting test cluster ${CLUSTER_NAME}"
-    if command -v k3d >/dev/null 2>&1; then
-      k3d cluster delete "${CLUSTER_NAME}" || true
-    fi
-  fi
+  info "Stopping docker compose k3s cluster"
+  COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" docker compose -f "${REPO_ROOT}/tools/k3s-compose.yaml" down --volumes || true
 }
 
 cleanup_port_forward() {
@@ -45,50 +37,41 @@ cleanup_port_forward() {
 
 trap "cleanup_port_forward; cleanup_cluster" EXIT
 
-if [[ -n "${USE_COMPOSE_K3S}" ]]; then
-  info "Starting docker compose k3s cluster"
-  mkdir -p "${K3S_KUBECONFIG_DIR}"
-  K3S_IMAGE="${K3S_IMAGE}" K3S_KUBECONFIG_DIR="${K3S_KUBECONFIG_DIR}" COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
-    docker compose -f "${REPO_ROOT}/tools/k3s-compose.yaml" up -d
+info "Starting docker compose k3s cluster"
+mkdir -p "${K3S_KUBECONFIG_DIR}"
+K3S_IMAGE="${K3S_IMAGE}" K3S_KUBECONFIG_DIR="${K3S_KUBECONFIG_DIR}" COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
+  docker compose -f "${REPO_ROOT}/tools/k3s-compose.yaml" up -d
 
-  info "Waiting for k3s kubeconfig"
-  for _ in {1..60}; do
-    if [[ -f "${K3S_KUBECONFIG_DIR}/kubeconfig" ]]; then
-      break
-    fi
-    sleep 2
-  done
-
-  if [[ ! -f "${K3S_KUBECONFIG_DIR}/kubeconfig" ]]; then
-    echo "k3s kubeconfig was not created" >&2
-    exit 1
+info "Waiting for k3s kubeconfig"
+for _ in {1..60}; do
+  if [[ -f "${K3S_KUBECONFIG_DIR}/kubeconfig" ]]; then
+    break
   fi
+  sleep 2
+done
 
-  export KUBECONFIG="${K3S_KUBECONFIG_DIR}/kubeconfig"
-  # The compose deployment advertises the apiserver as "localhost" in its certificate,
-  # so rewrite the generated kubeconfig host to avoid x509 hostname mismatches.
-  sed -i "s/127.0.0.1/localhost/g" "${KUBECONFIG}"
-
-  current_context=$(kubectl config current-context || true)
-  if [[ -n "${current_context}" ]]; then
-    cluster_name=$(kubectl config view -o "jsonpath={.contexts[?(@.name==\"${current_context}\")].context.cluster}" || true)
-    if [[ -n "${cluster_name}" ]]; then
-      info "Marking cluster ${cluster_name} as insecure to tolerate self-signed compose certificates"
-      kubectl config set-cluster "${cluster_name}" --kubeconfig "${KUBECONFIG}" --insecure-skip-tls-verify=true >/dev/null
-    fi
-  fi
-else
-  info "Creating k3s cluster ${CLUSTER_NAME} with k3d"
-  k3d cluster create "${CLUSTER_NAME}" \
-    --agents 1 \
-    --servers 1 \
-    --image "${K3S_IMAGE}" \
-    --wait
-  kubectl config use-context "k3d-${CLUSTER_NAME}"
+if [[ ! -f "${K3S_KUBECONFIG_DIR}/kubeconfig" ]]; then
+  echo "k3s kubeconfig was not created" >&2
+  exit 1
 fi
 
-info "Cluster nodes"
+export KUBECONFIG="${K3S_KUBECONFIG_DIR}/kubeconfig"
+# The compose deployment advertises the apiserver as "localhost" in its certificate,
+# so rewrite the generated kubeconfig host to avoid x509 hostname mismatches.
+sed -i "s/127.0.0.1/localhost/g" "${KUBECONFIG}"
+
+current_context=$(kubectl config current-context || true)
+if [[ -n "${current_context}" ]]; then
+  cluster_name=$(kubectl config view -o "jsonpath={.contexts[?(@.name==\"${current_context}\")].context.cluster}" || true)
+  if [[ -n "${cluster_name}" ]]; then
+    info "Marking cluster ${cluster_name} as insecure to tolerate self-signed compose certificates"
+    kubectl config set-cluster "${cluster_name}" --kubeconfig "${KUBECONFIG}" --insecure-skip-tls-verify=true >/dev/null
+  fi
+fi
+
+info "Waiting for k3s nodes to be ready"
 kubectl wait --for=condition=Ready node --all --timeout=180s
+info "Cluster nodes"
 kubectl get nodes
 
 info "Building runtime image"
@@ -125,16 +108,10 @@ IMAGES=(
   "${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}"
 )
 
-if [[ -n "${USE_COMPOSE_K3S}" ]]; then
-  K3S_CONTAINER="${COMPOSE_PROJECT_NAME}-k3s-1"
-  for image in "${IMAGES[@]}"; do
-    info "Importing ${image} into compose k3s runtime"
-    docker save "${image}" | docker exec -i "${K3S_CONTAINER}" ctr -n k8s.io images import -
-  done
-else
-  info "Importing images into k3d-backed cluster"
-  k3d image import --cluster "${CLUSTER_NAME}" "${IMAGES[@]}"
-fi
+for image in "${IMAGES[@]}"; do
+  info "Importing ${image} into compose k3s runtime"
+  docker save "${image}" | docker exec -i "${K3S_CONTAINER}" ctr -n k8s.io images import -
+done
 
 info "Installing Helm chart"
 helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
