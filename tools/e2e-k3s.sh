@@ -82,6 +82,20 @@ if ! kubectl get --raw='/readyz' >/dev/null 2>&1; then
   exit 1
 fi
 
+# Wait for node resources to exist before waiting on readiness.
+for _ in {1..45}; do
+  node_count=$(kubectl get nodes --no-headers 2>/dev/null | wc -l || true)
+  if (( node_count > 0 )); then
+    break
+  fi
+  sleep 2
+done
+
+if (( node_count == 0 )); then
+  echo "k3s nodes did not register" >&2
+  exit 1
+fi
+
 kubectl wait --for=condition=Ready node --all --timeout=180s
 info "Cluster nodes"
 kubectl get nodes
