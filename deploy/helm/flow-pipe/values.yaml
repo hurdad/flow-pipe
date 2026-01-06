@@ -8,6 +8,7 @@ namespace:
 etcd:
   enabled: true
   image: quay.io/coreos/etcd:v3.5.15
+  imagePullPolicy: IfNotPresent
   replicas: 1
   port: 2379
   service:
@@ -15,6 +16,7 @@ etcd:
     type: ClusterIP
   storage:
     size: 5Gi
+    storageClassName: ""
   # Computed into ETCD_ENDPOINTS
   endpoints:
     - http://flow-pipe-etcd:2379
@@ -24,7 +26,9 @@ etcd:
 # --------------------------------------------------
 controller:
   image: ghcr.io/hurdad/flow-pipe-controller:main
+  imagePullPolicy: IfNotPresent
   replicas: 1
+  port: 8080
   resources:
     requests:
       cpu: 100m
@@ -39,7 +43,9 @@ controller:
 api:
   enabled: true
   image: ghcr.io/hurdad/flow-pipe-api:main
+  imagePullPolicy: IfNotPresent
   replicas: 1
+  port: 8080
 
   # These map directly to env vars
   grpcAddr: ":9090"
@@ -52,6 +58,14 @@ api:
   ingress:
     enabled: false
     host: flow-pipe.local
+    annotations: {}
+    # Optional: specify the ingressClass.
+    className: ""
+    # Optional: override the path used by the ingress rule.
+    path: "/"
+    tls:
+      enabled: false
+      secretName: ""
 
 # --------------------------------------------------
 # Observability (optional)
