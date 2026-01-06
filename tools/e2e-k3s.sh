@@ -70,6 +70,18 @@ if [[ -n "${current_context}" ]]; then
 fi
 
 info "Waiting for k3s nodes to be ready"
+for _ in {1..90}; do
+  if kubectl get --raw='/readyz' >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+
+if ! kubectl get --raw='/readyz' >/dev/null 2>&1; then
+  echo "k3s API server did not become ready" >&2
+  exit 1
+fi
+
 kubectl wait --for=condition=Ready node --all --timeout=180s
 info "Cluster nodes"
 kubectl get nodes
