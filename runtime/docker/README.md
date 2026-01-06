@@ -92,6 +92,7 @@ docker build -f runtime/docker/Dockerfile.runtime \
 
 # 2. base
 docker build -f runtime/docker/Dockerfile.base \
+  --build-arg FLOW_PIPE_IMAGE_NAMESPACE=ghcr.io/hurdad \
   --build-arg FLOW_PIPE_RUNTIME_TAG=<tag> \
   -t ghcr.io/hurdad/flow-pipe-base:<tag> .
 
