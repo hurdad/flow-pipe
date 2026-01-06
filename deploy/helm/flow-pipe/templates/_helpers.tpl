@@ -9,40 +9,26 @@
 {{- end }}
 
 {{- define "flow-pipe.prometheus.endpoint" -}}
-{{- if or .Values.observability.prometheus.enabled .Values.observability.prometheus.endpoint -}}
-{{- if .Values.observability.prometheus.endpoint -}}
-{{ .Values.observability.prometheus.endpoint }}
-{{- else -}}
+{{- if .Values.observability.prometheus.enabled -}}
 http://{{ .Release.Name }}-prometheus-server
-{{- end -}}
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.loki.endpoint" -}}
-{{- if or .Values.observability.loki.enabled .Values.observability.loki.endpoint -}}
-{{- if .Values.observability.loki.endpoint -}}
-{{ .Values.observability.loki.endpoint }}
-{{- else -}}
+{{- if .Values.observability.loki.enabled -}}
 http://{{ .Release.Name }}-loki:3100
-{{- end -}}
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.tempo.endpoint" -}}
-{{- if or .Values.observability.tempo.enabled .Values.observability.tempo.endpoint -}}
-{{- if .Values.observability.tempo.endpoint -}}
-{{ .Values.observability.tempo.endpoint }}
-{{- else -}}
+{{- if .Values.observability.tempo.enabled -}}
 http://{{ .Release.Name }}-tempo:3200
-{{- end -}}
 {{- end -}}
 {{- end }}
 
 {{- define "flow-pipe.grafana.endpoint" -}}
-{{- if or .Values.observability.grafana.enabled .Values.observability.grafana.endpoint -}}
-{{- if .Values.observability.grafana.endpoint -}}
-{{ .Values.observability.grafana.endpoint }}
-{{- else if and .Values.grafana .Values.grafana.ingress .Values.grafana.ingress.enabled (gt (len .Values.grafana.ingress.hosts) 0) -}}
+{{- if .Values.observability.grafana.enabled -}}
+{{- if and .Values.grafana .Values.grafana.ingress .Values.grafana.ingress.enabled (gt (len .Values.grafana.ingress.hosts) 0) -}}
 {{- $scheme := ternary "https" "http" (and .Values.grafana.ingress.tls (gt (len .Values.grafana.ingress.tls) 0)) -}}
 {{ printf "%s://%s" $scheme (index .Values.grafana.ingress.hosts 0) }}
 {{- else -}}
@@ -52,12 +38,8 @@ http://{{ .Release.Name }}-grafana
 {{- end }}
 
 {{- define "flow-pipe.alloy.endpoint" -}}
-{{- if or .Values.observability.alloy.enabled .Values.observability.alloy.endpoint -}}
-{{- if .Values.observability.alloy.endpoint -}}
-{{ .Values.observability.alloy.endpoint }}
-{{- else -}}
+{{- if .Values.observability.alloy.enabled -}}
 http://{{ .Release.Name }}-alloy:4317
-{{- end -}}
 {{- end -}}
 {{- end }}
 
