@@ -112,6 +112,9 @@ observability:
     enabled: false
     # Optionally point to an existing Grafana instance instead of installing one.
     endpoint: ""
+    # Control whether the bundled dashboard and datasources are provisioned via the Grafana sidecar.
+    provisionDashboards: true
+    provisionDatasources: true
 
   alloy:
     enabled: false
