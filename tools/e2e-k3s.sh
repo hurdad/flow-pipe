@@ -65,7 +65,18 @@ if [[ -n "${USE_COMPOSE_K3S}" ]]; then
   fi
 
   export KUBECONFIG="${K3S_KUBECONFIG_DIR}/kubeconfig"
+  # The compose deployment advertises the apiserver as "localhost" in its certificate,
+  # so rewrite the generated kubeconfig host to avoid x509 hostname mismatches.
   sed -i "s/127.0.0.1/localhost/g" "${KUBECONFIG}"
+
+  current_context=$(kubectl config current-context || true)
+  if [[ -n "${current_context}" ]]; then
+    cluster_name=$(kubectl config view -o "jsonpath={.contexts[?(@.name==\"${current_context}\")].context.cluster}" || true)
+    if [[ -n "${cluster_name}" ]]; then
+      info "Marking cluster ${cluster_name} as insecure to tolerate self-signed compose certificates"
+      kubectl config set-cluster "${cluster_name}" --kubeconfig "${KUBECONFIG}" --insecure-skip-tls-verify=true >/dev/null
+    fi
+  fi
 else
   info "Creating k3s cluster ${CLUSTER_NAME} with k3d"
   k3d cluster create "${CLUSTER_NAME}" \
