@@ -113,7 +113,7 @@ observability:
       # Provide annotations to be applied to the Grafana ingress.
       annotations: {}
       # Optional: specify the ingressClass.
-      className: ""
+      ingressClassName: ""
       # Specify the hosts for the Grafana ingress.
       hosts:
         - grafana.local
