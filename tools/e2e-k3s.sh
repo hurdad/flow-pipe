@@ -141,6 +141,10 @@ for image in "${IMAGES[@]}"; do
 done
 
 info "Installing Helm chart"
+info "Ensuring Helm repositories"
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts --force-update >/dev/null
+helm repo add grafana https://grafana.github.io/helm-charts --force-update >/dev/null
+helm repo update >/dev/null
 info "Fetching Helm chart dependencies"
 helm dependency build "${REPO_ROOT}/deploy/helm/flow-pipe"
 helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
