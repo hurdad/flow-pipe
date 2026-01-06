@@ -73,24 +73,18 @@ api:
 observability:
   prometheus:
     enabled: false
-    # Override the default service endpoint when pointing to an external Prometheus instance.
-    endpoint: ""
     server:
       persistentVolume:
         enabled: false
 
   loki:
     enabled: false
-    # Override the default service endpoint when pointing to an external Loki instance.
-    endpoint: ""
     deploymentMode: SingleBinary
     loki:
       auth_enabled: false
 
   tempo:
     enabled: false
-    # Override the default service endpoint when pointing to an external Tempo instance.
-    endpoint: ""
     tempo:
       auth_enabled: false
     traces:
@@ -110,8 +104,6 @@ observability:
 
   grafana:
     enabled: false
-    # Override the default service endpoint when pointing to an external Grafana instance.
-    endpoint: ""
     adminUser: admin
     adminPassword: admin
     provisionDatasources: true
@@ -120,6 +112,8 @@ observability:
       enabled: false
       # Provide annotations to be applied to the Grafana ingress.
       annotations: {}
+      # Optional: specify the ingressClass.
+      className: ""
       # Specify the hosts for the Grafana ingress.
       hosts:
         - grafana.local
@@ -131,8 +125,6 @@ observability:
 
   alloy:
     enabled: false
-    # Override the default service endpoint when pointing to an external Alloy instance.
-    endpoint: ""
     # Choose the Alloy workload type: "deployment" for a centralized collector or "daemonset" for per-node collection.
     controller: &alloyController
       type: deployment
