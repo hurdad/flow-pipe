@@ -94,6 +94,7 @@ docker buildx build --load \
 info "Building base image"
 docker buildx build --load \
   -f "${REPO_ROOT}/runtime/docker/Dockerfile.base" \
+  --build-arg FLOW_PIPE_IMAGE_NAMESPACE="${IMAGE_NAMESPACE}" \
   --build-arg FLOW_PIPE_RUNTIME_TAG="${IMAGE_TAG}" \
   -t "${IMAGE_NAMESPACE}/flow-pipe-base:${IMAGE_TAG}" "${REPO_ROOT}"
 

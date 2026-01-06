@@ -20,12 +20,13 @@
 #   nvidia/cuda:<ver>-base
 # ============================================================
 
-# The runtime tag is injected by CI / CLI so that
+# The runtime tag and namespace are injected by CI / CLI so that
 # runtime, base, and dev always share the same ABI.
+ARG FLOW_PIPE_IMAGE_NAMESPACE=ghcr.io/hurdad
 ARG FLOW_PIPE_RUNTIME_TAG
 
 # Base directly on the matching runtime image (ABI provider)
-FROM ghcr.io/hurdad/flow-pipe-runtime:${FLOW_PIPE_RUNTIME_TAG}
+FROM ${FLOW_PIPE_IMAGE_NAMESPACE}/flow-pipe-runtime:${FLOW_PIPE_RUNTIME_TAG}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
