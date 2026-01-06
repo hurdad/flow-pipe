@@ -112,24 +112,24 @@ observability:
     enabled: false
     # Optionally point to an existing Grafana instance instead of installing one.
     endpoint: ""
-    adminUser: admin
-    adminPassword: admin
-    provisionDatasources: true
-    provisionDashboards: true
-    ingress: &grafanaIngress
-      enabled: false
-      # Provide annotations to be applied to the Grafana ingress.
-      annotations: {}
-      # Optional: specify the ingressClass.
-      ingressClassName: ""
-      # Specify the hosts for the Grafana ingress.
-      hosts:
-        - grafana.local
-      # Path and pathType used by the Grafana ingress rule.
-      path: /
-      pathType: Prefix
-      # Configure TLS secrets for Grafana ingress. Leave empty to disable TLS.
-      tls: []
+#    adminUser: admin
+#    adminPassword: admin
+#    provisionDatasources: true
+#    provisionDashboards: true
+#    ingress: &grafanaIngress
+#      enabled: false
+#      # Provide annotations to be applied to the Grafana ingress.
+#      annotations: {}
+#      # Optional: specify the ingressClass.
+#      ingressClassName: ""
+#      # Specify the hosts for the Grafana ingress.
+#      hosts:
+#        - grafana.local
+#      # Path and pathType used by the Grafana ingress rule.
+#      path: /
+#      pathType: Prefix
+#      # Configure TLS secrets for Grafana ingress. Leave empty to disable TLS.
+#      tls: []
 
   alloy:
     enabled: false
@@ -156,7 +156,7 @@ observability:
 grafana:
   adminUser: admin
   adminPassword: admin
-  ingress: *grafanaIngress
+  #ingress: *grafanaIngress
   sidecar:
     datasources:
       enabled: true
