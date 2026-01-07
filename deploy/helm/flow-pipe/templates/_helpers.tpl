@@ -93,19 +93,17 @@ http://{{ .Release.Name }}-alloy:4317
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
 {{- $tempo := include "flow-pipe.tempo.endpoint" . -}}
-
 logging {
   level = "info"
 }
 
-
 otelcol.receiver.otlp "default" {
   grpc {
-    endpoint = "{{ default "0.0.0.0:4317" (dig "receivers" "otlp" "grpcEndpoint" "" $alloy) }}"
+    endpoint = "{{ default \"0.0.0.0:4317\" (dig \"receivers\" \"otlp\" \"grpcEndpoint\" \"\" $alloy) }}"
   }
 
   http {
-    endpoint = "{{ default "0.0.0.0:4318" (dig "receivers" "otlp" "httpEndpoint" "" $alloy) }}"
+    endpoint = "{{ default \"0.0.0.0:4318\" (dig \"receivers\" \"otlp\" \"httpEndpoint\" \"\" $alloy) }}"
   }
 
   output {
@@ -118,27 +116,36 @@ otelcol.receiver.otlp "default" {
 otelcol.processor.batch "default" {
   output {
     traces  = [otelcol.exporter.otlp.tempo.input]
-    metrics = [prometheus.remote_write.default.input]
-    logs    = [loki.write.default.input]
+    metrics = [otelcol.exporter.prometheusremotewrite.default.input]
+    logs    = [otelcol.exporter.loki.default.input]
   }
 }
 
+# --------------------------------------------------
+# Tempo (OTLP gRPC, NOT HTTP/3200)
+# --------------------------------------------------
 otelcol.exporter.otlp "tempo" {
   client {
-    endpoint = "http://tempo:3200"
+    endpoint = "tempo:4317"
     tls {
       insecure = true
     }
   }
 }
 
-prometheus.remote_write "default" {
+# --------------------------------------------------
+# Prometheus Remote Write exporter
+# --------------------------------------------------
+otelcol.exporter.prometheusremotewrite "default" {
   endpoint {
     url = "http://prometheus:9090/api/v1/write"
   }
 }
 
-loki.write "default" {
+# --------------------------------------------------
+# Loki exporter (OTLP logs → Loki)
+# --------------------------------------------------
+otelcol.exporter.loki "default" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
