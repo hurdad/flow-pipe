@@ -7,9 +7,11 @@ This directory contains helper tooling for development and CI.
 Use [`e2e-k3s.sh`](./e2e-k3s.sh) to provision a local k3s-based Kubernetes cluster, build and load Flow Pipe images, install the Helm chart with observability enabled, and exercise flows end-to-end via the API using the `flow-pipe-cli` container image.
 
 ### Prerequisites
-- Docker (with Buildx) and kubectl installed locally
+- Docker (with Buildx)
 - Docker Compose
-- Helm 3
+- `curl` and `tar` for automatic tool installation
+
+The script will auto-install `kubectl` and Helm 3 into `./.bin` if they are missing. You can override the Helm version with `HELM_VERSION` (default: `v3.14.4`).
 
 ### Usage
 The script accepts a few environment variables to customize the run:
