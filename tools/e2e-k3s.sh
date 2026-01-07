@@ -10,12 +10,91 @@ KEEP_CLUSTER="${KEEP_CLUSTER:-}"
 K3S_KUBECONFIG_DIR="${K3S_KUBECONFIG_DIR:-${REPO_ROOT}/.k3s-kubeconfig}"
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-flow-pipe}"
 K3S_CONTAINER="${COMPOSE_PROJECT_NAME}-k3s-1"
+BIN_DIR="${REPO_ROOT}/.bin"
+HELM_VERSION="${HELM_VERSION:-v3.14.4}"
 
 info() { echo "[INFO] $*"; }
 append_summary() {
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     printf '%s\n' "$*" >>"${GITHUB_STEP_SUMMARY}" || true
   fi
+}
+
+require_command() {
+  local cmd="$1"
+  if command -v "${cmd}" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  case "${cmd}" in
+    kubectl)
+      install_kubectl
+      ;;
+    helm)
+      install_helm
+      ;;
+    *)
+      echo "Required command '${cmd}' is missing" >&2
+      return 1
+      ;;
+  esac
+}
+
+detect_platform() {
+  local os arch
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
+
+  case "${os}" in
+    linux|darwin) ;;
+    *)
+      echo "Unsupported OS for auto-install: ${os}" >&2
+      return 1
+      ;;
+  esac
+
+  case "${arch}" in
+    x86_64|amd64) arch="amd64" ;;
+    arm64|aarch64) arch="arm64" ;;
+    *)
+      echo "Unsupported architecture for auto-install: ${arch}" >&2
+      return 1
+      ;;
+  esac
+
+  printf '%s/%s' "${os}" "${arch}"
+}
+
+install_kubectl() {
+  info "kubectl not found; installing locally"
+  local platform
+  platform="$(detect_platform)"
+  local os="${platform%/*}"
+  local arch="${platform#*/}"
+  local version
+  version="$(curl -fsSL https://dl.k8s.io/release/stable.txt)"
+  mkdir -p "${BIN_DIR}"
+  curl -fsSL -o "${BIN_DIR}/kubectl" "https://dl.k8s.io/release/${version}/bin/${os}/${arch}/kubectl"
+  chmod +x "${BIN_DIR}/kubectl"
+  export PATH="${BIN_DIR}:${PATH}"
+}
+
+install_helm() {
+  info "Helm not found; installing locally"
+  local platform
+  platform="$(detect_platform)"
+  local os="${platform%/*}"
+  local arch="${platform#*/}"
+  local tarball="helm-${HELM_VERSION}-${os}-${arch}.tar.gz"
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${BIN_DIR}"
+  curl -fsSL -o "${tmp_dir}/${tarball}" "https://get.helm.sh/${tarball}"
+  tar -xzf "${tmp_dir}/${tarball}" -C "${tmp_dir}"
+  mv "${tmp_dir}/${os}-${arch}/helm" "${BIN_DIR}/helm"
+  chmod +x "${BIN_DIR}/helm"
+  rm -rf "${tmp_dir}"
+  export PATH="${BIN_DIR}:${PATH}"
 }
 
 cleanup_cluster() {
@@ -36,6 +115,9 @@ cleanup_port_forward() {
 }
 
 trap "cleanup_port_forward; cleanup_cluster" EXIT
+
+require_command kubectl
+require_command helm
 
 info "Starting docker compose k3s cluster"
 mkdir -p "${K3S_KUBECONFIG_DIR}"
