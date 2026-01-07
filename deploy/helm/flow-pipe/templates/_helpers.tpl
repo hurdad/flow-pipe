@@ -73,75 +73,99 @@ http://{{ .Release.Name }}-alloy:4317
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
 {{- $tempo := include "flow-pipe.tempo.endpoint" . -}}
-{{- $exporters := dict "prom" "" "loki" "" "tempo" "" -}}
-{{- if and $alloy.exporters $alloy.exporters.prometheus $alloy.exporters.prometheus.endpoint -}}
-{{- $_ := set $exporters "prom" $alloy.exporters.prometheus.endpoint -}}
-{{- else if $prom -}}
-{{- $_ := set $exporters "prom" (printf "%s/api/v1/write" $prom) -}}
-{{- end -}}
-{{- if and $alloy.exporters $alloy.exporters.loki $alloy.exporters.loki.endpoint -}}
-{{- $_ := set $exporters "loki" $alloy.exporters.loki.endpoint -}}
-{{- else if $loki -}}
-{{- $_ := set $exporters "loki" (printf "%s/loki/api/v1/push" $loki) -}}
-{{- end -}}
-{{- if and $alloy.exporters $alloy.exporters.tempo $alloy.exporters.tempo.endpoint -}}
-{{- $_ := set $exporters "tempo" $alloy.exporters.tempo.endpoint -}}
-{{- else if $tempo -}}
-{{- $_ := set $exporters "tempo" $tempo -}}
-{{- end -}}
+
 logging {
   level = "info"
 }
 
-otel {
-  receiver "otlp" {
-    protocols = {
-      grpc = {
-        endpoint = "{{ default "0.0.0.0:4317" (dig "receivers" "otlp" "grpcEndpoint" "" $alloy) }}",
-      },
-      http = {
-        endpoint = "{{ default "0.0.0.0:4318" (dig "receivers" "otlp" "httpEndpoint" "" $alloy) }}",
-      },
-    }
+################################################################################
+# OTLP Receiver
+################################################################################
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "{{ default "0.0.0.0:4317" (dig "receivers" "otlp" "grpcEndpoint" "" $alloy) }}"
   }
-{{- if (get $exporters "prom") }}
-  exporter "prometheusremotewrite" {
-    endpoint = "{{ get $exporters "prom" }}"
+
+  http {
+    endpoint = "{{ default "0.0.0.0:4318" (dig "receivers" "otlp" "httpEndpoint" "" $alloy) }}"
   }
+
+  output {
+{{- if or $tempo $prom $loki }}
+{{- if $tempo }}
+    traces  = [otelcol.processor.batch.default.input]
 {{- end }}
-{{- if (get $exporters "loki") }}
-  exporter "loki" {
-    endpoint = "{{ get $exporters "loki" }}"
-  }
+{{- if $prom }}
+    metrics = [otelcol.processor.batch.default.input]
 {{- end }}
-{{- if (get $exporters "tempo") }}
-  exporter "otlp" {
-    client {
-      endpoint = "{{ get $exporters "tempo" }}"
-    }
-  }
+{{- if $loki }}
+    logs    = [otelcol.processor.batch.default.input]
 {{- end }}
-  processor "batch" {}
-{{- if (get $exporters "prom") }}
-  pipeline "metrics" {
-    receivers  = [otel.receiver.otlp]
-    processors = [otel.processor.batch]
-    exporters  = [otel.exporter.prometheusremotewrite]
-  }
+{{- else }}
+    traces  = []
+    metrics = []
+    logs    = []
 {{- end }}
-{{- if (get $exporters "loki") }}
-  pipeline "logs" {
-    receivers  = [otel.receiver.otlp]
-    processors = [otel.processor.batch]
-    exporters  = [otel.exporter.loki]
   }
-{{- end }}
-{{- if (get $exporters "tempo") }}
-  pipeline "traces" {
-    receivers  = [otel.receiver.otlp]
-    processors = [otel.processor.batch]
-    exporters  = [otel.exporter.otlp]
-  }
-{{- end }}
 }
+
+################################################################################
+# Batch Processor
+################################################################################
+otelcol.processor.batch "default" {
+  output {
+  {{- if or $tempo $prom $loki }}
+{{- if $tempo }}
+    traces  = [otelcol.exporter.otlp.tempo.input]
+{{- end }}
+{{- if $prom }}
+    metrics = [prometheus.remote_write.default.input]
+{{- end }}
+{{- if $loki }}
+    logs    = [loki.write.default.input]
+{{- end }}
+{{- else }}
+    traces  = []
+    metrics = []
+    logs    = []
+{{- end }}
+  }
+}
+
+################################################################################
+# Tempo (Traces)
+################################################################################
+{{- if $tempo }}
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "{{ $tempo }}"
+    tls {
+      insecure = true
+    }
+  }
+}
+{{- end }}
+
+################################################################################
+# Prometheus Remote Write (Metrics)
+################################################################################
+{{- if $prom }}
+prometheus.remote_write "default" {
+  endpoint {
+    url = "{{ printf "%s/api/v1/write" $prom }}"
+  }
+}
+{{- end }}
+
+################################################################################
+# Loki (Logs)
+################################################################################
+{{- if $loki }}
+loki.write "default" {
+  endpoint {
+    url = "{{ printf "%s/loki/api/v1/push" $loki }}"
+  }
+}
+{{- end }}
+
 {{- end }}
