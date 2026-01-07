@@ -70,7 +70,7 @@ api:
 # --------------------------------------------------
 # Observability (optional)
 # --------------------------------------------------
-observability:
+observability: &observability
   prometheus:
     enabled: false
     # Optionally point to an existing Prometheus instance instead of installing one.
@@ -137,6 +137,9 @@ observability:
       tempo:
         # Override the Tempo OTLP endpoint. Defaults to the Tempo service when enabled.
         endpoint: ""
+
+global:
+  observability: *observability
 
 grafana:
   adminUser: admin
