@@ -121,9 +121,6 @@ otelcol.processor.batch "default" {
   }
 }
 
-# --------------------------------------------------
-# Tempo (OTLP gRPC, NOT HTTP/3200)
-# --------------------------------------------------
 otelcol.exporter.otlp "tempo" {
   client {
     endpoint = "tempo:4317"
@@ -133,18 +130,12 @@ otelcol.exporter.otlp "tempo" {
   }
 }
 
-# --------------------------------------------------
-# Prometheus Remote Write exporter
-# --------------------------------------------------
 otelcol.exporter.prometheusremotewrite "default" {
   endpoint {
     url = "http://prometheus:9090/api/v1/write"
   }
 }
 
-# --------------------------------------------------
-# Loki exporter (OTLP logs → Loki)
-# --------------------------------------------------
 otelcol.exporter.loki "default" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
