@@ -4,7 +4,6 @@ kind: Deployment
 metadata:
   name: flow-pipe-controller
   namespace: {{ include "flowpipe.namespace" . }}
-{{- $alloyEndpoint := include "flow-pipe.alloy.otlp.endpoint" . -}}
 spec:
   replicas: {{ .Values.controller.replicas }}
   selector:

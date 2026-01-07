@@ -5,7 +5,6 @@ kind: Deployment
 metadata:
   name: flow-pipe-api
   namespace: {{ include "flowpipe.namespace" . }}
-{{- $alloyEndpoint := include "flow-pipe.alloy.otlp.endpoint" . -}}
 spec:
   replicas: {{ .Values.api.replicas }}
   selector:
