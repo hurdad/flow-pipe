@@ -1,4 +1,5 @@
 {{- if .Values.api.enabled }}
+{{- $alloyEndpoint := include "flow-pipe.alloy.otlp.endpoint" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
