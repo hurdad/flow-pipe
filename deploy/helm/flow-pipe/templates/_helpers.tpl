@@ -109,7 +109,6 @@ otelcol.receiver.otlp "default" {
   output {
     traces  = [otelcol.processor.batch.default.input]
     metrics = [otelcol.processor.batch.default.input]
-    logs    = [otelcol.processor.batch.default.input]
   }
 }
 
@@ -117,7 +116,7 @@ otelcol.processor.batch "default" {
   output {
     traces  = [otelcol.exporter.otlp.tempo.input]
     metrics = [otelcol.exporter.prometheus.default.input]
-    logs    = [otelcol.exporter.loki.default.input]
+
   }
 }
 
@@ -140,8 +139,6 @@ prometheus.remote_write "default" {
   }
 }
 
-otelcol.exporter.loki "default" {
-  endpoint = "http://loki:3100/loki/api/v1/push"
-}
+
 
 {{- end }}
