@@ -78,6 +78,15 @@ http://{{ .Release.Name }}-alloy:4317
 {{- end -}}
 {{- end }}
 
+{{- define "flow-pipe.alloy.otlp.endpoint" -}}
+{{- $endpoint := include "flow-pipe.alloy.endpoint" . -}}
+{{- if $endpoint -}}
+{{- $endpoint = trimPrefix "http://" $endpoint -}}
+{{- $endpoint = trimPrefix "https://" $endpoint -}}
+{{- $endpoint -}}
+{{- end -}}
+{{- end }}
+
 {{- define "flow-pipe.alloy.river" -}}
 {{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
