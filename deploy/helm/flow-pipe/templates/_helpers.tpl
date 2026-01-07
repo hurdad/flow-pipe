@@ -9,7 +9,7 @@
 {{- end }}
 
 {{- define "flow-pipe.prometheus.endpoint" -}}
-{{- $observability := default (dict) .Values.observability -}}
+{{- $observability := default (dict) (default .Values.global.observability .Values.observability) -}}
 {{- $prometheus := default (dict) $observability.prometheus -}}
 {{- if $prometheus.endpoint -}}
 {{ $prometheus.endpoint }}
@@ -19,7 +19,7 @@ http://{{ .Release.Name }}-prometheus-server
 {{- end }}
 
 {{- define "flow-pipe.loki.endpoint" -}}
-{{- $observability := default (dict) .Values.observability -}}
+{{- $observability := default (dict) (default .Values.global.observability .Values.observability) -}}
 {{- $loki := default (dict) $observability.loki -}}
 {{- if $loki.endpoint -}}
 {{ $loki.endpoint }}
@@ -29,7 +29,7 @@ http://{{ .Release.Name }}-loki:3100
 {{- end }}
 
 {{- define "flow-pipe.tempo.endpoint" -}}
-{{- $observability := default (dict) .Values.observability -}}
+{{- $observability := default (dict) (default .Values.global.observability .Values.observability) -}}
 {{- $tempo := default (dict) $observability.tempo -}}
 {{- if $tempo.endpoint -}}
 {{ $tempo.endpoint }}
@@ -39,7 +39,7 @@ http://{{ .Release.Name }}-tempo:3200
 {{- end }}
 
 {{- define "flow-pipe.grafana.endpoint" -}}
-{{- $observability := default (dict) .Values.observability -}}
+{{- $observability := default (dict) (default .Values.global.observability .Values.observability) -}}
 {{- $grafanaObs := default (dict) $observability.grafana -}}
 {{- if $grafanaObs.endpoint -}}
 {{- $grafanaObs.endpoint -}}
@@ -58,7 +58,7 @@ http://{{ .Release.Name }}-tempo:3200
 
 
 {{- define "flow-pipe.alloy.endpoint" -}}
-{{- $observability := default (dict) .Values.observability -}}
+{{- $observability := default (dict) (default .Values.global.observability .Values.observability) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
 {{- if $alloy.endpoint -}}
 {{ $alloy.endpoint }}
@@ -68,7 +68,7 @@ http://{{ .Release.Name }}-alloy:4317
 {{- end }}
 
 {{- define "flow-pipe.alloy.river" -}}
-{{- $observability := default (dict) .Values.observability -}}
+{{- $observability := default (dict) (default .Values.global.observability .Values.observability) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
