@@ -116,7 +116,7 @@ otelcol.receiver.otlp "default" {
 otelcol.processor.batch "default" {
   output {
     traces  = [otelcol.exporter.otlp.tempo.input]
-    metrics = [prometheus.remote_write.default.receiver]
+    metrics = [otelcol.exporter.prometheus.default.input]
     logs    = [otelcol.exporter.loki.default.input]
   }
 }
@@ -128,6 +128,10 @@ otelcol.exporter.otlp "tempo" {
       insecure = true
     }
   }
+}
+
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.default.receiver]
 }
 
 prometheus.remote_write "default" {
