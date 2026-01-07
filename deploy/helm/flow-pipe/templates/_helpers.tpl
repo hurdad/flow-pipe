@@ -99,11 +99,11 @@ logging {
 
 otelcol.receiver.otlp "default" {
   grpc {
-    endpoint = "{{ default \"0.0.0.0:4317\" (dig \"receivers\" \"otlp\" \"grpcEndpoint\" \"\" $alloy) }}"
+    endpoint = "{{ default "0.0.0.0:4317" (dig "receivers" "otlp" "grpcEndpoint" "" $alloy) }}"
   }
 
   http {
-    endpoint = "{{ default \"0.0.0.0:4318\" (dig \"receivers\" \"otlp\" \"httpEndpoint\" \"\" $alloy) }}"
+    endpoint = "{{ default "0.0.0.0:4318" (dig "receivers" "otlp" "httpEndpoint" "" $alloy) }}"
   }
 
   output {
