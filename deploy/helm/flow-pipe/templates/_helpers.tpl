@@ -109,70 +109,40 @@ otelcol.receiver.otlp "default" {
   }
 
   output {
-{{- if or $tempo $prom $loki }}
-{{- if $tempo }}
     traces  = [otelcol.processor.batch.default.input]
-{{- end }}
-{{- if $prom }}
     metrics = [otelcol.processor.batch.default.input]
-{{- end }}
-{{- if $loki }}
     logs    = [otelcol.processor.batch.default.input]
-{{- end }}
-{{- else }}
-    traces  = []
-    metrics = []
-    logs    = []
-{{- end }}
   }
 }
 
 otelcol.processor.batch "default" {
   output {
-  {{- if or $tempo $prom $loki }}
-{{- if $tempo }}
     traces  = [otelcol.exporter.otlp.tempo.input]
-{{- end }}
-{{- if $prom }}
     metrics = [prometheus.remote_write.default.input]
-{{- end }}
-{{- if $loki }}
     logs    = [loki.write.default.input]
-{{- end }}
-{{- else }}
-    traces  = []
-    metrics = []
-    logs    = []
-{{- end }}
   }
 }
 
-{{- if $tempo }}
 otelcol.exporter.otlp "tempo" {
   client {
-    endpoint = "{{ $tempo }}"
+    endpoint = "http://tempo:3200"
     tls {
       insecure = true
     }
   }
 }
-{{- end }}
 
-{{- if $prom }}
 prometheus.remote_write "default" {
   endpoint {
-    url = "{{ printf "%s/api/v1/write" $prom }}"
+    url = "http://prometheus:9090/api/v1/write"
   }
 }
-{{- end }}
 
-
-{{- if $loki }}
 loki.write "default" {
   endpoint {
-    url = "{{ printf "%s/loki/api/v1/push" $loki }}"
+    url = "http://loki:3100/loki/api/v1/push"
   }
 }
-{{- end }}
+
 
 {{- end }}
