@@ -4,6 +4,7 @@ kind: Deployment
 metadata:
   name: flow-pipe-api
   namespace: {{ include "flowpipe.namespace" . }}
+{{- $alloyEndpoint := include "flow-pipe.alloy.otlp.endpoint" . -}}
 spec:
   replicas: {{ .Values.api.replicas }}
   selector:
@@ -32,6 +33,14 @@ spec:
 
             - name: FLOW_HTTP_ADDR
               value: {{ .Values.api.httpAddr | quote }}
+
+            {{- if $alloyEndpoint }}
+            # -------------------------------------------------
+            # OpenTelemetry (Alloy)
+            # -------------------------------------------------
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ $alloyEndpoint | quote }}
+            {{- end }}
 
             # -------------------------------------------------
             # Etcd
