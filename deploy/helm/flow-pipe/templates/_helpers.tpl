@@ -139,9 +139,10 @@ prometheus.remote_write "default" {
     url = "http://prometheus:9090/api/v1/write"
   }
 }
+
 otelcol.exporter.loki "default" {
-  endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
+  client {
+    endpoint = "http://loki:3100/loki/api/v1/push"
   }
 }
 
