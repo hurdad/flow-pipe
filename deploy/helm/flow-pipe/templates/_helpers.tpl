@@ -141,10 +141,7 @@ prometheus.remote_write "default" {
 }
 
 otelcol.exporter.loki "default" {
-  client {
-    endpoint = "http://loki:3100/loki/api/v1/push"
-  }
+  endpoint = "http://loki:3100/loki/api/v1/push"
 }
-
 
 {{- end }}
