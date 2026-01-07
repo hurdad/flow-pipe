@@ -8,8 +8,19 @@
 {{- end }}
 {{- end }}
 
+{{- define "flow-pipe.observability" -}}
+{{- $global := default (dict) (get .Values "global") -}}
+{{- $globalObs := default (dict) (get $global "observability") -}}
+{{- $localObs := default (dict) (get .Values "observability") -}}
+{{- if gt (len $globalObs) 0 -}}
+{{- toYaml $globalObs -}}
+{{- else -}}
+{{- toYaml $localObs -}}
+{{- end -}}
+{{- end }}
+
 {{- define "flow-pipe.prometheus.endpoint" -}}
-{{- $observability := default (dict) (default (dig "global" "observability" dict .Values) (dig "observability" dict .Values)) -}}
+{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $prometheus := default (dict) $observability.prometheus -}}
 {{- if $prometheus.endpoint -}}
 {{ $prometheus.endpoint }}
@@ -19,7 +30,7 @@ http://{{ .Release.Name }}-prometheus-server
 {{- end }}
 
 {{- define "flow-pipe.loki.endpoint" -}}
-{{- $observability := default (dict) (default (dig "global" "observability" dict .Values) (dig "observability" dict .Values)) -}}
+{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $loki := default (dict) $observability.loki -}}
 {{- if $loki.endpoint -}}
 {{ $loki.endpoint }}
@@ -29,7 +40,7 @@ http://{{ .Release.Name }}-loki:3100
 {{- end }}
 
 {{- define "flow-pipe.tempo.endpoint" -}}
-{{- $observability := default (dict) (default (dig "global" "observability" dict .Values) (dig "observability" dict .Values)) -}}
+{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $tempo := default (dict) $observability.tempo -}}
 {{- if $tempo.endpoint -}}
 {{ $tempo.endpoint }}
@@ -39,7 +50,7 @@ http://{{ .Release.Name }}-tempo:3200
 {{- end }}
 
 {{- define "flow-pipe.grafana.endpoint" -}}
-{{- $observability := default (dict) (default (dig "global" "observability" dict .Values) (dig "observability" dict .Values)) -}}
+{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $grafanaObs := default (dict) $observability.grafana -}}
 {{- if $grafanaObs.endpoint -}}
 {{- $grafanaObs.endpoint -}}
@@ -58,7 +69,7 @@ http://{{ .Release.Name }}-tempo:3200
 
 
 {{- define "flow-pipe.alloy.endpoint" -}}
-{{- $observability := default (dict) (default (dig "global" "observability" dict .Values) (dig "observability" dict .Values)) -}}
+{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
 {{- if $alloy.endpoint -}}
 {{ $alloy.endpoint }}
@@ -68,7 +79,7 @@ http://{{ .Release.Name }}-alloy:4317
 {{- end }}
 
 {{- define "flow-pipe.alloy.river" -}}
-{{- $observability := default (dict) (default (dig "global" "observability" dict .Values) (dig "observability" dict .Values)) -}}
+{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
 {{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
 {{- $loki := include "flow-pipe.loki.endpoint" . -}}
