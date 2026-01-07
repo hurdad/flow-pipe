@@ -101,7 +101,7 @@ otel {
       },
       http = {
         endpoint = "{{ default "0.0.0.0:4318" (dig "receivers" "otlp" "httpEndpoint" "" $alloy) }}",
-      }
+      },
     }
   }
 {{- if (get $exporters "prom") }}
