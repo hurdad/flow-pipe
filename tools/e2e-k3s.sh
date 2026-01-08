@@ -224,21 +224,20 @@ done
 
 info "Installing Helm chart"
 info "Ensuring Helm repositories"
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts --force-update >/dev/null
 helm repo add grafana https://grafana.github.io/helm-charts --force-update >/dev/null
 helm repo update >/dev/null
 info "Fetching Helm chart dependencies"
 helm dependency build "${REPO_ROOT}/deploy/helm/flow-pipe"
+OBS_EXPORT_ENDPOINT="http://observability-backend:4317"
 helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --namespace "${NAMESPACE}" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
   --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
-  --set observability.prometheus.enabled=true \
-  --set observability.loki.enabled=true \
-  --set observability.tempo.enabled=true \
-  --set observability.grafana.enabled=true \
-  --set observability.alloy.enabled=true
+  --set observability.alloy.enabled=true \
+  --set observability.alloy.exporters.metrics.endpoint="${OBS_EXPORT_ENDPOINT}" \
+  --set observability.alloy.exporters.traces.endpoint="${OBS_EXPORT_ENDPOINT}" \
+  --set observability.alloy.exporters.logs.endpoint="${OBS_EXPORT_ENDPOINT}"
 
 info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
@@ -402,105 +401,35 @@ if [[ -f "${REPO_ROOT}/job.log" ]]; then
 fi
 append_summary "\n\`\`\`"
 
-info "Running observability queries"
-cat <<MANIFEST | kubectl apply -f -
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: observability-queries
-  namespace: ${NAMESPACE}
-spec:
-  backoffLimit: 0
-  template:
-    spec:
-      restartPolicy: Never
-      containers:
-        - name: checks
-          image: python:3.11-alpine
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              set -euo pipefail
-              apk add --no-cache curl >/dev/null
-              cat <<'PY' >/tmp/checks.py
-import json
-import sys
-import time
-import urllib.parse
-import urllib.request
+info "Checking observability configuration"
+metrics_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.metricsEndpoint}')
+traces_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.tracesEndpoint}')
+logs_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.logsEndpoint}')
+alloy_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.alloyEndpoint}')
 
-PROM_BASE = "http://flow-pipe-prometheus-server/api/v1/query?query="
-METRICS = [
-    "flowpipe.queue.enqueue.count",
-    "flowpipe.queue.dequeue.count",
-    "flowpipe.stage.process.count",
-]
+{
+  echo "metricsEndpoint: ${metrics_endpoint}"
+  echo "tracesEndpoint: ${traces_endpoint}"
+  echo "logsEndpoint: ${logs_endpoint}"
+  echo "alloyEndpoint: ${alloy_endpoint}"
+} >"${REPO_ROOT}/observability.log"
 
-
-def get_json(url: str):
-    with urllib.request.urlopen(url) as resp:
-        body = resp.read().decode()
-        status = resp.status
-    try:
-        data = json.loads(body)
-    except json.JSONDecodeError as exc:  # pragma: no cover - validation path
-        raise SystemExit(f"invalid JSON from {url}: {exc}: {body}")
-    return status, data, body
-
-
-def require_metric(metric: str):
-    url = PROM_BASE + urllib.parse.quote(metric, safe="")
-    status, data, body = get_json(url)
-    if status != 200:
-        raise SystemExit(f"metric query failed ({status}) for {metric}: {body}")
-    if data.get("status") != "success":
-        raise SystemExit(f"metric query unsuccessful for {metric}: {body}")
-    result = data.get("data", {}).get("result")
-    if not result:
-        raise SystemExit(f"metric {metric} returned no series: {body}")
-    print(f"metric {metric} OK: {result}")
-
-
-def require_loki(label_query: str, substring: str):
-    url = "http://flow-pipe-loki:3100/loki/api/v1/query?query=" + urllib.parse.quote(label_query, safe="{}=\"\",")
-    status, data, body = get_json(url)
-    if status != 200:
-        raise SystemExit(f"loki query failed ({status}): {body}")
-    streams = data.get("data", {}).get("result") or []
-    joined = "\n".join(
-        entry for stream in streams for _, entry in stream.get("values", [])
-    )
-    if substring not in joined:
-        raise SystemExit(f"log substring '{substring}' not found in Loki response")
-    print(f"loki logs contain '{substring}'")
-
-
-def require_http_ok(url: str):
-    status, _, body = get_json(url)
-    if status != 200:
-        raise SystemExit(f"HTTP check failed ({status}) for {url}: {body}")
-    print(f"HTTP {url} -> {status}")
-
-
-time.sleep(20)
-for metric in METRICS:
-    require_metric(metric)
-
-require_loki('{app="flow-runtime-stream"}', "DEADBEEF")
-require_http_ok("http://flow-pipe-tempo:3200/status")
-
-status, _, body = get_json("http://flow-pipe-grafana/login")
-if status not in (200, 302):
-    raise SystemExit(f"unexpected Grafana status {status}: {body}")
-print(f"Grafana login endpoint status {status}")
-
-print("all observability checks passed")
-PY
-              python /tmp/checks.py
-MANIFEST
-
-kubectl wait --for=condition=complete job/observability-queries -n "${NAMESPACE}" --timeout=300s
-kubectl logs job/observability-queries -n "${NAMESPACE}" >"${REPO_ROOT}/observability.log"
+if [[ "${metrics_endpoint}" != "${OBS_EXPORT_ENDPOINT}" ]]; then
+  echo "metrics endpoint mismatch: ${metrics_endpoint}" >&2
+  exit 1
+fi
+if [[ "${traces_endpoint}" != "${OBS_EXPORT_ENDPOINT}" ]]; then
+  echo "traces endpoint mismatch: ${traces_endpoint}" >&2
+  exit 1
+fi
+if [[ "${logs_endpoint}" != "${OBS_EXPORT_ENDPOINT}" ]]; then
+  echo "logs endpoint mismatch: ${logs_endpoint}" >&2
+  exit 1
+fi
+if [[ -z "${alloy_endpoint}" ]]; then
+  echo "alloy endpoint missing from observability config" >&2
+  exit 1
+fi
 append_summary "\n### Observability queries"
 append_summary "\n\n\`\`\`"
 if [[ -f "${REPO_ROOT}/observability.log" ]]; then
@@ -518,7 +447,6 @@ append_summary "\n## Events"
 append_summary "$(kubectl get events -n "${NAMESPACE}" --sort-by=.metadata.creationTimestamp | tail -n 50 2>/dev/null || true)"
 
 info "Cleanup helper jobs"
-kubectl delete job/observability-queries -n "${NAMESPACE}" --ignore-not-found
 kubectl delete job/flow-runtime-job -n "${NAMESPACE}" --ignore-not-found
 kubectl delete deployment/flow-runtime-stream -n "${NAMESPACE}" --ignore-not-found
 

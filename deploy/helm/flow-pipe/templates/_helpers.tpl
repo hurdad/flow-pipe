@@ -19,55 +19,6 @@
 {{- end -}}
 {{- end }}
 
-{{- define "flow-pipe.prometheus.endpoint" -}}
-{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
-{{- $prometheus := default (dict) $observability.prometheus -}}
-{{- if $prometheus.endpoint -}}
-{{ $prometheus.endpoint }}
-{{- else if $prometheus.enabled -}}
-http://{{ .Release.Name }}-prometheus-server
-{{- end -}}
-{{- end }}
-
-{{- define "flow-pipe.loki.endpoint" -}}
-{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
-{{- $loki := default (dict) $observability.loki -}}
-{{- if $loki.endpoint -}}
-{{ $loki.endpoint }}
-{{- else if $loki.enabled -}}
-http://{{ .Release.Name }}-loki:3100
-{{- end -}}
-{{- end }}
-
-{{- define "flow-pipe.tempo.endpoint" -}}
-{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
-{{- $tempo := default (dict) $observability.tempo -}}
-{{- if $tempo.endpoint -}}
-{{ $tempo.endpoint }}
-{{- else if $tempo.enabled -}}
-http://{{ .Release.Name }}-tempo:3200
-{{- end -}}
-{{- end }}
-
-{{- define "flow-pipe.grafana.endpoint" -}}
-{{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
-{{- $grafanaObs := default (dict) $observability.grafana -}}
-{{- if $grafanaObs.endpoint -}}
-{{- $grafanaObs.endpoint -}}
-{{- else if and $grafanaObs.enabled
-              .Values.grafana
-              .Values.grafana.ingress
-              .Values.grafana.ingress.enabled -}}
-{{- $scheme := ternary "https" "http" (gt (len .Values.grafana.ingress.tls) 0) -}}
-{{- if gt (len .Values.grafana.ingress.hosts) 0 -}}
-{{- printf "%s://%s" $scheme (index .Values.grafana.ingress.hosts 0) -}}
-{{- else -}}
-{{- printf "%s://%s-grafana" $scheme .Release.Name -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-
 {{- define "flow-pipe.alloy.endpoint" -}}
 {{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
@@ -90,9 +41,9 @@ http://{{ .Release.Name }}-alloy:4317
 {{- define "flow-pipe.alloy.river" -}}
 {{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
 {{- $alloy := default (dict) $observability.alloy -}}
-{{- $prom := include "flow-pipe.prometheus.endpoint" . -}}
-{{- $loki := include "flow-pipe.loki.endpoint" . -}}
-{{- $tempo := include "flow-pipe.tempo.endpoint" . -}}
+{{- $metricsEndpoint := dig "exporters" "metrics" "endpoint" "" $alloy -}}
+{{- $tracesEndpoint := dig "exporters" "traces" "endpoint" "" $alloy -}}
+{{- $logsEndpoint := dig "exporters" "logs" "endpoint" "" $alloy -}}
 logging {
   level = "info"
 }
@@ -109,36 +60,57 @@ otelcol.receiver.otlp "default" {
   output {
     traces  = [otelcol.processor.batch.default.input]
     metrics = [otelcol.processor.batch.default.input]
+    {{- if $logsEndpoint }}
+    logs    = [otelcol.processor.batch.default.input]
+    {{- end }}
   }
 }
 
 otelcol.processor.batch "default" {
   output {
-    traces  = [otelcol.exporter.otlp.tempo.input]
-    metrics = [otelcol.exporter.prometheus.default.input]
-
+    {{- if $tracesEndpoint }}
+    traces  = [otelcol.exporter.otlp.traces.input]
+    {{- end }}
+    {{- if $metricsEndpoint }}
+    metrics = [otelcol.exporter.otlp.metrics.input]
+    {{- end }}
+    {{- if $logsEndpoint }}
+    logs    = [otelcol.exporter.otlp.logs.input]
+    {{- end }}
   }
 }
 
-otelcol.exporter.otlp "tempo" {
+{{- if $tracesEndpoint }}
+otelcol.exporter.otlp "traces" {
   client {
-    endpoint = "tempo:4317"
+    endpoint = "{{ $tracesEndpoint }}"
     tls {
       insecure = true
     }
   }
 }
+{{- end }}
 
-otelcol.exporter.prometheus "default" {
-  forward_to = [prometheus.remote_write.default.receiver]
-}
-
-prometheus.remote_write "default" {
-  endpoint {
-    url = "http://prometheus:9090/api/v1/write"
+{{- if $metricsEndpoint }}
+otelcol.exporter.otlp "metrics" {
+  client {
+    endpoint = "{{ $metricsEndpoint }}"
+    tls {
+      insecure = true
+    }
   }
 }
+{{- end }}
 
-
+{{- if $logsEndpoint }}
+otelcol.exporter.otlp "logs" {
+  client {
+    endpoint = "{{ $logsEndpoint }}"
+    tls {
+      insecure = true
+    }
+  }
+}
+{{- end }}
 
 {{- end }}
