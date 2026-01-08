@@ -15,4 +15,4 @@ helm upgrade --install flow-pipe deploy/helm/flow-pipe
 
 Override values as needed for image tags, etcd endpoints, and Kubernetes namespaces.
 
-When enabling the bundled Grafana chart via `observability.grafana.enabled`, datasources for Prometheus, Loki, and Tempo are automatically provisioned using the configured endpoints for those services. A Flow Pipe runtime dashboard is also shipped and loaded via the Grafana sidecar, surfacing queue throughput, dwell latency percentiles, stage throughput, stage latency percentiles, and stage error rates using the metrics documented in `runtime/METRICS.md`. Both the dashboard and datasource provisioning are enabled by default and can be toggled via `observability.grafana.provisionDashboards` and `observability.grafana.provisionDatasources`.
+The Helm chart only bundles Grafana Alloy for observability. Configure the Alloy OTLP export endpoints for metrics, traces, and logs under `observability.alloy.exporters` to forward telemetry to your backend.
