@@ -14,9 +14,7 @@ on:
 env:
   IMAGE_NAMESPACE: ghcr.io/${{ github.repository_owner }}
   IMAGE_TAG: e2e-${{ github.run_id }}-ubuntu24.04
-  CLUSTER_NAME: flow-pipe-e2e
   NAMESPACE: flow-pipe
-  USE_COMPOSE_K3S: ""
 
 jobs:
   e2e:
@@ -38,10 +36,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Install k3d
-        if: env.USE_COMPOSE_K3S != 'true'
-        run: |
-          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
 
       - name: Run e2e script
         run: ./tools/e2e-k3s.sh
