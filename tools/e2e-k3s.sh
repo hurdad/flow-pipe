@@ -254,6 +254,13 @@ docker buildx build --load \
 
 info "Generating flow specs with runtime metadata"
 FLOW_TMP_DIR="$(mktemp -d)"
+FLOW_KUBERNETES_CONFIG=$(cat <<FLOW
+kubernetes:
+  image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
+  image_pull_policy: IMAGE_PULL_POLICY_IF_NOT_PRESENT
+  restart_policy: RESTART_POLICY_ALWAYS
+FLOW
+)
 
 cat >"${FLOW_TMP_DIR}/streaming.yaml" <<FLOW
 name: noop-observability
@@ -261,6 +268,7 @@ runtime: FLOW_RUNTIME_BUILTIN
 image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_STREAMING
+${FLOW_KUBERNETES_CONFIG}
 queues:
   - name: q1
     capacity: 128
@@ -289,6 +297,7 @@ runtime: FLOW_RUNTIME_BUILTIN
 image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_JOB
+${FLOW_KUBERNETES_CONFIG}
 queues:
   - name: q1
     capacity: 256
