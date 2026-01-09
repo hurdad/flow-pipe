@@ -12,13 +12,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/yaml"
 )
 
 const (
 	flowLabelKey          = "flowpipe.io/flow-name"
-	runtimeConfigKey      = "flow.json"
+	runtimeConfigKey      = "flow.yaml"
 	runtimeConfigMountDir = "/config"
-	runtimeConfigPath     = "/config/flow.json"
+	runtimeConfigPath     = "/config/flow.yaml"
 )
 
 func ensureRuntime(
@@ -78,6 +79,10 @@ func applyConfigMap(
 	if err != nil {
 		return fmt.Errorf("marshal flow spec: %w", err)
 	}
+	yamlPayload, err := yaml.JSONToYAML(payload)
+	if err != nil {
+		return fmt.Errorf("marshal flow spec as yaml: %w", err)
+	}
 
 	desired := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -88,7 +93,7 @@ func applyConfigMap(
 			},
 		},
 		Data: map[string]string{
-			runtimeConfigKey: string(payload),
+			runtimeConfigKey: string(yamlPayload),
 		},
 	}
 
