@@ -255,7 +255,7 @@ docker buildx build --load \
 info "Generating flow specs with runtime metadata"
 FLOW_TMP_DIR="$(mktemp -d)"
 
-cat >"${FLOW_TMP_DIR}/streaming.yaml" <<'FLOW'
+cat >"${FLOW_TMP_DIR}/streaming.yaml" <<FLOW
 name: noop-observability
 runtime: FLOW_RUNTIME_BUILTIN
 image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
@@ -283,7 +283,7 @@ observability:
   logs_enabled: true
 FLOW
 
-cat >"${FLOW_TMP_DIR}/job.yaml" <<'FLOW'
+cat >"${FLOW_TMP_DIR}/job.yaml" <<FLOW
 name: simple-pipeline-job
 runtime: FLOW_RUNTIME_BUILTIN
 image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
