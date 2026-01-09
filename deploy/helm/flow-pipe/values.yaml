@@ -47,6 +47,10 @@ api:
   replicas: 1
   port: 8080
 
+  httpService:
+    # Options: ClusterIP (default), LoadBalancer
+    type: ClusterIP
+
   # These map directly to env vars
   grpcAddr: ":9090"
   httpAddr: ":8080"
@@ -54,6 +58,12 @@ api:
   # Used only for container/service ports
   grpcPort: 9090
   httpPort: 8080
+
+  grpcService:
+    enabled: false
+    # Options: ClusterIP, LoadBalancer
+    type: LoadBalancer
+    annotations: {}
 
   ingress:
     enabled: false
