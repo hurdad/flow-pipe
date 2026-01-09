@@ -28,6 +28,7 @@ func (c *Controller) worker(ctx context.Context) {
 				continue
 			}
 
+			c.logger.Info(ctx, "reconcile requested", slog.String("flow", name))
 			if err := c.reconcile(ctx, name); err != nil {
 				c.logger.Error(ctx, "reconcile failed", slog.String("flow", name), slog.Any("error", err))
 				c.reconcileFailure.Add(ctx, 1, metric.WithAttributes(attribute.String("flow.name", name)))
