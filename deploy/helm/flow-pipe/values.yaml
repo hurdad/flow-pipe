@@ -108,13 +108,12 @@ global:
 
 alloy:
   controller: *alloyController
-  extraPorts:
-   - name: "grpc-otel"
-     port: 4317
-     targetPort: 4317
-     protocol: "TCP"
-
   alloy:
+    extraPorts:
+      - name: "grpc-otel"
+        port: 4317
+        targetPort: 4317
+        protocol: "TCP"
     configMap:
       create: true
       content: |-
