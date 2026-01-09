@@ -12,6 +12,7 @@ import (
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func (c *Controller) worker(ctx context.Context) {
@@ -60,11 +61,25 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 		return nil
 	}
 
+	workload, err := ensureRuntime(
+		ctx,
+		c.kube,
+		c.runtimeNamespace,
+		spec,
+		corev1.PullIfNotPresent,
+	)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
 	// Minimal, correct status update
 	status := &flowpipev1.FlowStatus{
-		State:         flowpipev1.FlowState_FLOW_STATE_PENDING,
-		Message:       "flow accepted by controller",
+		State:         flowpipev1.FlowState_FLOW_STATE_DEPLOYING,
+		Message:       "flow runtime created",
 		ActiveVersion: version,
+		Workload:      workload,
 		LastUpdated:   timestamppb.New(time.Now()),
 	}
 
