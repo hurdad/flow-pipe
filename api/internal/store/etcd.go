@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"path"
 	"strconv"
@@ -11,6 +10,7 @@ import (
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"google.golang.org/protobuf/proto"
 )
 
 // ============================================================
@@ -133,7 +133,7 @@ func (s *EtcdStore) createNewVersion(
 
 	spec.Version = nextVersion
 
-	specBytes, err := json.Marshal(spec)
+	specBytes, err := proto.Marshal(spec)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (s *EtcdStore) GetFlow(
 	}
 
 	var spec flowpipev1.FlowSpec
-	if err := json.Unmarshal(specResp.Kvs[0].Value, &spec); err != nil {
+	if err := proto.Unmarshal(specResp.Kvs[0].Value, &spec); err != nil {
 		return nil, err
 	}
 
@@ -293,7 +293,7 @@ func (s *EtcdStore) GetFlowStatus(
 	}
 
 	var status flowpipev1.FlowStatus
-	if err := json.Unmarshal(resp.Kvs[0].Value, &status); err != nil {
+	if err := proto.Unmarshal(resp.Kvs[0].Value, &status); err != nil {
 		return nil, err
 	}
 
