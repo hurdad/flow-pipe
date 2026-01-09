@@ -59,7 +59,7 @@ func ensureRuntime(
 
 	switch mode {
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
-		return applyJob(ctx, client, namespace, spec.Name, configMapName, image, imagePullPolicy)
+		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
 		fallthrough
 	default:
@@ -195,11 +195,12 @@ func applyJob(
 	ctx context.Context,
 	client kubernetes.Interface,
 	namespace string,
-	name string,
+	spec *flowpipev1.FlowSpec,
 	configMapName string,
 	image string,
 	imagePullPolicy corev1.PullPolicy,
 ) (string, error) {
+	name := spec.Name
 	desired := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -216,7 +217,7 @@ func applyJob(
 					},
 				},
 				Spec: corev1.PodSpec{
-					RestartPolicy: corev1.RestartPolicyNever,
+					RestartPolicy: restartPolicyFromSpec(spec),
 					Containers: []corev1.Container{
 						{
 							Name:            "runtime",
@@ -257,6 +258,48 @@ func applyJob(
 	}
 
 	return name, nil
+}
+
+func pullPolicyFromSpec(spec *flowpipev1.FlowSpec) corev1.PullPolicy {
+	if spec == nil {
+		return corev1.PullIfNotPresent
+	}
+
+	if spec.Kubernetes == nil {
+		return corev1.PullIfNotPresent
+	}
+
+	switch spec.Kubernetes.ImagePullPolicy {
+	case flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_ALWAYS:
+		return corev1.PullAlways
+	case flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_NEVER:
+		return corev1.PullNever
+	case flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_IF_NOT_PRESENT:
+		fallthrough
+	default:
+		return corev1.PullIfNotPresent
+	}
+}
+
+func restartPolicyFromSpec(spec *flowpipev1.FlowSpec) corev1.RestartPolicy {
+	if spec == nil {
+		return corev1.RestartPolicyNever
+	}
+
+	if spec.Kubernetes == nil {
+		return corev1.RestartPolicyNever
+	}
+
+	switch spec.Kubernetes.RestartPolicy {
+	case flowpipev1.RestartPolicy_RESTART_POLICY_ALWAYS:
+		return corev1.RestartPolicyAlways
+	case flowpipev1.RestartPolicy_RESTART_POLICY_ON_FAILURE:
+		return corev1.RestartPolicyOnFailure
+	case flowpipev1.RestartPolicy_RESTART_POLICY_NEVER:
+		fallthrough
+	default:
+		return corev1.RestartPolicyNever
+	}
 }
 
 func runtimeEnv() []corev1.EnvVar {

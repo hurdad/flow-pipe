@@ -93,3 +93,129 @@ func TestEnsureRuntimeCreatesJob(t *testing.T) {
 		t.Fatalf("expected restart policy never, got %q", job.Spec.Template.Spec.RestartPolicy)
 	}
 }
+
+func TestPullPolicyFromSpec(t *testing.T) {
+	cases := []struct {
+		name     string
+		spec     *flowpipev1.FlowSpec
+		expected corev1.PullPolicy
+	}{
+		{
+			name:     "nil spec defaults",
+			spec:     nil,
+			expected: corev1.PullIfNotPresent,
+		},
+		{
+			name: "always",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					ImagePullPolicy: flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_ALWAYS,
+				},
+			},
+			expected: corev1.PullAlways,
+		},
+		{
+			name: "never",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					ImagePullPolicy: flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_NEVER,
+				},
+			},
+			expected: corev1.PullNever,
+		},
+		{
+			name: "if not present",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					ImagePullPolicy: flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_IF_NOT_PRESENT,
+				},
+			},
+			expected: corev1.PullIfNotPresent,
+		},
+		{
+			name: "unspecified",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					ImagePullPolicy: flowpipev1.ImagePullPolicy_IMAGE_PULL_POLICY_UNSPECIFIED,
+				},
+			},
+			expected: corev1.PullIfNotPresent,
+		},
+		{
+			name:     "nil kubernetes",
+			spec:     &flowpipev1.FlowSpec{},
+			expected: corev1.PullIfNotPresent,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := pullPolicyFromSpec(tc.spec); got != tc.expected {
+				t.Fatalf("expected %q, got %q", tc.expected, got)
+			}
+		})
+	}
+}
+
+func TestRestartPolicyFromSpec(t *testing.T) {
+	cases := []struct {
+		name     string
+		spec     *flowpipev1.FlowSpec
+		expected corev1.RestartPolicy
+	}{
+		{
+			name:     "nil spec defaults",
+			spec:     nil,
+			expected: corev1.RestartPolicyNever,
+		},
+		{
+			name: "always",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					RestartPolicy: flowpipev1.RestartPolicy_RESTART_POLICY_ALWAYS,
+				},
+			},
+			expected: corev1.RestartPolicyAlways,
+		},
+		{
+			name: "on failure",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					RestartPolicy: flowpipev1.RestartPolicy_RESTART_POLICY_ON_FAILURE,
+				},
+			},
+			expected: corev1.RestartPolicyOnFailure,
+		},
+		{
+			name: "never",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					RestartPolicy: flowpipev1.RestartPolicy_RESTART_POLICY_NEVER,
+				},
+			},
+			expected: corev1.RestartPolicyNever,
+		},
+		{
+			name: "unspecified",
+			spec: &flowpipev1.FlowSpec{
+				Kubernetes: &flowpipev1.KubernetesSettings{
+					RestartPolicy: flowpipev1.RestartPolicy_RESTART_POLICY_UNSPECIFIED,
+				},
+			},
+			expected: corev1.RestartPolicyNever,
+		},
+		{
+			name:     "nil kubernetes",
+			spec:     &flowpipev1.FlowSpec{},
+			expected: corev1.RestartPolicyNever,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := restartPolicyFromSpec(tc.spec); got != tc.expected {
+				t.Fatalf("expected %q, got %q", tc.expected, got)
+			}
+		})
+	}
+}

@@ -12,7 +12,6 @@ import (
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	corev1 "k8s.io/api/core/v1"
 )
 
 func (c *Controller) worker(ctx context.Context) {
@@ -67,7 +66,7 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 		c.kube,
 		c.runtimeNamespace,
 		spec,
-		corev1.PullIfNotPresent,
+		pullPolicyFromSpec(spec),
 	)
 	if err != nil {
 		span.RecordError(err)
