@@ -464,7 +464,7 @@
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
-      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "rpcStatus": {
       "type": "object",
@@ -539,16 +539,6 @@
         }
       }
     },
-    "v1FlowRuntime": {
-      "type": "string",
-      "enum": [
-        "FLOW_RUNTIME_UNSPECIFIED",
-        "FLOW_RUNTIME_BUILTIN",
-        "FLOW_RUNTIME_CONTAINER"
-      ],
-      "default": "FLOW_RUNTIME_UNSPECIFIED",
-      "description": " - FLOW_RUNTIME_UNSPECIFIED: Runtime not specified.\n - FLOW_RUNTIME_BUILTIN: Built-in stages linked into runtime binary.\n - FLOW_RUNTIME_CONTAINER: Stages executed inside a container image."
-    },
     "v1FlowSpec": {
       "type": "object",
       "properties": {
@@ -560,10 +550,6 @@
           "type": "string",
           "format": "uint64",
           "description": "Immutable version assigned by the controller."
-        },
-        "runtime": {
-          "$ref": "#/definitions/v1FlowRuntime",
-          "description": "Runtime environment selection."
         },
         "image": {
           "type": "string",
