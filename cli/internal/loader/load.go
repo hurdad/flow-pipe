@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -17,7 +18,7 @@ func LoadFlowSpec(path string) (*flowpipev1.FlowSpec, error) {
 	}
 
 	// YAML → generic map
-	var raw any
+	var raw map[string]any
 	if err := yaml.Unmarshal(data, &raw); err != nil {
 		return nil, fmt.Errorf("yaml decode: %w", err)
 	}
@@ -39,5 +40,5 @@ func LoadFlowSpec(path string) (*flowpipev1.FlowSpec, error) {
 
 // yamlToJSON converts YAML-parsed data into canonical JSON bytes.
 func yamlToJSON(v any) ([]byte, error) {
-	return yaml.Marshal(v)
+	return json.Marshal(v)
 }
