@@ -1,5 +1,4 @@
 name: noop-observability-k3s
-runtime: FLOW_RUNTIME_BUILTIN
 execution:
   mode: EXECUTION_MODE_STREAMING
 kubernetes:
