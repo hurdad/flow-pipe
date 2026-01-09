@@ -1,0 +1,22 @@
+# Ignore everything by default; allow only build inputs needed by Dockerfiles.
+**
+
+# Root module file required by Dockerfiles.
+!go.mod
+!CMakeLists.txt
+!cmake/**
+
+# Shared source used by api/cli/controller builds.
+!gen/**
+!pkg/**
+
+# Module sources and go.mod/go.sum files.
+!api/**
+!cli/**
+!controller/**
+
+# Runtime build inputs for runtime/docker Dockerfiles.
+!proto/**
+!runtime/**
+!stages/**
+!third_party/**
