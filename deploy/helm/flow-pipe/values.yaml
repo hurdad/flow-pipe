@@ -62,7 +62,7 @@ api:
   grpcService:
     enabled: false
     # Options: ClusterIP, LoadBalancer
-    type: LoadBalancer
+    type: ClusterIP
     annotations: {}
 
   ingress:
@@ -94,13 +94,13 @@ observability: &observability
         httpEndpoint: "0.0.0.0:4318"
     exporters:
       metrics:
-        # OTLP endpoint for metrics export (e.g., https://otel-collector:4317).
+        # OTLP endpoint for metrics export
         endpoint: ""
       traces:
-        # OTLP endpoint for trace export (e.g., https://otel-collector:4317).
+        # OTLP endpoint for trace export
         endpoint: ""
       logs:
-        # OTLP endpoint for log export (e.g., https://otel-collector:4317).
+        # OTLP endpoint for log export
         endpoint: ""
 
 global:
