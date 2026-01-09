@@ -75,6 +75,120 @@ func (FlowRuntime) EnumDescriptor() ([]byte, []int) {
 	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
 }
 
+// Kubernetes image pull policy.
+type ImagePullPolicy int32
+
+const (
+	// Pull policy not specified (controller default).
+	ImagePullPolicy_IMAGE_PULL_POLICY_UNSPECIFIED ImagePullPolicy = 0
+	// Always pull the image.
+	ImagePullPolicy_IMAGE_PULL_POLICY_ALWAYS ImagePullPolicy = 1
+	// Pull if not present on node.
+	ImagePullPolicy_IMAGE_PULL_POLICY_IF_NOT_PRESENT ImagePullPolicy = 2
+	// Never pull the image.
+	ImagePullPolicy_IMAGE_PULL_POLICY_NEVER ImagePullPolicy = 3
+)
+
+// Enum value maps for ImagePullPolicy.
+var (
+	ImagePullPolicy_name = map[int32]string{
+		0: "IMAGE_PULL_POLICY_UNSPECIFIED",
+		1: "IMAGE_PULL_POLICY_ALWAYS",
+		2: "IMAGE_PULL_POLICY_IF_NOT_PRESENT",
+		3: "IMAGE_PULL_POLICY_NEVER",
+	}
+	ImagePullPolicy_value = map[string]int32{
+		"IMAGE_PULL_POLICY_UNSPECIFIED":    0,
+		"IMAGE_PULL_POLICY_ALWAYS":         1,
+		"IMAGE_PULL_POLICY_IF_NOT_PRESENT": 2,
+		"IMAGE_PULL_POLICY_NEVER":          3,
+	}
+)
+
+func (x ImagePullPolicy) Enum() *ImagePullPolicy {
+	p := new(ImagePullPolicy)
+	*p = x
+	return p
+}
+
+func (x ImagePullPolicy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ImagePullPolicy) Descriptor() protoreflect.EnumDescriptor {
+	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
+}
+
+func (ImagePullPolicy) Type() protoreflect.EnumType {
+	return &file_flowpipe_v1_flow_proto_enumTypes[1]
+}
+
+func (x ImagePullPolicy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ImagePullPolicy.Descriptor instead.
+func (ImagePullPolicy) EnumDescriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
+}
+
+// Kubernetes restart policy for runtime pods.
+type RestartPolicy int32
+
+const (
+	// Restart policy not specified (controller default).
+	RestartPolicy_RESTART_POLICY_UNSPECIFIED RestartPolicy = 0
+	// Always restart the pod.
+	RestartPolicy_RESTART_POLICY_ALWAYS RestartPolicy = 1
+	// Restart on failure.
+	RestartPolicy_RESTART_POLICY_ON_FAILURE RestartPolicy = 2
+	// Never restart the pod.
+	RestartPolicy_RESTART_POLICY_NEVER RestartPolicy = 3
+)
+
+// Enum value maps for RestartPolicy.
+var (
+	RestartPolicy_name = map[int32]string{
+		0: "RESTART_POLICY_UNSPECIFIED",
+		1: "RESTART_POLICY_ALWAYS",
+		2: "RESTART_POLICY_ON_FAILURE",
+		3: "RESTART_POLICY_NEVER",
+	}
+	RestartPolicy_value = map[string]int32{
+		"RESTART_POLICY_UNSPECIFIED": 0,
+		"RESTART_POLICY_ALWAYS":      1,
+		"RESTART_POLICY_ON_FAILURE":  2,
+		"RESTART_POLICY_NEVER":       3,
+	}
+)
+
+func (x RestartPolicy) Enum() *RestartPolicy {
+	p := new(RestartPolicy)
+	*p = x
+	return p
+}
+
+func (x RestartPolicy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RestartPolicy) Descriptor() protoreflect.EnumDescriptor {
+	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
+}
+
+func (RestartPolicy) Type() protoreflect.EnumType {
+	return &file_flowpipe_v1_flow_proto_enumTypes[2]
+}
+
+func (x RestartPolicy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RestartPolicy.Descriptor instead.
+func (RestartPolicy) EnumDescriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
+}
+
 type ExecutionMode int32
 
 const (
@@ -111,11 +225,11 @@ func (x ExecutionMode) String() string {
 }
 
 func (ExecutionMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[3].Descriptor()
 }
 
 func (ExecutionMode) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[1]
+	return &file_flowpipe_v1_flow_proto_enumTypes[3]
 }
 
 func (x ExecutionMode) Number() protoreflect.EnumNumber {
@@ -124,7 +238,7 @@ func (x ExecutionMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionMode.Descriptor instead.
 func (ExecutionMode) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
 }
 
 type FlowState int32
@@ -179,11 +293,11 @@ func (x FlowState) String() string {
 }
 
 func (FlowState) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[4].Descriptor()
 }
 
 func (FlowState) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[2]
+	return &file_flowpipe_v1_flow_proto_enumTypes[4]
 }
 
 func (x FlowState) Number() protoreflect.EnumNumber {
@@ -192,7 +306,7 @@ func (x FlowState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FlowState.Descriptor instead.
 func (FlowState) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
 }
 
 type Flow struct {
@@ -291,6 +405,8 @@ type FlowSpec struct {
 	Labels map[string]string `protobuf:"bytes,10,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// Flow-level observability overrides.
 	Observability *ObservabilityConfig `protobuf:"bytes,11,opt,name=observability,proto3,oneof" json:"observability,omitempty"`
+	// Kubernetes runtime settings.
+	Kubernetes    *KubernetesSettings `protobuf:"bytes,12,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -402,6 +518,68 @@ func (x *FlowSpec) GetObservability() *ObservabilityConfig {
 	return nil
 }
 
+func (x *FlowSpec) GetKubernetes() *KubernetesSettings {
+	if x != nil {
+		return x.Kubernetes
+	}
+	return nil
+}
+
+// Kubernetes runtime settings for flow workloads.
+type KubernetesSettings struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Image pull policy for runtime pods.
+	ImagePullPolicy ImagePullPolicy `protobuf:"varint,1,opt,name=image_pull_policy,json=imagePullPolicy,proto3,enum=flowpipe.v1.ImagePullPolicy" json:"image_pull_policy,omitempty"`
+	// Restart policy for runtime pods.
+	RestartPolicy RestartPolicy `protobuf:"varint,2,opt,name=restart_policy,json=restartPolicy,proto3,enum=flowpipe.v1.RestartPolicy" json:"restart_policy,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KubernetesSettings) Reset() {
+	*x = KubernetesSettings{}
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KubernetesSettings) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KubernetesSettings) ProtoMessage() {}
+
+func (x *KubernetesSettings) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KubernetesSettings.ProtoReflect.Descriptor instead.
+func (*KubernetesSettings) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *KubernetesSettings) GetImagePullPolicy() ImagePullPolicy {
+	if x != nil {
+		return x.ImagePullPolicy
+	}
+	return ImagePullPolicy_IMAGE_PULL_POLICY_UNSPECIFIED
+}
+
+func (x *KubernetesSettings) GetRestartPolicy() RestartPolicy {
+	if x != nil {
+		return x.RestartPolicy
+	}
+	return RestartPolicy_RESTART_POLICY_UNSPECIFIED
+}
+
 type Execution struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Selected execution mode.
@@ -412,7 +590,7 @@ type Execution struct {
 
 func (x *Execution) Reset() {
 	*x = Execution{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[2]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -424,7 +602,7 @@ func (x *Execution) String() string {
 func (*Execution) ProtoMessage() {}
 
 func (x *Execution) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[2]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -437,7 +615,7 @@ func (x *Execution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Execution.ProtoReflect.Descriptor instead.
 func (*Execution) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Execution) GetMode() ExecutionMode {
@@ -469,7 +647,7 @@ type StageSpec struct {
 
 func (x *StageSpec) Reset() {
 	*x = StageSpec{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[3]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -481,7 +659,7 @@ func (x *StageSpec) String() string {
 func (*StageSpec) ProtoMessage() {}
 
 func (x *StageSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[3]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -494,7 +672,7 @@ func (x *StageSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StageSpec.ProtoReflect.Descriptor instead.
 func (*StageSpec) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *StageSpec) GetName() string {
@@ -558,7 +736,7 @@ type QueueSpec struct {
 
 func (x *QueueSpec) Reset() {
 	*x = QueueSpec{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -570,7 +748,7 @@ func (x *QueueSpec) String() string {
 func (*QueueSpec) ProtoMessage() {}
 
 func (x *QueueSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -583,7 +761,7 @@ func (x *QueueSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueueSpec.ProtoReflect.Descriptor instead.
 func (*QueueSpec) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *QueueSpec) GetName() string {
@@ -614,7 +792,7 @@ type Resources struct {
 
 func (x *Resources) Reset() {
 	*x = Resources{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -626,7 +804,7 @@ func (x *Resources) String() string {
 func (*Resources) ProtoMessage() {}
 
 func (x *Resources) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -639,7 +817,7 @@ func (x *Resources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resources.ProtoReflect.Descriptor instead.
 func (*Resources) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Resources) GetCpuCores() uint32 {
@@ -673,7 +851,7 @@ type CpuSet struct {
 
 func (x *CpuSet) Reset() {
 	*x = CpuSet{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -685,7 +863,7 @@ func (x *CpuSet) String() string {
 func (*CpuSet) ProtoMessage() {}
 
 func (x *CpuSet) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -698,7 +876,7 @@ func (x *CpuSet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CpuSet.ProtoReflect.Descriptor instead.
 func (*CpuSet) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CpuSet) GetCpu() []uint32 {
@@ -726,7 +904,7 @@ type FlowStatus struct {
 
 func (x *FlowStatus) Reset() {
 	*x = FlowStatus{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -738,7 +916,7 @@ func (x *FlowStatus) String() string {
 func (*FlowStatus) ProtoMessage() {}
 
 func (x *FlowStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -751,7 +929,7 @@ func (x *FlowStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlowStatus.ProtoReflect.Descriptor instead.
 func (*FlowStatus) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *FlowStatus) GetState() FlowState {
@@ -813,7 +991,7 @@ type Value struct {
 
 func (x *Value) Reset() {
 	*x = Value{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -825,7 +1003,7 @@ func (x *Value) String() string {
 func (*Value) ProtoMessage() {}
 
 func (x *Value) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -838,7 +1016,7 @@ func (x *Value) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Value.ProtoReflect.Descriptor instead.
 func (*Value) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Value) GetKind() isValue_Kind {
@@ -1038,7 +1216,7 @@ type Struct struct {
 
 func (x *Struct) Reset() {
 	*x = Struct{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1050,7 +1228,7 @@ func (x *Struct) String() string {
 func (*Struct) ProtoMessage() {}
 
 func (x *Struct) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1063,7 +1241,7 @@ func (x *Struct) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Struct.ProtoReflect.Descriptor instead.
 func (*Struct) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{9}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Struct) GetFields() map[string]*Value {
@@ -1083,7 +1261,7 @@ type StringList struct {
 
 func (x *StringList) Reset() {
 	*x = StringList{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1095,7 +1273,7 @@ func (x *StringList) String() string {
 func (*StringList) ProtoMessage() {}
 
 func (x *StringList) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1108,7 +1286,7 @@ func (x *StringList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StringList.ProtoReflect.Descriptor instead.
 func (*StringList) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{10}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StringList) GetValues() []string {
@@ -1128,7 +1306,7 @@ type IntList struct {
 
 func (x *IntList) Reset() {
 	*x = IntList{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1140,7 +1318,7 @@ func (x *IntList) String() string {
 func (*IntList) ProtoMessage() {}
 
 func (x *IntList) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1153,7 +1331,7 @@ func (x *IntList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IntList.ProtoReflect.Descriptor instead.
 func (*IntList) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{11}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *IntList) GetValues() []int64 {
@@ -1173,7 +1351,7 @@ type UIntList struct {
 
 func (x *UIntList) Reset() {
 	*x = UIntList{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[12]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1185,7 +1363,7 @@ func (x *UIntList) String() string {
 func (*UIntList) ProtoMessage() {}
 
 func (x *UIntList) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[12]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1198,7 +1376,7 @@ func (x *UIntList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UIntList.ProtoReflect.Descriptor instead.
 func (*UIntList) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{12}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UIntList) GetValues() []uint64 {
@@ -1218,7 +1396,7 @@ type DoubleList struct {
 
 func (x *DoubleList) Reset() {
 	*x = DoubleList{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[13]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1230,7 +1408,7 @@ func (x *DoubleList) String() string {
 func (*DoubleList) ProtoMessage() {}
 
 func (x *DoubleList) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[13]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1243,7 +1421,7 @@ func (x *DoubleList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DoubleList.ProtoReflect.Descriptor instead.
 func (*DoubleList) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{13}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DoubleList) GetValues() []float64 {
@@ -1263,7 +1441,7 @@ type BoolList struct {
 
 func (x *BoolList) Reset() {
 	*x = BoolList{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[14]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1275,7 +1453,7 @@ func (x *BoolList) String() string {
 func (*BoolList) ProtoMessage() {}
 
 func (x *BoolList) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[14]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1288,7 +1466,7 @@ func (x *BoolList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BoolList.ProtoReflect.Descriptor instead.
 func (*BoolList) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{14}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *BoolList) GetValues() []bool {
@@ -1307,7 +1485,7 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\x04R\aversion\x12)\n" +
 	"\x04spec\x18\x03 \x01(\v2\x15.flowpipe.v1.FlowSpecR\x04spec\x12/\n" +
-	"\x06status\x18\x04 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"\xf4\x05\n" +
+	"\x06status\x18\x04 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"\xc9\x06\n" +
 	"\bFlowSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\x04R\aversion\x122\n" +
@@ -1321,7 +1499,10 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\tresources\x18\t \x01(\v2\x16.flowpipe.v1.ResourcesH\x02R\tresources\x88\x01\x01\x129\n" +
 	"\x06labels\x18\n" +
 	" \x03(\v2!.flowpipe.v1.FlowSpec.LabelsEntryR\x06labels\x12K\n" +
-	"\robservability\x18\v \x01(\v2 .flowpipe.v1.ObservabilityConfigH\x03R\robservability\x88\x01\x01\x1aR\n" +
+	"\robservability\x18\v \x01(\v2 .flowpipe.v1.ObservabilityConfigH\x03R\robservability\x88\x01\x01\x12D\n" +
+	"\n" +
+	"kubernetes\x18\f \x01(\v2\x1f.flowpipe.v1.KubernetesSettingsH\x04R\n" +
+	"kubernetes\x88\x01\x01\x1aR\n" +
 	"\x0fCpuPinningEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12)\n" +
 	"\x05value\x18\x02 \x01(\v2\x13.flowpipe.v1.CpuSetR\x05value:\x028\x01\x1a9\n" +
@@ -1333,7 +1514,11 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"_executionB\f\n" +
 	"\n" +
 	"_resourcesB\x10\n" +
-	"\x0e_observability\";\n" +
+	"\x0e_observabilityB\r\n" +
+	"\v_kubernetes\"\xa1\x01\n" +
+	"\x12KubernetesSettings\x12H\n" +
+	"\x11image_pull_policy\x18\x01 \x01(\x0e2\x1c.flowpipe.v1.ImagePullPolicyR\x0fimagePullPolicy\x12A\n" +
+	"\x0erestart_policy\x18\x02 \x01(\x0e2\x1a.flowpipe.v1.RestartPolicyR\rrestartPolicy\";\n" +
 	"\tExecution\x12.\n" +
 	"\x04mode\x18\x01 \x01(\x0e2\x1a.flowpipe.v1.ExecutionModeR\x04mode\"\x95\x02\n" +
 	"\tStageSpec\x12\x12\n" +
@@ -1408,7 +1593,17 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\vFlowRuntime\x12\x1c\n" +
 	"\x18FLOW_RUNTIME_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14FLOW_RUNTIME_BUILTIN\x10\x01\x12\x1a\n" +
-	"\x16FLOW_RUNTIME_CONTAINER\x10\x02*e\n" +
+	"\x16FLOW_RUNTIME_CONTAINER\x10\x02*\x95\x01\n" +
+	"\x0fImagePullPolicy\x12!\n" +
+	"\x1dIMAGE_PULL_POLICY_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18IMAGE_PULL_POLICY_ALWAYS\x10\x01\x12$\n" +
+	" IMAGE_PULL_POLICY_IF_NOT_PRESENT\x10\x02\x12\x1b\n" +
+	"\x17IMAGE_PULL_POLICY_NEVER\x10\x03*\x83\x01\n" +
+	"\rRestartPolicy\x12\x1e\n" +
+	"\x1aRESTART_POLICY_UNSPECIFIED\x10\x00\x12\x19\n" +
+	"\x15RESTART_POLICY_ALWAYS\x10\x01\x12\x1d\n" +
+	"\x19RESTART_POLICY_ON_FAILURE\x10\x02\x12\x18\n" +
+	"\x14RESTART_POLICY_NEVER\x10\x03*e\n" +
 	"\rExecutionMode\x12\x1e\n" +
 	"\x1aEXECUTION_MODE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18EXECUTION_MODE_STREAMING\x10\x01\x12\x16\n" +
@@ -1434,63 +1629,69 @@ func file_flowpipe_v1_flow_proto_rawDescGZIP() []byte {
 	return file_flowpipe_v1_flow_proto_rawDescData
 }
 
-var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_flowpipe_v1_flow_proto_goTypes = []any{
 	(FlowRuntime)(0),              // 0: flowpipe.v1.FlowRuntime
-	(ExecutionMode)(0),            // 1: flowpipe.v1.ExecutionMode
-	(FlowState)(0),                // 2: flowpipe.v1.FlowState
-	(*Flow)(nil),                  // 3: flowpipe.v1.Flow
-	(*FlowSpec)(nil),              // 4: flowpipe.v1.FlowSpec
-	(*Execution)(nil),             // 5: flowpipe.v1.Execution
-	(*StageSpec)(nil),             // 6: flowpipe.v1.StageSpec
-	(*QueueSpec)(nil),             // 7: flowpipe.v1.QueueSpec
-	(*Resources)(nil),             // 8: flowpipe.v1.Resources
-	(*CpuSet)(nil),                // 9: flowpipe.v1.CpuSet
-	(*FlowStatus)(nil),            // 10: flowpipe.v1.FlowStatus
-	(*Value)(nil),                 // 11: flowpipe.v1.Value
-	(*Struct)(nil),                // 12: flowpipe.v1.Struct
-	(*StringList)(nil),            // 13: flowpipe.v1.StringList
-	(*IntList)(nil),               // 14: flowpipe.v1.IntList
-	(*UIntList)(nil),              // 15: flowpipe.v1.UIntList
-	(*DoubleList)(nil),            // 16: flowpipe.v1.DoubleList
-	(*BoolList)(nil),              // 17: flowpipe.v1.BoolList
-	nil,                           // 18: flowpipe.v1.FlowSpec.CpuPinningEntry
-	nil,                           // 19: flowpipe.v1.FlowSpec.LabelsEntry
-	nil,                           // 20: flowpipe.v1.Struct.FieldsEntry
-	(*ObservabilityConfig)(nil),   // 21: flowpipe.v1.ObservabilityConfig
-	(*structpb.Struct)(nil),       // 22: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil), // 23: google.protobuf.Timestamp
+	(ImagePullPolicy)(0),          // 1: flowpipe.v1.ImagePullPolicy
+	(RestartPolicy)(0),            // 2: flowpipe.v1.RestartPolicy
+	(ExecutionMode)(0),            // 3: flowpipe.v1.ExecutionMode
+	(FlowState)(0),                // 4: flowpipe.v1.FlowState
+	(*Flow)(nil),                  // 5: flowpipe.v1.Flow
+	(*FlowSpec)(nil),              // 6: flowpipe.v1.FlowSpec
+	(*KubernetesSettings)(nil),    // 7: flowpipe.v1.KubernetesSettings
+	(*Execution)(nil),             // 8: flowpipe.v1.Execution
+	(*StageSpec)(nil),             // 9: flowpipe.v1.StageSpec
+	(*QueueSpec)(nil),             // 10: flowpipe.v1.QueueSpec
+	(*Resources)(nil),             // 11: flowpipe.v1.Resources
+	(*CpuSet)(nil),                // 12: flowpipe.v1.CpuSet
+	(*FlowStatus)(nil),            // 13: flowpipe.v1.FlowStatus
+	(*Value)(nil),                 // 14: flowpipe.v1.Value
+	(*Struct)(nil),                // 15: flowpipe.v1.Struct
+	(*StringList)(nil),            // 16: flowpipe.v1.StringList
+	(*IntList)(nil),               // 17: flowpipe.v1.IntList
+	(*UIntList)(nil),              // 18: flowpipe.v1.UIntList
+	(*DoubleList)(nil),            // 19: flowpipe.v1.DoubleList
+	(*BoolList)(nil),              // 20: flowpipe.v1.BoolList
+	nil,                           // 21: flowpipe.v1.FlowSpec.CpuPinningEntry
+	nil,                           // 22: flowpipe.v1.FlowSpec.LabelsEntry
+	nil,                           // 23: flowpipe.v1.Struct.FieldsEntry
+	(*ObservabilityConfig)(nil),   // 24: flowpipe.v1.ObservabilityConfig
+	(*structpb.Struct)(nil),       // 25: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 26: google.protobuf.Timestamp
 }
 var file_flowpipe_v1_flow_proto_depIdxs = []int32{
-	4,  // 0: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
-	10, // 1: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
+	6,  // 0: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
+	13, // 1: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
 	0,  // 2: flowpipe.v1.FlowSpec.runtime:type_name -> flowpipe.v1.FlowRuntime
-	5,  // 3: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
-	6,  // 4: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
-	7,  // 5: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
-	18, // 6: flowpipe.v1.FlowSpec.cpu_pinning:type_name -> flowpipe.v1.FlowSpec.CpuPinningEntry
-	8,  // 7: flowpipe.v1.FlowSpec.resources:type_name -> flowpipe.v1.Resources
-	19, // 8: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
-	21, // 9: flowpipe.v1.FlowSpec.observability:type_name -> flowpipe.v1.ObservabilityConfig
-	1,  // 10: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
-	22, // 11: flowpipe.v1.StageSpec.config:type_name -> google.protobuf.Struct
-	2,  // 12: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
-	23, // 13: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
-	13, // 14: flowpipe.v1.Value.string_list:type_name -> flowpipe.v1.StringList
-	14, // 15: flowpipe.v1.Value.int_list:type_name -> flowpipe.v1.IntList
-	15, // 16: flowpipe.v1.Value.uint_list:type_name -> flowpipe.v1.UIntList
-	16, // 17: flowpipe.v1.Value.double_list:type_name -> flowpipe.v1.DoubleList
-	17, // 18: flowpipe.v1.Value.bool_list:type_name -> flowpipe.v1.BoolList
-	12, // 19: flowpipe.v1.Value.struct_value:type_name -> flowpipe.v1.Struct
-	20, // 20: flowpipe.v1.Struct.fields:type_name -> flowpipe.v1.Struct.FieldsEntry
-	9,  // 21: flowpipe.v1.FlowSpec.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
-	11, // 22: flowpipe.v1.Struct.FieldsEntry.value:type_name -> flowpipe.v1.Value
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	8,  // 3: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
+	9,  // 4: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
+	10, // 5: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
+	21, // 6: flowpipe.v1.FlowSpec.cpu_pinning:type_name -> flowpipe.v1.FlowSpec.CpuPinningEntry
+	11, // 7: flowpipe.v1.FlowSpec.resources:type_name -> flowpipe.v1.Resources
+	22, // 8: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
+	24, // 9: flowpipe.v1.FlowSpec.observability:type_name -> flowpipe.v1.ObservabilityConfig
+	7,  // 10: flowpipe.v1.FlowSpec.kubernetes:type_name -> flowpipe.v1.KubernetesSettings
+	1,  // 11: flowpipe.v1.KubernetesSettings.image_pull_policy:type_name -> flowpipe.v1.ImagePullPolicy
+	2,  // 12: flowpipe.v1.KubernetesSettings.restart_policy:type_name -> flowpipe.v1.RestartPolicy
+	3,  // 13: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
+	25, // 14: flowpipe.v1.StageSpec.config:type_name -> google.protobuf.Struct
+	4,  // 15: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
+	26, // 16: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
+	16, // 17: flowpipe.v1.Value.string_list:type_name -> flowpipe.v1.StringList
+	17, // 18: flowpipe.v1.Value.int_list:type_name -> flowpipe.v1.IntList
+	18, // 19: flowpipe.v1.Value.uint_list:type_name -> flowpipe.v1.UIntList
+	19, // 20: flowpipe.v1.Value.double_list:type_name -> flowpipe.v1.DoubleList
+	20, // 21: flowpipe.v1.Value.bool_list:type_name -> flowpipe.v1.BoolList
+	15, // 22: flowpipe.v1.Value.struct_value:type_name -> flowpipe.v1.Struct
+	23, // 23: flowpipe.v1.Struct.fields:type_name -> flowpipe.v1.Struct.FieldsEntry
+	12, // 24: flowpipe.v1.FlowSpec.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
+	14, // 25: flowpipe.v1.Struct.FieldsEntry.value:type_name -> flowpipe.v1.Value
+	26, // [26:26] is the sub-list for method output_type
+	26, // [26:26] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_flow_proto_init() }
@@ -1500,9 +1701,9 @@ func file_flowpipe_v1_flow_proto_init() {
 	}
 	file_flowpipe_v1_observability_proto_init()
 	file_flowpipe_v1_flow_proto_msgTypes[1].OneofWrappers = []any{}
-	file_flowpipe_v1_flow_proto_msgTypes[3].OneofWrappers = []any{}
-	file_flowpipe_v1_flow_proto_msgTypes[5].OneofWrappers = []any{}
-	file_flowpipe_v1_flow_proto_msgTypes[8].OneofWrappers = []any{
+	file_flowpipe_v1_flow_proto_msgTypes[4].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[6].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[9].OneofWrappers = []any{
 		(*Value_StringValue)(nil),
 		(*Value_IntValue)(nil),
 		(*Value_UintValue)(nil),
@@ -1520,8 +1721,8 @@ func file_flowpipe_v1_flow_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_flow_proto_rawDesc), len(file_flowpipe_v1_flow_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   18,
+			NumEnums:      5,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

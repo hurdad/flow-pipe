@@ -63,6 +63,9 @@ message FlowSpec {
 
   // Flow-level observability overrides.
   optional ObservabilityConfig observability = 11;
+
+  // Kubernetes runtime settings.
+  optional KubernetesSettings kubernetes = 12;
 }
 
 // ============================================================
@@ -78,6 +81,45 @@ enum FlowRuntime {
 
   // Stages executed inside a container image.
   FLOW_RUNTIME_CONTAINER = 2;
+}
+
+// Kubernetes runtime settings for flow workloads.
+message KubernetesSettings {
+  // Image pull policy for runtime pods.
+  ImagePullPolicy image_pull_policy = 1;
+
+  // Restart policy for runtime pods.
+  RestartPolicy restart_policy = 2;
+}
+
+// Kubernetes image pull policy.
+enum ImagePullPolicy {
+  // Pull policy not specified (controller default).
+  IMAGE_PULL_POLICY_UNSPECIFIED = 0;
+
+  // Always pull the image.
+  IMAGE_PULL_POLICY_ALWAYS = 1;
+
+  // Pull if not present on node.
+  IMAGE_PULL_POLICY_IF_NOT_PRESENT = 2;
+
+  // Never pull the image.
+  IMAGE_PULL_POLICY_NEVER = 3;
+}
+
+// Kubernetes restart policy for runtime pods.
+enum RestartPolicy {
+  // Restart policy not specified (controller default).
+  RESTART_POLICY_UNSPECIFIED = 0;
+
+  // Always restart the pod.
+  RESTART_POLICY_ALWAYS = 1;
+
+  // Restart on failure.
+  RESTART_POLICY_ON_FAILURE = 2;
+
+  // Never restart the pod.
+  RESTART_POLICY_NEVER = 3;
 }
 
 // ============================================================

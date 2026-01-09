@@ -610,6 +610,10 @@
         "observability": {
           "$ref": "#/definitions/v1ObservabilityConfig",
           "description": "Flow-level observability overrides."
+        },
+        "kubernetes": {
+          "$ref": "#/definitions/v1KubernetesSettings",
+          "description": "Kubernetes runtime settings."
         }
       }
     },
@@ -653,6 +657,31 @@
           "description": "Last controller reconciliation time."
         }
       }
+    },
+    "v1ImagePullPolicy": {
+      "type": "string",
+      "enum": [
+        "IMAGE_PULL_POLICY_UNSPECIFIED",
+        "IMAGE_PULL_POLICY_ALWAYS",
+        "IMAGE_PULL_POLICY_IF_NOT_PRESENT",
+        "IMAGE_PULL_POLICY_NEVER"
+      ],
+      "default": "IMAGE_PULL_POLICY_UNSPECIFIED",
+      "description": "Kubernetes image pull policy.\n\n - IMAGE_PULL_POLICY_UNSPECIFIED: Pull policy not specified (controller default).\n - IMAGE_PULL_POLICY_ALWAYS: Always pull the image.\n - IMAGE_PULL_POLICY_IF_NOT_PRESENT: Pull if not present on node.\n - IMAGE_PULL_POLICY_NEVER: Never pull the image."
+    },
+    "v1KubernetesSettings": {
+      "type": "object",
+      "properties": {
+        "imagePullPolicy": {
+          "$ref": "#/definitions/v1ImagePullPolicy",
+          "description": "Image pull policy for runtime pods."
+        },
+        "restartPolicy": {
+          "$ref": "#/definitions/v1RestartPolicy",
+          "description": "Restart policy for runtime pods."
+        }
+      },
+      "description": "Kubernetes runtime settings for flow workloads."
     },
     "v1ListFlowsResponse": {
       "type": "object",
@@ -742,6 +771,17 @@
           "description": "Named resource profile hint."
         }
       }
+    },
+    "v1RestartPolicy": {
+      "type": "string",
+      "enum": [
+        "RESTART_POLICY_UNSPECIFIED",
+        "RESTART_POLICY_ALWAYS",
+        "RESTART_POLICY_ON_FAILURE",
+        "RESTART_POLICY_NEVER"
+      ],
+      "default": "RESTART_POLICY_UNSPECIFIED",
+      "description": "Kubernetes restart policy for runtime pods.\n\n - RESTART_POLICY_UNSPECIFIED: Restart policy not specified (controller default).\n - RESTART_POLICY_ALWAYS: Always restart the pod.\n - RESTART_POLICY_ON_FAILURE: Restart on failure.\n - RESTART_POLICY_NEVER: Never restart the pod."
     },
     "v1StageSpec": {
       "type": "object",
