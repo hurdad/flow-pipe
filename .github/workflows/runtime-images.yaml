@@ -90,9 +90,9 @@ jobs:
         run: ctest --test-dir build/runtime/tests --output-on-failure
 
   # ------------------------------------------------------------
-  # 3. Build & push runtime image (root of tree)
+  # 3. Build & push runtime image (root of tree) per-arch
   # ------------------------------------------------------------
-  runtime:
+  runtime-amd64:
     needs: [meta, tests]
     runs-on: ubuntu-latest
 
@@ -107,7 +107,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: runtime/docker/Dockerfile
+          target: runtime
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}-amd64
+
+  runtime-arm64:
+    needs: [meta, tests]
+    runs-on: [self-hosted, linux, arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/setup-buildx-action@v3
 
@@ -117,15 +142,35 @@ jobs:
           file: runtime/docker/Dockerfile
           target: runtime
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}-arm64
+
+  runtime-manifest:
+    needs: [meta, runtime-amd64, runtime-arm64]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Create multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}-arm64
 
   # ------------------------------------------------------------
-  # 4. Build & push base image (depends on runtime)
+  # 4. Build & push base image (depends on runtime) per-arch
   # ------------------------------------------------------------
-  base:
-    needs: [meta, runtime]
+  base-amd64:
+    needs: [meta, runtime-manifest]
     runs-on: ubuntu-latest
 
     steps:
@@ -138,8 +183,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: docker/setup-qemu-action@v3
 
       - uses: docker/setup-buildx-action@v3
 
@@ -149,15 +192,62 @@ jobs:
           file: runtime/docker/Dockerfile
           target: base
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}-amd64
+
+  base-arm64:
+    needs: [meta, runtime-manifest]
+    runs-on: [self-hosted, linux, arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: runtime/docker/Dockerfile
+          target: base
+          push: true
+          platforms: linux/arm64
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}-arm64
+
+  base-manifest:
+    needs: [meta, base-amd64, base-arm64]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Create multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}-arm64
 
   # ------------------------------------------------------------
-  # 5. Build & push dev (SDK) image (depends on base)
+  # 5. Build & push dev (SDK) image (depends on base) per-arch
   # ------------------------------------------------------------
-  dev:
-    needs: [meta, base]
+  dev-amd64:
+    needs: [meta, base-manifest]
     runs-on: ubuntu-latest
 
     steps:
@@ -171,7 +261,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: runtime/docker/Dockerfile
+          target: dev
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }}-amd64
+
+  dev-arm64:
+    needs: [meta, base-manifest]
+    runs-on: [self-hosted, linux, arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: docker/setup-buildx-action@v3
 
@@ -181,6 +296,26 @@ jobs:
           file: runtime/docker/Dockerfile
           target: dev
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }}-arm64
+
+  dev-manifest:
+    needs: [meta, dev-amd64, dev-arm64]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Create multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }}-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }}-arm64
