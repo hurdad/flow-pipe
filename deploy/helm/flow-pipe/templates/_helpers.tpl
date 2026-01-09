@@ -71,7 +71,7 @@ otelcol.processor.batch "default" {
 
 otelcol.exporter.otlp "traces" {
   client {
-    endpoint = "{{ $tracesEndpoint }}"
+    endpoint = "otel.tracing.endpoint"
     tls {
       insecure = true
     }
@@ -80,7 +80,7 @@ otelcol.exporter.otlp "traces" {
 
 otelcol.exporter.otlp "metrics" {
   client {
-    endpoint = "{{ $metricsEndpoint }}"
+    endpoint = "otel.metrics.endpoint"
     tls {
       insecure = true
     }
@@ -89,7 +89,7 @@ otelcol.exporter.otlp "metrics" {
 
 otelcol.exporter.otlp "logs" {
   client {
-    endpoint = "{{ $logsEndpoint }}"
+    endpoint = "otel.logs.endpoint"
     tls {
       insecure = true
     }
