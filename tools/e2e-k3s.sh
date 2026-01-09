@@ -184,20 +184,20 @@ kubectl get nodes
 
 info "Building runtime image"
 docker buildx build --load \
-  -f "${REPO_ROOT}/runtime/docker/Dockerfile.runtime" \
+  -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
+  --target runtime \
   -t "${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}" "${REPO_ROOT}"
 
 info "Building base image"
 docker buildx build --load \
-  -f "${REPO_ROOT}/runtime/docker/Dockerfile.base" \
-  --build-arg FLOW_PIPE_IMAGE_NAMESPACE="${IMAGE_NAMESPACE}" \
-  --build-arg FLOW_PIPE_RUNTIME_TAG="${IMAGE_TAG}" \
+  -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
+  --target base \
   -t "${IMAGE_NAMESPACE}/flow-pipe-base:${IMAGE_TAG}" "${REPO_ROOT}"
 
 info "Building dev image"
 docker buildx build --load \
-  -f "${REPO_ROOT}/runtime/docker/Dockerfile.dev" \
-  --build-arg FLOW_PIPE_BASE_TAG="${IMAGE_TAG}" \
+  -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
+  --target dev \
   -t "${IMAGE_NAMESPACE}/flow-pipe-dev:${IMAGE_TAG}" "${REPO_ROOT}"
 
 info "Building controller and API images"

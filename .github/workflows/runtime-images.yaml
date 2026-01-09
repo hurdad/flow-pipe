@@ -114,7 +114,8 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: .
-          file: runtime/docker/Dockerfile.runtime
+          file: runtime/docker/Dockerfile
+          target: runtime
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
@@ -143,11 +144,10 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: .
-          file: runtime/docker/Dockerfile.base
+          file: runtime/docker/Dockerfile
+          target: base
           push: true
           platforms: linux/amd64,linux/arm64
-          build-args: |
-            FLOW_PIPE_RUNTIME_TAG=${{ needs.meta.outputs.tag }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-base:${{ needs.meta.outputs.tag }}
 
@@ -176,10 +176,9 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: .
-          file: runtime/docker/Dockerfile.dev
+          file: runtime/docker/Dockerfile
+          target: dev
           push: true
           platforms: linux/amd64,linux/arm64
-          build-args: |
-            FLOW_PIPE_BASE_TAG=${{ needs.meta.outputs.tag }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-dev:${{ needs.meta.outputs.tag }}
