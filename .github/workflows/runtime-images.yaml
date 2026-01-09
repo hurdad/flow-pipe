@@ -107,11 +107,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: runtime/docker/Dockerfile.runtime
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/flow-pipe-runtime:${{ needs.meta.outputs.tag }}
 
@@ -131,11 +136,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: runtime/docker/Dockerfile.base
           push: true
+          platforms: linux/amd64,linux/arm64
           build-args: |
             FLOW_PIPE_RUNTIME_TAG=${{ needs.meta.outputs.tag }}
           tags: |
@@ -159,11 +169,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: runtime/docker/Dockerfile.dev
           push: true
+          platforms: linux/amd64,linux/arm64
           build-args: |
             FLOW_PIPE_BASE_TAG=${{ needs.meta.outputs.tag }}
           tags: |
