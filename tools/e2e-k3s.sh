@@ -291,6 +291,35 @@ observability:
   logs_enabled: true
 FLOW
 
+cat >"${FLOW_TMP_DIR}/streaming-update.yaml" <<FLOW
+name: noop-observability
+runtime: FLOW_RUNTIME_BUILTIN
+image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
+execution:
+  mode: EXECUTION_MODE_STREAMING
+${FLOW_KUBERNETES_CONFIG}
+queues:
+  - name: q1
+    capacity: 128
+stages:
+  - name: src
+    type: noop_source
+    threads: 1
+    output_queue: q1
+    config:
+      delay_ms: 200
+      message: "FEEDBEEF"
+      max_messages: 0
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: q1
+observability:
+  metrics_enabled: true
+  tracing_enabled: true
+  logs_enabled: true
+FLOW
+
 cat >"${FLOW_TMP_DIR}/job.yaml" <<FLOW
 name: simple-pipeline-job
 runtime: FLOW_RUNTIME_BUILTIN
@@ -402,6 +431,25 @@ if ! grep -q "DEADBEEF" "${REPO_ROOT}/job.log"; then
   echo "job runtime did not emit expected payloads" >&2
   exit 1
 fi
+
+info "Updating flow with flowctl"
+docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" update /flows/streaming-update.yaml --api localhost:9090
+wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
+
+info "Rolling back flow with flowctl"
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" rollback noop-observability --version 1 --api localhost:9090
+wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
+
+info "Stopping flows with flowctl"
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-observability --api localhost:9090
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop simple-pipeline-job --api localhost:9090
+info "Waiting for flow resources to be removed"
+kubectl wait --for=delete deployment/noop-observability-runtime -n "${NAMESPACE}" --timeout=120s
+kubectl wait --for=delete job/simple-pipeline-job -n "${NAMESPACE}" --timeout=120s
 append_summary "### Flow runtime stream logs"
 append_summary "\n\n\`\`\`"
 if [[ -f "${REPO_ROOT}/stream.log" ]]; then
