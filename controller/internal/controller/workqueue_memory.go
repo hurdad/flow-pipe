@@ -24,9 +24,9 @@ func (m *MemoryQueue) Add(key string) {
 func (m *MemoryQueue) Get() (string, bool) {
 	item, shutdown := m.q.Get()
 	if shutdown {
-		return "", true
+		return "", false
 	}
-	return item.(string), false
+	return item.(string), true
 }
 
 func (m *MemoryQueue) Forget(key string) {
