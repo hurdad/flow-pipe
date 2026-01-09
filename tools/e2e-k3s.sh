@@ -318,6 +318,8 @@ observability:
   logs_enabled: true
 FLOW
 
+chmod -R a+rX "${FLOW_TMP_DIR}"
+
 info "Port-forwarding API service for flowctl"
 kubectl port-forward svc/flow-pipe-api -n "${NAMESPACE}" 9090:9090 >/tmp/flow-pipe-api-port-forward.log 2>&1 &
 PORT_FORWARD_PID=$!
