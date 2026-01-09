@@ -40,8 +40,8 @@ func ensureRuntime(
 	}
 
 	image := ""
-	if spec.Image != nil {
-		image = *spec.Image
+	if spec.Kubernetes != nil && spec.Kubernetes.Image != nil {
+		image = *spec.Kubernetes.Image
 	}
 	if image == "" {
 		return "", fmt.Errorf("runtime image is required for flow %q", spec.Name)
