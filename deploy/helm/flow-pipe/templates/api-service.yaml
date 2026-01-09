@@ -5,7 +5,7 @@ metadata:
   name: flow-pipe-api
   namespace: {{ include "flowpipe.namespace" . }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.api.httpService.type | default "ClusterIP" }}
   selector:
     app: flow-pipe-api
   ports:
