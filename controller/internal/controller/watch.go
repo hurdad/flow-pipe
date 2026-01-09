@@ -57,7 +57,26 @@ func (c *Controller) runWatch(ctx context.Context) {
 			)
 
 			switch ev.Type {
-			case store.WatchAdded, store.WatchUpdated, store.WatchDeleted:
+			case store.WatchAdded:
+				c.logger.Info(
+					ctx,
+					"new flow submitted",
+					slog.String("flow", ev.Flow.Name),
+				)
+				c.queue.Add(ev.Flow.Name)
+			case store.WatchUpdated:
+				c.logger.Info(
+					ctx,
+					"flow updated",
+					slog.String("flow", ev.Flow.Name),
+				)
+				c.queue.Add(ev.Flow.Name)
+			case store.WatchDeleted:
+				c.logger.Info(
+					ctx,
+					"flow deleted",
+					slog.String("flow", ev.Flow.Name),
+				)
 				c.queue.Add(ev.Flow.Name)
 			}
 		}
