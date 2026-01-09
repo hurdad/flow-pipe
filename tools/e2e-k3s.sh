@@ -265,7 +265,6 @@ FLOW
 cat >"${FLOW_TMP_DIR}/streaming.yaml" <<FLOW
 name: noop-observability
 runtime: FLOW_RUNTIME_BUILTIN
-image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_STREAMING
 ${FLOW_KUBERNETES_CONFIG}
@@ -294,7 +293,6 @@ FLOW
 cat >"${FLOW_TMP_DIR}/streaming-update.yaml" <<FLOW
 name: noop-observability
 runtime: FLOW_RUNTIME_BUILTIN
-image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_STREAMING
 ${FLOW_KUBERNETES_CONFIG}
@@ -323,7 +321,6 @@ FLOW
 cat >"${FLOW_TMP_DIR}/job.yaml" <<FLOW
 name: simple-pipeline-job
 runtime: FLOW_RUNTIME_BUILTIN
-image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_JOB
 ${FLOW_KUBERNETES_CONFIG}

@@ -1,6 +1,5 @@
 name: noop-observability-k3s
 runtime: FLOW_RUNTIME_BUILTIN
-image: ghcr.io/hurdad/flow-pipe-runtime:main-ubuntu24.04
 execution:
   mode: EXECUTION_MODE_STREAMING
 kubernetes:
