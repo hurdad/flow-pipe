@@ -22,7 +22,7 @@
 {{- if $alloy.endpoint -}}
 {{ $alloy.endpoint }}
 {{- else if $alloy.enabled -}}
-http://{{ .Release.Name }}-alloy:4317
+http://flow-pipe-alloy:4317
 {{- end -}}
 {{- end }}
 
