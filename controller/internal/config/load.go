@@ -22,13 +22,23 @@ func Load() Config {
 			envOrDefault("OTEL_SERVICE_NAME", "flow-controller"),
 			"logical service name for observability signals",
 		)
+
+		runtimeNamespace = flag.String(
+			"runtime-namespace",
+			envOrDefault(
+				"FLOW_PIPE_RUNTIME_NAMESPACE",
+				envOrDefault("POD_NAMESPACE", "default"),
+			),
+			"namespace for runtime workloads",
+		)
 	)
 
 	flag.Parse()
 
 	return Config{
-		EtcdEndpoints: splitComma(*etcdURLs),
-		OTLPEndpoint:  *otelEndpoint,
-		ServiceName:   *serviceName,
+		EtcdEndpoints:    splitComma(*etcdURLs),
+		OTLPEndpoint:     *otelEndpoint,
+		ServiceName:      *serviceName,
+		RuntimeNamespace: *runtimeNamespace,
 	}
 }

@@ -234,6 +234,7 @@ helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
   --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
+  --set runtime.image="${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}" \
   --set observability.alloy.enabled=true \
   --set observability.alloy.exporters.metrics.endpoint="${OBS_EXPORT_ENDPOINT}" \
   --set observability.alloy.exporters.traces.endpoint="${OBS_EXPORT_ENDPOINT}" \
@@ -257,6 +258,7 @@ FLOW_TMP_DIR="$(mktemp -d)"
 cat >"${FLOW_TMP_DIR}/streaming.yaml" <<'FLOW'
 name: noop-observability
 runtime: FLOW_RUNTIME_BUILTIN
+image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_STREAMING
 queues:
@@ -284,6 +286,7 @@ FLOW
 cat >"${FLOW_TMP_DIR}/job.yaml" <<'FLOW'
 name: simple-pipeline-job
 runtime: FLOW_RUNTIME_BUILTIN
+image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
 execution:
   mode: EXECUTION_MODE_JOB
 queues:

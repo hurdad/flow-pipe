@@ -12,6 +12,7 @@ import (
 
 	"github.com/hurdad/flow-pipe/controller/internal/observability"
 	"github.com/hurdad/flow-pipe/controller/internal/store"
+	"k8s.io/client-go/kubernetes"
 )
 
 // Controller is the core reconciliation engine.
@@ -20,6 +21,9 @@ type Controller struct {
 	store  store.Store
 	queue  WorkQueue
 	prefix string
+	kube   kubernetes.Interface
+
+	runtimeNamespace string
 
 	logger observability.Logger
 	tracer trace.Tracer
@@ -34,7 +38,14 @@ type Controller struct {
 // store: desired-state store (etcd-backed, abstracted)
 // queue: work queue for reconciliation keys
 // prefix: etcd path prefix to monitor
-func New(store store.Store, queue WorkQueue, prefix string, logger observability.Logger) *Controller {
+func New(
+	store store.Store,
+	queue WorkQueue,
+	prefix string,
+	logger observability.Logger,
+	kube kubernetes.Interface,
+	runtimeNamespace string,
+) *Controller {
 	meter := otelMeter()
 
 	reconcileSuccess, _ := meter.Int64Counter(
@@ -54,6 +65,8 @@ func New(store store.Store, queue WorkQueue, prefix string, logger observability
 		store:            store,
 		queue:            queue,
 		prefix:           prefix,
+		kube:             kube,
+		runtimeNamespace: runtimeNamespace,
 		logger:           logger,
 		tracer:           observability.Tracer("github.com/hurdad/flow-pipe/controller"),
 		reconcileSuccess: reconcileSuccess,
