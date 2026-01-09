@@ -14,9 +14,8 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "runtime:latest"
 	spec := &flowpipev1.FlowSpec{
-		Name:    "noop-observability",
-		Runtime: flowpipev1.FlowRuntime_FLOW_RUNTIME_BUILTIN,
-		Image:   &image,
+		Name:  "noop-observability",
+		Image: &image,
 		Execution: &flowpipev1.Execution{
 			Mode: flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING,
 		},
@@ -56,9 +55,8 @@ func TestEnsureRuntimeCreatesJob(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "custom:tag"
 	spec := &flowpipev1.FlowSpec{
-		Name:    "simple-pipeline-job",
-		Runtime: flowpipev1.FlowRuntime_FLOW_RUNTIME_CONTAINER,
-		Image:   &image,
+		Name:  "simple-pipeline-job",
+		Image: &image,
 		Execution: &flowpipev1.Execution{
 			Mode: flowpipev1.ExecutionMode_EXECUTION_MODE_JOB,
 		},

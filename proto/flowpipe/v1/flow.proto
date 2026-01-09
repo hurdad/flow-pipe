@@ -37,9 +37,6 @@ message FlowSpec {
   // Immutable version assigned by the controller.
   uint64 version = 2;
 
-  // Runtime environment selection.
-  FlowRuntime runtime = 3;
-
   // Container image when using container runtime.
   optional string image = 4;
 
@@ -66,21 +63,6 @@ message FlowSpec {
 
   // Kubernetes runtime settings.
   optional KubernetesSettings kubernetes = 12;
-}
-
-// ============================================================
-// Runtime environment
-// ============================================================
-
-enum FlowRuntime {
-  // Runtime not specified.
-  FLOW_RUNTIME_UNSPECIFIED = 0;
-
-  // Built-in stages linked into runtime binary.
-  FLOW_RUNTIME_BUILTIN = 1;
-
-  // Stages executed inside a container image.
-  FLOW_RUNTIME_CONTAINER = 2;
 }
 
 // Kubernetes runtime settings for flow workloads.
