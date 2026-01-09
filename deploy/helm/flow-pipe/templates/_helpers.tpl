@@ -12,11 +12,8 @@
 {{- $global := default (dict) (get .Values "global") -}}
 {{- $globalObs := default (dict) (get $global "observability") -}}
 {{- $localObs := default (dict) (get .Values "observability") -}}
-{{- if gt (len $globalObs) 0 -}}
-{{- toYaml $globalObs -}}
-{{- else -}}
-{{- toYaml $localObs -}}
-{{- end -}}
+{{- $mergedObs := mergeOverwrite (deepCopy $globalObs) $localObs -}}
+{{- toYaml $mergedObs -}}
 {{- end }}
 
 {{- define "flow-pipe.alloy.endpoint" -}}
