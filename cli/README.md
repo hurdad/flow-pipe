@@ -6,6 +6,7 @@ It is used to:
 - validate flow definitions
 - run flows locally during development
 - submit flows to the flow-pipe API for execution
+- manage flows in the flow-pipe API (get, list, status, update, rollback, delete)
 
 The same flow definition is intended to work **locally and remotely** without modification.
 
@@ -20,7 +21,13 @@ cli/
 │       ├── main.go
 │       ├── root.go
 │       ├── run.go
+│       ├── get.go
+│       ├── list.go
+│       ├── status.go
 │       ├── submit.go
+│       ├── update.go
+│       ├── rollback.go
+│       ├── stop.go
 │       └── validate.go
 ├── internal/
 │   └── loader/           # YAML → FlowSpec loader
@@ -138,6 +145,105 @@ flowctl submit flow.yaml --api localhost:9090
 Behavior:
 - validate the flow locally
 - send it to the API over gRPC
+- print a success message if the request completes
+
+Flags:
+- `--api` – API address (defaults to `localhost:9090`)
+- `--timeout` – gRPC request timeout (default 5s)
+
+---
+
+### `get`
+
+Fetch a flow from the API.
+
+```bash
+flowctl get flow-name --api localhost:9090
+```
+
+Behavior:
+- fetch the active flow definition
+- print the flow as JSON (proto field names)
+
+---
+
+### `list`
+
+List all flows from the API.
+
+```bash
+flowctl list --api localhost:9090
+```
+
+Behavior:
+- fetch all flows
+- print the list as JSON (proto field names)
+
+---
+
+### `status`
+
+Fetch the status of a flow.
+
+```bash
+flowctl status flow-name --api localhost:9090
+```
+
+Behavior:
+- fetch the current flow status
+- print the status as JSON (proto field names)
+
+---
+
+### `update`
+
+Update an existing flow definition.
+
+```bash
+flowctl update flow.yaml --api localhost:9090
+```
+
+Behavior:
+- validate the flow locally
+- update the flow in the API
+- print a success message if the request completes
+
+Flags:
+- `--api` – API address (defaults to `localhost:9090`)
+- `--timeout` – gRPC request timeout (default 5s)
+- `--name` – override the flow name (defaults to the spec name)
+
+---
+
+### `rollback`
+
+Rollback a flow to a previous version.
+
+```bash
+flowctl rollback flow-name --version 3 --api localhost:9090
+```
+
+Behavior:
+- request a rollback to the specified version
+- print the updated flow as JSON (proto field names)
+
+Flags:
+- `--api` – API address (defaults to `localhost:9090`)
+- `--timeout` – gRPC request timeout (default 5s)
+- `--version` – flow version to roll back to (required)
+
+---
+
+### `stop`
+
+Stop (delete) a flow.
+
+```bash
+flowctl stop flow-name --api localhost:9090
+```
+
+Behavior:
+- delete the flow in the API
 - print a success message if the request completes
 
 Flags:
