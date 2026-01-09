@@ -551,10 +551,6 @@
           "format": "uint64",
           "description": "Immutable version assigned by the controller."
         },
-        "image": {
-          "type": "string",
-          "description": "Container image when using container runtime."
-        },
         "execution": {
           "$ref": "#/definitions/v1Execution",
           "description": "Execution semantics for the flow."
@@ -574,17 +570,6 @@
             "$ref": "#/definitions/v1QueueSpec"
           },
           "description": "Queues connecting stages."
-        },
-        "cpuPinning": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/v1CpuSet"
-          },
-          "description": "Optional CPU affinity per stage."
-        },
-        "resources": {
-          "$ref": "#/definitions/v1Resources",
-          "description": "Aggregate resource intent."
         },
         "labels": {
           "type": "object",
@@ -658,6 +643,10 @@
     "v1KubernetesSettings": {
       "type": "object",
       "properties": {
+        "image": {
+          "type": "string",
+          "description": "Container image when using container runtime."
+        },
         "imagePullPolicy": {
           "$ref": "#/definitions/v1ImagePullPolicy",
           "description": "Image pull policy for runtime pods."
@@ -665,6 +654,17 @@
         "restartPolicy": {
           "$ref": "#/definitions/v1RestartPolicy",
           "description": "Restart policy for runtime pods."
+        },
+        "cpuPinning": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1CpuSet"
+          },
+          "description": "Optional CPU affinity per stage."
+        },
+        "resources": {
+          "$ref": "#/definitions/v1Resources",
+          "description": "Aggregate resource intent."
         }
       },
       "description": "Kubernetes runtime settings for flow workloads."

@@ -37,9 +37,6 @@ message FlowSpec {
   // Immutable version assigned by the controller.
   uint64 version = 2;
 
-  // Container image when using container runtime.
-  optional string image = 4;
-
   // Execution semantics for the flow.
   optional Execution execution = 5;
 
@@ -48,12 +45,6 @@ message FlowSpec {
 
   // Queues connecting stages.
   repeated QueueSpec queues = 7;
-
-  // Optional CPU affinity per stage.
-  map<string, CpuSet> cpu_pinning = 8;
-
-  // Aggregate resource intent.
-  optional Resources resources = 9;
 
   // User-defined metadata labels.
   map<string, string> labels = 10;
@@ -67,11 +58,20 @@ message FlowSpec {
 
 // Kubernetes runtime settings for flow workloads.
 message KubernetesSettings {
+  // Container image when using container runtime.
+  optional string image = 1;
+
   // Image pull policy for runtime pods.
-  ImagePullPolicy image_pull_policy = 1;
+  ImagePullPolicy image_pull_policy = 2;
 
   // Restart policy for runtime pods.
-  RestartPolicy restart_policy = 2;
+  RestartPolicy restart_policy = 3;
+
+  // Optional CPU affinity per stage.
+  map<string, CpuSet> cpu_pinning = 4;
+
+  // Aggregate resource intent.
+  optional Resources resources = 5;
 }
 
 // Kubernetes image pull policy.
