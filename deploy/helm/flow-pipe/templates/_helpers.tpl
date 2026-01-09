@@ -42,7 +42,7 @@ http://flow-pipe-alloy:4317
 {{- $tracesEndpoint := dig "exporters" "traces" "endpoint" "" $alloy -}}
 {{- $logsEndpoint := dig "exporters" "logs" "endpoint" "" $alloy -}}
 logging {
-  level = "info"
+  level = "debug"
 }
 
 otelcol.receiver.otlp "default" {
@@ -57,27 +57,18 @@ otelcol.receiver.otlp "default" {
   output {
     traces  = [otelcol.processor.batch.default.input]
     metrics = [otelcol.processor.batch.default.input]
-    {{- if $logsEndpoint }}
     logs    = [otelcol.processor.batch.default.input]
-    {{- end }}
   }
 }
 
 otelcol.processor.batch "default" {
   output {
-    {{- if $tracesEndpoint }}
     traces  = [otelcol.exporter.otlp.traces.input]
-    {{- end }}
-    {{- if $metricsEndpoint }}
     metrics = [otelcol.exporter.otlp.metrics.input]
-    {{- end }}
-    {{- if $logsEndpoint }}
     logs    = [otelcol.exporter.otlp.logs.input]
-    {{- end }}
   }
 }
 
-{{- if $tracesEndpoint }}
 otelcol.exporter.otlp "traces" {
   client {
     endpoint = "{{ $tracesEndpoint }}"
@@ -86,9 +77,7 @@ otelcol.exporter.otlp "traces" {
     }
   }
 }
-{{- end }}
 
-{{- if $metricsEndpoint }}
 otelcol.exporter.otlp "metrics" {
   client {
     endpoint = "{{ $metricsEndpoint }}"
@@ -97,9 +86,7 @@ otelcol.exporter.otlp "metrics" {
     }
   }
 }
-{{- end }}
 
-{{- if $logsEndpoint }}
 otelcol.exporter.otlp "logs" {
   client {
     endpoint = "{{ $logsEndpoint }}"
@@ -108,6 +95,5 @@ otelcol.exporter.otlp "logs" {
     }
   }
 }
-{{- end }}
 
 {{- end }}
