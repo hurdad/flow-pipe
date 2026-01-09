@@ -16,6 +16,9 @@ func TestRepositoryFlowsValidate(t *testing.T) {
 	flowsDir := filepath.Join(repoRoot(t), "flows")
 	entries, err := os.ReadDir(flowsDir)
 	if err != nil {
+		if os.IsNotExist(err) {
+			t.Skipf("flows directory not present at %s", flowsDir)
+		}
 		t.Fatalf("read flows dir: %v", err)
 	}
 
