@@ -9,6 +9,7 @@ import (
 
 	"github.com/hurdad/flow-pipe/controller/internal/config"
 	"github.com/hurdad/flow-pipe/controller/internal/controller"
+	"github.com/hurdad/flow-pipe/controller/internal/kube"
 	"github.com/hurdad/flow-pipe/controller/internal/observability"
 	"github.com/hurdad/flow-pipe/controller/internal/store"
 )
@@ -56,9 +57,25 @@ func main() {
 	queue := controller.NewMemoryQueue()
 
 	// --------------------------------------------------
+	// Create Kubernetes client
+	// --------------------------------------------------
+	kubeClient, err := kube.New()
+	if err != nil {
+		logger.Error(context.Background(), "failed to create kubernetes client", slog.Any("error", err))
+		os.Exit(1)
+	}
+
+	// --------------------------------------------------
 	// Create controller
 	// --------------------------------------------------
-	ctrl := controller.New(st, queue, nodeName, logger)
+	ctrl := controller.New(
+		st,
+		queue,
+		nodeName,
+		logger,
+		kubeClient.Clientset,
+		cfg.RuntimeNamespace,
+	)
 
 	// --------------------------------------------------
 	// Signal-aware context

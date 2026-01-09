@@ -10,4 +10,7 @@ type Config struct {
 
 	// Logical service name used in observability signals
 	ServiceName string
+
+	// Namespace for runtime workloads.
+	RuntimeNamespace string
 }
