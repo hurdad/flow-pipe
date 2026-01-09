@@ -28,7 +28,7 @@ the same tag**.
 
 ---
 
-## `Dockerfile.runtime`
+## `Dockerfile` (multi-target)
 
 **Lowest-level image**.
 
@@ -46,27 +46,24 @@ This is the image used in production Kubernetes workloads.
 
 ---
 
-## `Dockerfile.base`
+## Target `base`
 
-Extends the runtime image.
+Extends the runtime target.
 
-### Adds
-- gRPC runtime libraries
-- Protobuf runtime libraries
-- YAML runtime libraries
-- CA certificates
+### Includes
+- Same runtime libraries as `runtime`
 
 ### Still does NOT contain
 - Headers
 - Compilers
 - Build tools
 
-This image exists to separate runtime dependencies from the core binary
-and is the parent of the SDK image.
+This image exists as a stable parent for downstream images (including the
+SDK image) while keeping the ABI tied to the runtime target.
 
 ---
 
-## `Dockerfile.dev` (SDK)
+## Target `dev` (SDK)
 
 The development image used to build custom flow-pipe stages.
 
@@ -87,18 +84,18 @@ Images must be built **in order**.
 
 ```bash
 # 1. runtime
-docker build -f runtime/docker/Dockerfile.runtime \
+docker build -f runtime/docker/Dockerfile \
+  --target runtime \
   -t ghcr.io/hurdad/flow-pipe-runtime:<tag> .
 
 # 2. base
-docker build -f runtime/docker/Dockerfile.base \
-  --build-arg FLOW_PIPE_IMAGE_NAMESPACE=ghcr.io/hurdad \
-  --build-arg FLOW_PIPE_RUNTIME_TAG=<tag> \
+docker build -f runtime/docker/Dockerfile \
+  --target base \
   -t ghcr.io/hurdad/flow-pipe-base:<tag> .
 
 # 3. dev
-docker build -f runtime/docker/Dockerfile.dev \
-  --build-arg FLOW_PIPE_BASE_TAG=<tag> \
+docker build -f runtime/docker/Dockerfile \
+  --target dev \
   -t ghcr.io/hurdad/flow-pipe-dev:<tag> .
 ```
 

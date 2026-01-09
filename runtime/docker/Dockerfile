@@ -1,4 +1,13 @@
 # ============================================================
+# flow-pipe multi-target image
+#
+# Targets:
+#   - runtime: minimal runtime image
+#   - base:    runtime image alias for downstream layering
+#   - dev:     SDK image for building custom stages
+# ============================================================
+
+# ============================================================
 # Stage 1: Build + install flow-pipe runtime & stages
 # ============================================================
 FROM ubuntu:24.04 AS builder
@@ -54,7 +63,7 @@ RUN cmake --install build
 # ============================================================
 # Stage 2: Minimal runtime image
 # ============================================================
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -95,3 +104,73 @@ RUN ls /opt/flow-pipe/plugins/libstage_*.so
 # Entrypoint
 # ------------------------------------------------------------
 ENTRYPOINT ["/opt/flow-pipe/bin/flow_runtime"]
+
+# ============================================================
+# Stage 3: Base image
+# ============================================================
+FROM runtime AS base
+
+# ============================================================
+# Stage 4: SDK / Dev image
+# ============================================================
+FROM ubuntu:24.04 AS dev
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# -----------------------------------------------------
+# System dependencies
+# -----------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    ninja-build \
+    pkg-config \
+    git \
+    libyaml-cpp-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    protobuf-compiler-grpc \
+    libgrpc++-dev \
+    libgtest-dev \
+    libcurl4-openssl-dev \
+    libspdlog-dev \
+    libjemalloc-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# -----------------------------------------------------
+# Workdir
+# -----------------------------------------------------
+WORKDIR /src
+
+# -----------------------------------------------------
+# Copy source (expects submodules already present)
+# -----------------------------------------------------
+COPY . .
+
+# -----------------------------------------------------
+# Install SDK (runtime, libs, headers, plugins)
+# -----------------------------------------------------
+COPY --from=builder /opt/flow-pipe /opt/flow-pipe
+
+# -----------------------------------------------------
+# Sanity checks (fail fast)
+# -----------------------------------------------------
+# Runtime
+RUN test -f /opt/flow-pipe/bin/flow_runtime
+RUN test -f /opt/flow-pipe/lib/libflowpipe_runtime.so
+
+# Headers
+RUN test -f /opt/flow-pipe/include/flowpipe/stage.h
+RUN test -f /opt/flow-pipe/include/flowpipe/plugin.h
+
+# Plugins (examples)
+RUN ls /opt/flow-pipe/plugins/libstage_*.so
+
+# -----------------------------------------------------
+# Environment (dev + downstream stage builds)
+# -----------------------------------------------------
+ENV FLOW_PIPE_ROOT=/opt/flow-pipe
+ENV CMAKE_PREFIX_PATH=/opt/flow-pipe
+ENV LD_LIBRARY_PATH=/opt/flow-pipe/lib
+ENV PATH=/opt/flow-pipe/bin:${PATH}
