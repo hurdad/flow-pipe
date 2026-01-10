@@ -357,41 +357,11 @@ func runtimeEnv() []corev1.EnvVar {
 		{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
 		{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
 		{
-			Name: "FLOWPIPE_OTEL_ENDPOINT",
+			Name: "OTEL_EXPORTER_OTLP_ENDPOINT",
 			ValueFrom: &corev1.EnvVarSource{
 				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{Name: "flow-pipe-observability"},
 					Key:                  "alloyEndpoint",
-					Optional:             boolPtr(true),
-				},
-			},
-		},
-		{
-			Name: "FLOWPIPE_OTEL_METRICS_ENDPOINT",
-			ValueFrom: &corev1.EnvVarSource{
-				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{Name: "flow-pipe-observability"},
-					Key:                  "metricsEndpoint",
-					Optional:             boolPtr(true),
-				},
-			},
-		},
-		{
-			Name: "FLOWPIPE_OTEL_TRACING_ENDPOINT",
-			ValueFrom: &corev1.EnvVarSource{
-				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{Name: "flow-pipe-observability"},
-					Key:                  "tracesEndpoint",
-					Optional:             boolPtr(true),
-				},
-			},
-		},
-		{
-			Name: "FLOWPIPE_OTEL_LOGS_ENDPOINT",
-			ValueFrom: &corev1.EnvVarSource{
-				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{Name: "flow-pipe-observability"},
-					Key:                  "logsEndpoint",
 					Optional:             boolPtr(true),
 				},
 			},
