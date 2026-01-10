@@ -18,7 +18,7 @@ There is **no code** in this directory.
 From the project root (after running `make configure` and `make runtime`):
 
 ```bash
-./cmake-build/runtime/cmd/flow_runtime/flow_runtime flows/noop.yaml
+./cmake-build/runtime/flow_runtime flows/noop.yaml
 ```
 
 The runtime loads stage plugins from `/opt/flow-pipe/plugins` by default. Ensure the built plugins are installed there (for local builds, `make install` places them under the chosen prefix).
@@ -115,7 +115,8 @@ Common fields:
 Optional fields:
 - `input_queue`
 - `output_queue`
-- `params`
+- `config`
+- `plugin`
 
 ---
 
