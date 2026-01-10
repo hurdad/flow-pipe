@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -21,6 +23,7 @@ const (
 	runtimeConfigKey      = "flow.yaml"
 	runtimeConfigMountDir = "/config"
 	runtimeConfigPath     = "/config/flow.yaml"
+	runtimeConfigHashKey  = "flowpipe.io/flow-config-checksum"
 )
 
 func ensureRuntime(
@@ -49,7 +52,8 @@ func ensureRuntime(
 	}
 
 	configMapName := fmt.Sprintf("%s-config", spec.Name)
-	if err := applyConfigMap(ctx, client, namespace, configMapName, spec); err != nil {
+	configChecksum, err := applyConfigMap(ctx, client, namespace, configMapName, spec)
+	if err != nil {
 		return "", err
 	}
 
@@ -60,12 +64,12 @@ func ensureRuntime(
 
 	switch mode {
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
-		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy)
+		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
 		fallthrough
 	default:
 		deploymentName := fmt.Sprintf("%s-runtime", spec.Name)
-		return applyDeployment(ctx, client, namespace, spec.Name, deploymentName, configMapName, image, imagePullPolicy)
+		return applyDeployment(ctx, client, namespace, spec.Name, deploymentName, configMapName, image, imagePullPolicy, configChecksum)
 	}
 }
 
@@ -75,15 +79,17 @@ func applyConfigMap(
 	namespace string,
 	name string,
 	spec *flowpipev1.FlowSpec,
-) error {
+) (string, error) {
 	payload, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(spec)
 	if err != nil {
-		return fmt.Errorf("marshal flow spec: %w", err)
+		return "", fmt.Errorf("marshal flow spec: %w", err)
 	}
 	yamlPayload, err := yaml.JSONToYAML(payload)
 	if err != nil {
-		return fmt.Errorf("marshal flow spec as yaml: %w", err)
+		return "", fmt.Errorf("marshal flow spec as yaml: %w", err)
 	}
+	checksum := sha256.Sum256(yamlPayload)
+	checksumValue := hex.EncodeToString(checksum[:])
 
 	desired := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -103,15 +109,15 @@ func applyConfigMap(
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			_, err = cmClient.Create(ctx, desired, metav1.CreateOptions{})
-			return err
+			return checksumValue, err
 		}
-		return err
+		return checksumValue, err
 	}
 
 	current.Data = desired.Data
 	current.Labels = desired.Labels
 	_, err = cmClient.Update(ctx, current, metav1.UpdateOptions{})
-	return err
+	return checksumValue, err
 }
 
 func applyDeployment(
@@ -123,6 +129,7 @@ func applyDeployment(
 	configMapName string,
 	image string,
 	imagePullPolicy corev1.PullPolicy,
+	configChecksum string,
 ) (string, error) {
 	desired := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -143,6 +150,9 @@ func applyDeployment(
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						flowLabelKey: flowName,
+					},
+					Annotations: map[string]string{
+						runtimeConfigHashKey: configChecksum,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -200,6 +210,7 @@ func applyJob(
 	configMapName string,
 	image string,
 	imagePullPolicy corev1.PullPolicy,
+	configChecksum string,
 ) (string, error) {
 	name := spec.Name
 	desired := &batchv1.Job{
@@ -215,6 +226,9 @@ func applyJob(
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						flowLabelKey: name,
+					},
+					Annotations: map[string]string{
+						runtimeConfigHashKey: configChecksum,
 					},
 				},
 				Spec: corev1.PodSpec{
