@@ -60,8 +60,6 @@ message ObservabilityConfig {
   // ==========================================================
   message TracingConfig {
 
-    reserved 1, 2;
-
     // --------------------------------------------------------
     // Tracing sampling intent
     // --------------------------------------------------------
@@ -87,7 +85,7 @@ message ObservabilityConfig {
     }
 
     // Trace processor selection.
-    TraceProcessorType processor = 4;
+    TraceProcessorType processor = 1;
 
     // --------------------------------------------------------
     // Batch trace processor tuning
@@ -155,43 +153,41 @@ message ObservabilityConfig {
   // ==========================================================
   message MetricsConfig {
 
-    reserved 1, 2;
-
     // --------------------------------------------------------
     // Metrics granularity controls
     // --------------------------------------------------------
 
     // Emit per-stage metrics.
-    bool stage_metrics_enabled = 3;
+    bool stage_metrics_enabled = 1;
 
     // Emit queue-level metrics.
-    bool queue_metrics_enabled = 4;
+    bool queue_metrics_enabled = 2;
 
     // Emit flow-level aggregate metrics.
-    bool flow_metrics_enabled = 5;
+    bool flow_metrics_enabled = 3;
 
     // --------------------------------------------------------
     // Cost and cardinality controls
     // --------------------------------------------------------
 
     // Emit latency histogram metrics.
-    bool latency_histograms_enabled = 6;
+    bool latency_histograms_enabled = 4;
 
     // Emit counters only (no gauges or histograms).
-    bool counters_only = 7;
+    bool counters_only = 5;
 
     // --------------------------------------------------------
     // Metrics collection interval hints
     // --------------------------------------------------------
 
     // Minimum metrics emission interval (milliseconds).
-    uint32 min_collection_interval_ms = 8;
+    uint32 min_collection_interval_ms = 6;
 
     // Preferred metrics emission interval (milliseconds).
-    uint32 collection_interval_ms = 9;
+    uint32 collection_interval_ms = 7;
 
     // Expected latency budget for metric tagging and alerting.
-    uint32 latency_budget_ms = 10;
+    uint32 latency_budget_ms = 8;
   }
 
   // Metrics configuration block.
@@ -201,8 +197,6 @@ message ObservabilityConfig {
   // Logging configuration
   // ==========================================================
   message LoggingConfig {
-
-    reserved 1, 2;
 
     // --------------------------------------------------------
     // Log processing strategy
@@ -215,7 +209,7 @@ message ObservabilityConfig {
     }
 
     // Log processor selection.
-    LogProcessorType processor = 3;
+    LogProcessorType processor = 1;
 
     // --------------------------------------------------------
     // Batch log processor tuning
@@ -229,7 +223,7 @@ message ObservabilityConfig {
     }
 
     // Batch processor configuration.
-    BatchConfig batch = 4;
+    BatchConfig batch = 2;
   }
 
   // Logging configuration block.

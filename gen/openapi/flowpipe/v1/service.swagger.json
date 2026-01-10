@@ -252,14 +252,6 @@
     "ObservabilityConfigLoggingConfig": {
       "type": "object",
       "properties": {
-        "otlpEndpoint": {
-          "type": "string",
-          "description": "Optional OTLP endpoint override for logs (host:port).\nIf unset, the global runtime logging endpoint is used."
-        },
-        "transport": {
-          "$ref": "#/definitions/v1OtlpTransport",
-          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
-        },
         "processor": {
           "$ref": "#/definitions/LoggingConfigLogProcessorType",
           "description": "Log processor selection."
@@ -299,14 +291,6 @@
     "ObservabilityConfigMetricsConfig": {
       "type": "object",
       "properties": {
-        "otlpEndpoint": {
-          "type": "string",
-          "description": "Optional OTLP endpoint override for metrics (host:port).\nIf unset, the global runtime metrics endpoint is used."
-        },
-        "transport": {
-          "$ref": "#/definitions/v1OtlpTransport",
-          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
-        },
         "stageMetricsEnabled": {
           "type": "boolean",
           "description": "Emit per-stage metrics."
@@ -348,14 +332,6 @@
     "ObservabilityConfigTracingConfig": {
       "type": "object",
       "properties": {
-        "otlpEndpoint": {
-          "type": "string",
-          "description": "Optional OTLP endpoint override for tracing (host:port).\nIf unset, the global runtime tracing endpoint is used."
-        },
-        "transport": {
-          "$ref": "#/definitions/v1OtlpTransport",
-          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
-        },
         "traceHint": {
           "$ref": "#/definitions/TracingConfigTraceHint",
           "description": "Sampling intent hint for this flow."
@@ -695,6 +671,14 @@
         "logsEnabled": {
           "type": "boolean",
           "description": "Allow log emission for this flow."
+        },
+        "otlpEndpoint": {
+          "type": "string",
+          "description": "Optional OTLP endpoint override for observability (host:port).\nIf unset, the global runtime OTEL endpoint is used."
+        },
+        "transport": {
+          "$ref": "#/definitions/v1OtlpTransport",
+          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
         },
         "tracing": {
           "$ref": "#/definitions/ObservabilityConfigTracingConfig",

@@ -287,6 +287,12 @@ type ObservabilityConfig struct {
 	TracingEnabled bool `protobuf:"varint,2,opt,name=tracing_enabled,json=tracingEnabled,proto3" json:"tracing_enabled,omitempty"`
 	// Allow log emission for this flow.
 	LogsEnabled bool `protobuf:"varint,3,opt,name=logs_enabled,json=logsEnabled,proto3" json:"logs_enabled,omitempty"`
+	// Optional OTLP endpoint override for observability (host:port).
+	// If unset, the global runtime OTEL endpoint is used.
+	OtlpEndpoint string `protobuf:"bytes,8,opt,name=otlp_endpoint,json=otlpEndpoint,proto3" json:"otlp_endpoint,omitempty"`
+	// OTLP transport selection (gRPC or HTTP).
+	// If unspecified, runtime default is used.
+	Transport OtlpTransport `protobuf:"varint,9,opt,name=transport,proto3,enum=flowpipe.v1.OtlpTransport" json:"transport,omitempty"`
 	// Tracing configuration block.
 	Tracing *ObservabilityConfig_TracingConfig `protobuf:"bytes,4,opt,name=tracing,proto3" json:"tracing,omitempty"`
 	// Metrics configuration block.
@@ -351,6 +357,20 @@ func (x *ObservabilityConfig) GetLogsEnabled() bool {
 	return false
 }
 
+func (x *ObservabilityConfig) GetOtlpEndpoint() string {
+	if x != nil {
+		return x.OtlpEndpoint
+	}
+	return ""
+}
+
+func (x *ObservabilityConfig) GetTransport() OtlpTransport {
+	if x != nil {
+		return x.Transport
+	}
+	return OtlpTransport_OTLP_TRANSPORT_UNSPECIFIED
+}
+
 func (x *ObservabilityConfig) GetTracing() *ObservabilityConfig_TracingConfig {
 	if x != nil {
 		return x.Tracing
@@ -384,16 +404,10 @@ func (x *ObservabilityConfig) GetDebug() bool {
 // ==========================================================
 type ObservabilityConfig_TracingConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional OTLP endpoint override for tracing (host:port).
-	// If unset, the global runtime tracing endpoint is used.
-	OtlpEndpoint string `protobuf:"bytes,1,opt,name=otlp_endpoint,json=otlpEndpoint,proto3" json:"otlp_endpoint,omitempty"`
-	// OTLP transport selection (gRPC or HTTP).
-	// If unspecified, runtime default is used.
-	Transport OtlpTransport `protobuf:"varint,2,opt,name=transport,proto3,enum=flowpipe.v1.OtlpTransport" json:"transport,omitempty"`
 	// Sampling intent hint for this flow.
 	TraceHint ObservabilityConfig_TracingConfig_TraceHint `protobuf:"varint,3,opt,name=trace_hint,json=traceHint,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceHint" json:"trace_hint,omitempty"`
 	// Trace processor selection.
-	Processor ObservabilityConfig_TracingConfig_TraceProcessorType `protobuf:"varint,4,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceProcessorType" json:"processor,omitempty"`
+	Processor ObservabilityConfig_TracingConfig_TraceProcessorType `protobuf:"varint,1,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceProcessorType" json:"processor,omitempty"`
 	// Batch processor configuration.
 	Batch *ObservabilityConfig_TracingConfig_BatchConfig `protobuf:"bytes,5,opt,name=batch,proto3" json:"batch,omitempty"`
 	// Emit spans for stage execution.
@@ -439,20 +453,6 @@ func (x *ObservabilityConfig_TracingConfig) ProtoReflect() protoreflect.Message 
 // Deprecated: Use ObservabilityConfig_TracingConfig.ProtoReflect.Descriptor instead.
 func (*ObservabilityConfig_TracingConfig) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0, 0}
-}
-
-func (x *ObservabilityConfig_TracingConfig) GetOtlpEndpoint() string {
-	if x != nil {
-		return x.OtlpEndpoint
-	}
-	return ""
-}
-
-func (x *ObservabilityConfig_TracingConfig) GetTransport() OtlpTransport {
-	if x != nil {
-		return x.Transport
-	}
-	return OtlpTransport_OTLP_TRANSPORT_UNSPECIFIED
 }
 
 func (x *ObservabilityConfig_TracingConfig) GetTraceHint() ObservabilityConfig_TracingConfig_TraceHint {
@@ -516,28 +516,22 @@ func (x *ObservabilityConfig_TracingConfig) GetLatencyBudgetMs() uint32 {
 // ==========================================================
 type ObservabilityConfig_MetricsConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional OTLP endpoint override for metrics (host:port).
-	// If unset, the global runtime metrics endpoint is used.
-	OtlpEndpoint string `protobuf:"bytes,1,opt,name=otlp_endpoint,json=otlpEndpoint,proto3" json:"otlp_endpoint,omitempty"`
-	// OTLP transport selection (gRPC or HTTP).
-	// If unspecified, runtime default is used.
-	Transport OtlpTransport `protobuf:"varint,2,opt,name=transport,proto3,enum=flowpipe.v1.OtlpTransport" json:"transport,omitempty"`
 	// Emit per-stage metrics.
-	StageMetricsEnabled bool `protobuf:"varint,3,opt,name=stage_metrics_enabled,json=stageMetricsEnabled,proto3" json:"stage_metrics_enabled,omitempty"`
+	StageMetricsEnabled bool `protobuf:"varint,1,opt,name=stage_metrics_enabled,json=stageMetricsEnabled,proto3" json:"stage_metrics_enabled,omitempty"`
 	// Emit queue-level metrics.
-	QueueMetricsEnabled bool `protobuf:"varint,4,opt,name=queue_metrics_enabled,json=queueMetricsEnabled,proto3" json:"queue_metrics_enabled,omitempty"`
+	QueueMetricsEnabled bool `protobuf:"varint,2,opt,name=queue_metrics_enabled,json=queueMetricsEnabled,proto3" json:"queue_metrics_enabled,omitempty"`
 	// Emit flow-level aggregate metrics.
-	FlowMetricsEnabled bool `protobuf:"varint,5,opt,name=flow_metrics_enabled,json=flowMetricsEnabled,proto3" json:"flow_metrics_enabled,omitempty"`
+	FlowMetricsEnabled bool `protobuf:"varint,3,opt,name=flow_metrics_enabled,json=flowMetricsEnabled,proto3" json:"flow_metrics_enabled,omitempty"`
 	// Emit latency histogram metrics.
-	LatencyHistogramsEnabled bool `protobuf:"varint,6,opt,name=latency_histograms_enabled,json=latencyHistogramsEnabled,proto3" json:"latency_histograms_enabled,omitempty"`
+	LatencyHistogramsEnabled bool `protobuf:"varint,4,opt,name=latency_histograms_enabled,json=latencyHistogramsEnabled,proto3" json:"latency_histograms_enabled,omitempty"`
 	// Emit counters only (no gauges or histograms).
-	CountersOnly bool `protobuf:"varint,7,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
+	CountersOnly bool `protobuf:"varint,5,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
 	// Minimum metrics emission interval (milliseconds).
-	MinCollectionIntervalMs uint32 `protobuf:"varint,8,opt,name=min_collection_interval_ms,json=minCollectionIntervalMs,proto3" json:"min_collection_interval_ms,omitempty"`
+	MinCollectionIntervalMs uint32 `protobuf:"varint,6,opt,name=min_collection_interval_ms,json=minCollectionIntervalMs,proto3" json:"min_collection_interval_ms,omitempty"`
 	// Preferred metrics emission interval (milliseconds).
-	CollectionIntervalMs uint32 `protobuf:"varint,9,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
+	CollectionIntervalMs uint32 `protobuf:"varint,7,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
 	// Expected latency budget for metric tagging and alerting.
-	LatencyBudgetMs uint32 `protobuf:"varint,10,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
+	LatencyBudgetMs uint32 `protobuf:"varint,8,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -570,20 +564,6 @@ func (x *ObservabilityConfig_MetricsConfig) ProtoReflect() protoreflect.Message 
 // Deprecated: Use ObservabilityConfig_MetricsConfig.ProtoReflect.Descriptor instead.
 func (*ObservabilityConfig_MetricsConfig) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0, 1}
-}
-
-func (x *ObservabilityConfig_MetricsConfig) GetOtlpEndpoint() string {
-	if x != nil {
-		return x.OtlpEndpoint
-	}
-	return ""
-}
-
-func (x *ObservabilityConfig_MetricsConfig) GetTransport() OtlpTransport {
-	if x != nil {
-		return x.Transport
-	}
-	return OtlpTransport_OTLP_TRANSPORT_UNSPECIFIED
 }
 
 func (x *ObservabilityConfig_MetricsConfig) GetStageMetricsEnabled() bool {
@@ -647,16 +627,10 @@ func (x *ObservabilityConfig_MetricsConfig) GetLatencyBudgetMs() uint32 {
 // ==========================================================
 type ObservabilityConfig_LoggingConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional OTLP endpoint override for logs (host:port).
-	// If unset, the global runtime logging endpoint is used.
-	OtlpEndpoint string `protobuf:"bytes,1,opt,name=otlp_endpoint,json=otlpEndpoint,proto3" json:"otlp_endpoint,omitempty"`
-	// OTLP transport selection (gRPC or HTTP).
-	// If unspecified, runtime default is used.
-	Transport OtlpTransport `protobuf:"varint,2,opt,name=transport,proto3,enum=flowpipe.v1.OtlpTransport" json:"transport,omitempty"`
 	// Log processor selection.
-	Processor ObservabilityConfig_LoggingConfig_LogProcessorType `protobuf:"varint,3,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_LoggingConfig_LogProcessorType" json:"processor,omitempty"`
+	Processor ObservabilityConfig_LoggingConfig_LogProcessorType `protobuf:"varint,1,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_LoggingConfig_LogProcessorType" json:"processor,omitempty"`
 	// Batch processor configuration.
-	Batch         *ObservabilityConfig_LoggingConfig_BatchConfig `protobuf:"bytes,4,opt,name=batch,proto3" json:"batch,omitempty"`
+	Batch         *ObservabilityConfig_LoggingConfig_BatchConfig `protobuf:"bytes,2,opt,name=batch,proto3" json:"batch,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -689,20 +663,6 @@ func (x *ObservabilityConfig_LoggingConfig) ProtoReflect() protoreflect.Message 
 // Deprecated: Use ObservabilityConfig_LoggingConfig.ProtoReflect.Descriptor instead.
 func (*ObservabilityConfig_LoggingConfig) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0, 2}
-}
-
-func (x *ObservabilityConfig_LoggingConfig) GetOtlpEndpoint() string {
-	if x != nil {
-		return x.OtlpEndpoint
-	}
-	return ""
-}
-
-func (x *ObservabilityConfig_LoggingConfig) GetTransport() OtlpTransport {
-	if x != nil {
-		return x.Transport
-	}
-	return OtlpTransport_OTLP_TRANSPORT_UNSPECIFIED
 }
 
 func (x *ObservabilityConfig_LoggingConfig) GetProcessor() ObservabilityConfig_LoggingConfig_LogProcessorType {
@@ -867,21 +827,21 @@ var File_flowpipe_v1_observability_proto protoreflect.FileDescriptor
 
 const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\n" +
-	"\x1fflowpipe/v1/observability.proto\x12\vflowpipe.v1\"\x8b\x15\n" +
+	"\x1fflowpipe/v1/observability.proto\x12\vflowpipe.v1\"\xcd\x13\n" +
 	"\x13ObservabilityConfig\x12'\n" +
 	"\x0fmetrics_enabled\x18\x01 \x01(\bR\x0emetricsEnabled\x12'\n" +
 	"\x0ftracing_enabled\x18\x02 \x01(\bR\x0etracingEnabled\x12!\n" +
-	"\flogs_enabled\x18\x03 \x01(\bR\vlogsEnabled\x12H\n" +
+	"\flogs_enabled\x18\x03 \x01(\bR\vlogsEnabled\x12#\n" +
+	"\rotlp_endpoint\x18\b \x01(\tR\fotlpEndpoint\x128\n" +
+	"\ttransport\x18\t \x01(\x0e2\x1a.flowpipe.v1.OtlpTransportR\ttransport\x12H\n" +
 	"\atracing\x18\x04 \x01(\v2..flowpipe.v1.ObservabilityConfig.TracingConfigR\atracing\x12H\n" +
 	"\ametrics\x18\x05 \x01(\v2..flowpipe.v1.ObservabilityConfig.MetricsConfigR\ametrics\x12H\n" +
 	"\alogging\x18\x06 \x01(\v2..flowpipe.v1.ObservabilityConfig.LoggingConfigR\alogging\x12\x14\n" +
-	"\x05debug\x18\a \x01(\bR\x05debug\x1a\xb4\t\n" +
-	"\rTracingConfig\x12#\n" +
-	"\rotlp_endpoint\x18\x01 \x01(\tR\fotlpEndpoint\x128\n" +
-	"\ttransport\x18\x02 \x01(\x0e2\x1a.flowpipe.v1.OtlpTransportR\ttransport\x12W\n" +
+	"\x05debug\x18\a \x01(\bR\x05debug\x1a\xd5\b\n" +
+	"\rTracingConfig\x12W\n" +
 	"\n" +
 	"trace_hint\x18\x03 \x01(\x0e28.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceHintR\ttraceHint\x12_\n" +
-	"\tprocessor\x18\x04 \x01(\x0e2A.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceProcessorTypeR\tprocessor\x12P\n" +
+	"\tprocessor\x18\x01 \x01(\x0e2A.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceProcessorTypeR\tprocessor\x12P\n" +
 	"\x05batch\x18\x05 \x01(\v2:.flowpipe.v1.ObservabilityConfig.TracingConfig.BatchConfigR\x05batch\x12.\n" +
 	"\x13stage_spans_enabled\x18\x06 \x01(\bR\x11stageSpansEnabled\x12.\n" +
 	"\x13queue_spans_enabled\x18\a \x01(\bR\x11queueSpansEnabled\x120\n" +
@@ -907,24 +867,19 @@ const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\x16ATTRIBUTES_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ATTRIBUTES_MINIMAL\x10\x01\x12\x17\n" +
 	"\x13ATTRIBUTES_STANDARD\x10\x02\x12\x16\n" +
-	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\x8a\x04\n" +
-	"\rMetricsConfig\x12#\n" +
-	"\rotlp_endpoint\x18\x01 \x01(\tR\fotlpEndpoint\x128\n" +
-	"\ttransport\x18\x02 \x01(\x0e2\x1a.flowpipe.v1.OtlpTransportR\ttransport\x122\n" +
-	"\x15stage_metrics_enabled\x18\x03 \x01(\bR\x13stageMetricsEnabled\x122\n" +
-	"\x15queue_metrics_enabled\x18\x04 \x01(\bR\x13queueMetricsEnabled\x120\n" +
-	"\x14flow_metrics_enabled\x18\x05 \x01(\bR\x12flowMetricsEnabled\x12<\n" +
-	"\x1alatency_histograms_enabled\x18\x06 \x01(\bR\x18latencyHistogramsEnabled\x12#\n" +
-	"\rcounters_only\x18\a \x01(\bR\fcountersOnly\x12;\n" +
-	"\x1amin_collection_interval_ms\x18\b \x01(\rR\x17minCollectionIntervalMs\x124\n" +
-	"\x16collection_interval_ms\x18\t \x01(\rR\x14collectionIntervalMs\x12*\n" +
-	"\x11latency_budget_ms\x18\n" +
-	" \x01(\rR\x0flatencyBudgetMs\x1a\xc6\x04\n" +
-	"\rLoggingConfig\x12#\n" +
-	"\rotlp_endpoint\x18\x01 \x01(\tR\fotlpEndpoint\x128\n" +
-	"\ttransport\x18\x02 \x01(\x0e2\x1a.flowpipe.v1.OtlpTransportR\ttransport\x12]\n" +
-	"\tprocessor\x18\x03 \x01(\x0e2?.flowpipe.v1.ObservabilityConfig.LoggingConfig.LogProcessorTypeR\tprocessor\x12P\n" +
-	"\x05batch\x18\x04 \x01(\v2:.flowpipe.v1.ObservabilityConfig.LoggingConfig.BatchConfigR\x05batch\x1a\xbe\x01\n" +
+	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\xab\x03\n" +
+	"\rMetricsConfig\x122\n" +
+	"\x15stage_metrics_enabled\x18\x01 \x01(\bR\x13stageMetricsEnabled\x122\n" +
+	"\x15queue_metrics_enabled\x18\x02 \x01(\bR\x13queueMetricsEnabled\x120\n" +
+	"\x14flow_metrics_enabled\x18\x03 \x01(\bR\x12flowMetricsEnabled\x12<\n" +
+	"\x1alatency_histograms_enabled\x18\x04 \x01(\bR\x18latencyHistogramsEnabled\x12#\n" +
+	"\rcounters_only\x18\x05 \x01(\bR\fcountersOnly\x12;\n" +
+	"\x1amin_collection_interval_ms\x18\x06 \x01(\rR\x17minCollectionIntervalMs\x124\n" +
+	"\x16collection_interval_ms\x18\a \x01(\rR\x14collectionIntervalMs\x12*\n" +
+	"\x11latency_budget_ms\x18\b \x01(\rR\x0flatencyBudgetMs\x1a\xe7\x03\n" +
+	"\rLoggingConfig\x12]\n" +
+	"\tprocessor\x18\x01 \x01(\x0e2?.flowpipe.v1.ObservabilityConfig.LoggingConfig.LogProcessorTypeR\tprocessor\x12P\n" +
+	"\x05batch\x18\x02 \x01(\v2:.flowpipe.v1.ObservabilityConfig.LoggingConfig.BatchConfigR\x05batch\x1a\xbe\x01\n" +
 	"\vBatchConfig\x12$\n" +
 	"\x0emax_queue_size\x18\x01 \x01(\rR\fmaxQueueSize\x121\n" +
 	"\x15max_export_batch_size\x18\x02 \x01(\rR\x12maxExportBatchSize\x12*\n" +
@@ -967,23 +922,21 @@ var file_flowpipe_v1_observability_proto_goTypes = []any{
 	(*ObservabilityConfig_LoggingConfig_BatchConfig)(nil),     // 10: flowpipe.v1.ObservabilityConfig.LoggingConfig.BatchConfig
 }
 var file_flowpipe_v1_observability_proto_depIdxs = []int32{
-	6,  // 0: flowpipe.v1.ObservabilityConfig.tracing:type_name -> flowpipe.v1.ObservabilityConfig.TracingConfig
-	7,  // 1: flowpipe.v1.ObservabilityConfig.metrics:type_name -> flowpipe.v1.ObservabilityConfig.MetricsConfig
-	8,  // 2: flowpipe.v1.ObservabilityConfig.logging:type_name -> flowpipe.v1.ObservabilityConfig.LoggingConfig
-	0,  // 3: flowpipe.v1.ObservabilityConfig.TracingConfig.transport:type_name -> flowpipe.v1.OtlpTransport
+	0,  // 0: flowpipe.v1.ObservabilityConfig.transport:type_name -> flowpipe.v1.OtlpTransport
+	6,  // 1: flowpipe.v1.ObservabilityConfig.tracing:type_name -> flowpipe.v1.ObservabilityConfig.TracingConfig
+	7,  // 2: flowpipe.v1.ObservabilityConfig.metrics:type_name -> flowpipe.v1.ObservabilityConfig.MetricsConfig
+	8,  // 3: flowpipe.v1.ObservabilityConfig.logging:type_name -> flowpipe.v1.ObservabilityConfig.LoggingConfig
 	1,  // 4: flowpipe.v1.ObservabilityConfig.TracingConfig.trace_hint:type_name -> flowpipe.v1.ObservabilityConfig.TracingConfig.TraceHint
 	2,  // 5: flowpipe.v1.ObservabilityConfig.TracingConfig.processor:type_name -> flowpipe.v1.ObservabilityConfig.TracingConfig.TraceProcessorType
 	9,  // 6: flowpipe.v1.ObservabilityConfig.TracingConfig.batch:type_name -> flowpipe.v1.ObservabilityConfig.TracingConfig.BatchConfig
 	3,  // 7: flowpipe.v1.ObservabilityConfig.TracingConfig.attribute_level:type_name -> flowpipe.v1.ObservabilityConfig.TracingConfig.AttributeLevel
-	0,  // 8: flowpipe.v1.ObservabilityConfig.MetricsConfig.transport:type_name -> flowpipe.v1.OtlpTransport
-	0,  // 9: flowpipe.v1.ObservabilityConfig.LoggingConfig.transport:type_name -> flowpipe.v1.OtlpTransport
-	4,  // 10: flowpipe.v1.ObservabilityConfig.LoggingConfig.processor:type_name -> flowpipe.v1.ObservabilityConfig.LoggingConfig.LogProcessorType
-	10, // 11: flowpipe.v1.ObservabilityConfig.LoggingConfig.batch:type_name -> flowpipe.v1.ObservabilityConfig.LoggingConfig.BatchConfig
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	4,  // 8: flowpipe.v1.ObservabilityConfig.LoggingConfig.processor:type_name -> flowpipe.v1.ObservabilityConfig.LoggingConfig.LogProcessorType
+	10, // 9: flowpipe.v1.ObservabilityConfig.LoggingConfig.batch:type_name -> flowpipe.v1.ObservabilityConfig.LoggingConfig.BatchConfig
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_observability_proto_init() }
