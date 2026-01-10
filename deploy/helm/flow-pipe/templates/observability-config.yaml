@@ -1,5 +1,5 @@
 {{- $observability := default (dict) (include "flow-pipe.observability" . | fromYaml) -}}
-{{- $alloy := include "flow-pipe.alloy.endpoint" . -}}
+{{- $alloy := include "flow-pipe.alloy.otlp.endpoint" . -}}
 {{- $metricsEndpoint := dig "alloy" "exporters" "metrics" "endpoint" "" $observability -}}
 {{- $tracesEndpoint := dig "alloy" "exporters" "traces" "endpoint" "" $observability -}}
 {{- $logsEndpoint := dig "alloy" "exporters" "logs" "endpoint" "" $observability -}}
