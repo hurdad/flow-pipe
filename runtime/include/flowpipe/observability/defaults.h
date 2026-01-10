@@ -19,6 +19,9 @@ struct GlobalDefaults {
   // Default OTLP endpoint (used when flow does not override)
   std::string otlp_endpoint;  // OTEL OTLP gRPC endpoint
 
+  // Whether OTLP gRPC uses SSL/TLS credentials
+  bool otlp_use_ssl_credentials = false;
+
   // Whether flow-level endpoint overrides are permitted
   bool allow_endpoint_overrides = false;
 };
