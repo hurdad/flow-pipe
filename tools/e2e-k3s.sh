@@ -425,10 +425,43 @@ if ! grep -q "DEADBEEF" "${REPO_ROOT}/job.log"; then
   exit 1
 fi
 
+info "Capturing current runtime pod and config state"
+initial_configmap_version=$(kubectl get configmap noop-observability-config -n "${NAMESPACE}" -o jsonpath='{.metadata.resourceVersion}')
+initial_runtime_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-observability" -o jsonpath='{.items[0].metadata.name}')
+initial_runtime_pod_uid=$(kubectl get pod "${initial_runtime_pod}" -n "${NAMESPACE}" -o jsonpath='{.metadata.uid}')
+
 info "Updating flow with flowctl"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" update /flows/streaming-update.yaml --api localhost:9090
 wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
+
+info "Waiting for config map reconciliation to trigger a new runtime pod"
+for _ in {1..60}; do
+  updated_configmap_version=$(kubectl get configmap noop-observability-config -n "${NAMESPACE}" -o jsonpath='{.metadata.resourceVersion}')
+  if [[ "${updated_configmap_version}" != "${initial_configmap_version}" ]]; then
+    break
+  fi
+  sleep 2
+done
+
+if [[ "${updated_configmap_version}" == "${initial_configmap_version}" ]]; then
+  echo "config map was not updated during reconciliation" >&2
+  exit 1
+fi
+
+for _ in {1..60}; do
+  updated_runtime_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-observability" -o jsonpath='{.items[0].metadata.name}')
+  updated_runtime_pod_uid=$(kubectl get pod "${updated_runtime_pod}" -n "${NAMESPACE}" -o jsonpath='{.metadata.uid}')
+  if [[ "${updated_runtime_pod_uid}" != "${initial_runtime_pod_uid}" ]]; then
+    kubectl wait --for=condition=Ready "pod/${updated_runtime_pod}" -n "${NAMESPACE}" --timeout=120s && break
+  fi
+  sleep 2
+done
+
+if [[ "${updated_runtime_pod_uid}" == "${initial_runtime_pod_uid}" ]]; then
+  echo "runtime pod was not recreated after config map update" >&2
+  exit 1
+fi
 
 info "Rolling back flow with flowctl"
 docker run --rm --network host \
