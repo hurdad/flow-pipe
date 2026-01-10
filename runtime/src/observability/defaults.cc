@@ -33,11 +33,14 @@ GlobalDefaults LoadFromEnv() {
   cfg.logs_enabled = GetEnvBool("FLOWPIPE_LOGS_ENABLED", false);
 
   // Default OTLP endpoints
-  cfg.metrics_endpoint = GetEnvString("FLOWPIPE_OTEL_METRICS_ENDPOINT", "localhost:4317");
+  std::string single_endpoint = GetEnvString(
+      "FLOWPIPE_OTEL_ENDPOINT", GetEnvString("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"));
 
-  cfg.tracing_endpoint = GetEnvString("FLOWPIPE_OTEL_TRACING_ENDPOINT", "localhost:4317");
+  cfg.metrics_endpoint = GetEnvString("FLOWPIPE_OTEL_METRICS_ENDPOINT", single_endpoint);
 
-  cfg.logging_endpoint = GetEnvString("FLOWPIPE_OTEL_LOGS_ENDPOINT", "localhost:4317");
+  cfg.tracing_endpoint = GetEnvString("FLOWPIPE_OTEL_TRACING_ENDPOINT", single_endpoint);
+
+  cfg.logging_endpoint = GetEnvString("FLOWPIPE_OTEL_LOGS_ENDPOINT", single_endpoint);
 
   // Policy: can flows override endpoints?
   cfg.allow_endpoint_overrides = GetEnvBool("FLOWPIPE_ALLOW_FLOW_ENDPOINT_OVERRIDES", false);

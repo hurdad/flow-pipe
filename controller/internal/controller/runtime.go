@@ -343,6 +343,16 @@ func runtimeEnv() []corev1.EnvVar {
 		{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
 		{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
 		{
+			Name: "FLOWPIPE_OTEL_ENDPOINT",
+			ValueFrom: &corev1.EnvVarSource{
+				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{Name: "flow-pipe-observability"},
+					Key:                  "alloyEndpoint",
+					Optional:             boolPtr(true),
+				},
+			},
+		},
+		{
 			Name: "FLOWPIPE_OTEL_METRICS_ENDPOINT",
 			ValueFrom: &corev1.EnvVarSource{
 				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
