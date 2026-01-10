@@ -258,7 +258,6 @@ FLOW_KUBERNETES_CONFIG=$(cat <<FLOW
 kubernetes:
   image: ${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}
   image_pull_policy: IMAGE_PULL_POLICY_IF_NOT_PRESENT
-  restart_policy: RESTART_POLICY_ALWAYS
 FLOW
 )
 

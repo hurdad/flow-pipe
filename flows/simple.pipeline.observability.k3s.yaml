@@ -4,7 +4,6 @@ execution:
 kubernetes:
   image: ghcr.io/hurdad/flow-pipe-runtime:main-ubuntu24.04
   image_pull_policy: IMAGE_PULL_POLICY_ALWAYS
-  restart_policy: RESTART_POLICY_ALWAYS
 queues:
   - name: q1
     capacity: 256
