@@ -124,7 +124,10 @@ Optional fields:
 | File | Description |
 |----|------------|
 | `noop.yaml` | Minimal source → sink pipeline |
-| `simple_pipeline.yaml` | Source → transform → sink |
+| `noop.observability.yaml` | No-op pipeline with observability enabled |
+| `noop.observability.k3s.yaml` | No-op pipeline for k3s with observability enabled |
+| `simple.pipeline.yaml` | Source → transform → sink |
+| `simple.pipeline.observability.k3s.yaml` | Job-mode simple pipeline for k3s with observability enabled |
 | `fanout.yaml` | Fan-out to multiple transforms and sinks |
 
 ---
