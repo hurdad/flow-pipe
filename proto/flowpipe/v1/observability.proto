@@ -17,15 +17,10 @@ option go_package = "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1";
 // ------------------------------------------------------------
 // OTLP transport selection
 // ------------------------------------------------------------
-//
-// Defines which OTLP transport should be used when exporting
-// telemetry. This is a hint only and may be ignored by runtime
-// policy.
-//
 enum OtlpTransport {
   OTLP_TRANSPORT_UNSPECIFIED = 0; // Runtime default (typically gRPC)
-  OTLP_TRANSPORT_GRPC = 1; // OTLP over gRPC
-  OTLP_TRANSPORT_HTTP = 2; // OTLP over HTTP/protobuf
+  OTLP_TRANSPORT_GRPC = 1;        // OTLP over gRPC
+  OTLP_TRANSPORT_HTTP = 2;        // OTLP over HTTP/protobuf
 }
 
 message ObservabilityConfig {
@@ -34,26 +29,16 @@ message ObservabilityConfig {
   // Master enable switches
   // ----------------------------------------------------------
 
-  // Allow metrics emission for this flow.
   bool metrics_enabled = 1;
-
-  // Allow tracing emission for this flow.
   bool tracing_enabled = 2;
-
-  // Allow log emission for this flow.
   bool logs_enabled = 3;
 
   // ----------------------------------------------------------
   // OTLP endpoint & transport selection
   // ----------------------------------------------------------
 
-  // Optional OTLP endpoint override for observability (host:port).
-  // If unset, the global runtime OTEL endpoint is used.
-  string otlp_endpoint = 8;
-
-  // OTLP transport selection (gRPC or HTTP).
-  // If unspecified, runtime default is used.
-  OtlpTransport transport = 9;
+  string otlp_endpoint = 4;
+  OtlpTransport transport = 5;
 
   // ==========================================================
   // Tracing configuration
@@ -63,177 +48,112 @@ message ObservabilityConfig {
     // --------------------------------------------------------
     // Tracing sampling intent
     // --------------------------------------------------------
-
     enum TraceHint {
-      TRACE_HINT_UNSPECIFIED = 0; // Use runtime default behavior.
-      TRACE_HINT_DEFAULT = 1;     // Normal sampling behavior.
-      TRACE_HINT_ALWAYS = 2;      // Force tracing for this flow.
-      TRACE_HINT_NEVER = 3;       // Suppress tracing for this flow.
+      TRACE_HINT_UNSPECIFIED = 0;
+      TRACE_HINT_DEFAULT = 1;
+      TRACE_HINT_ALWAYS = 2;
+      TRACE_HINT_NEVER = 3;
     }
 
-    // Sampling intent hint for this flow.
-    TraceHint trace_hint = 3;
+    TraceHint trace_hint = 1;
 
     // --------------------------------------------------------
     // Trace processing strategy
     // --------------------------------------------------------
-
     enum TraceProcessorType {
-      TRACE_PROCESSOR_UNSPECIFIED = 0; // Runtime default.
-      TRACE_PROCESSOR_SIMPLE = 1;      // Synchronous export.
-      TRACE_PROCESSOR_BATCH = 2;       // Asynchronous batch export.
+      TRACE_PROCESSOR_UNSPECIFIED = 0;
+      TRACE_PROCESSOR_SIMPLE = 1;
+      TRACE_PROCESSOR_BATCH = 2;
     }
 
-    // Trace processor selection.
-    TraceProcessorType processor = 1;
+    TraceProcessorType processor = 2;
 
     // --------------------------------------------------------
     // Batch trace processor tuning
     // --------------------------------------------------------
-
     message BatchConfig {
-
-      // Maximum number of spans queued in memory.
-      // Spans are dropped once this limit is reached.
       uint32 max_queue_size = 1;
-
-      // Maximum number of spans sent per export.
-      // Must be <= max_queue_size.
       uint32 max_export_batch_size = 2;
-
-      // Delay between two consecutive exports (milliseconds).
       uint32 schedule_delay_ms = 3;
-
-      // Maximum time allowed for an export attempt (milliseconds).
-      // NOTE: Currently ignored by the OTEL C++ SDK but preserved
-      // for forward compatibility.
       uint32 export_timeout_ms = 4;
     }
 
-    // Batch processor configuration.
-    BatchConfig batch = 5;
+    BatchConfig batch = 3;
 
     // --------------------------------------------------------
     // Span granularity controls
     // --------------------------------------------------------
-
-    // Emit spans for stage execution.
-    bool stage_spans_enabled = 6;
-
-    // Emit spans for queue wait and dequeue.
-    bool queue_spans_enabled = 7;
-
-    // Emit per-record spans (high overhead).
-    bool record_spans_enabled = 8;
+    bool stage_spans_enabled = 4;
+    bool queue_spans_enabled = 5;
+    bool record_spans_enabled = 6;
 
     // --------------------------------------------------------
     // Trace attribute verbosity
     // --------------------------------------------------------
-
     enum AttributeLevel {
-      ATTRIBUTES_UNSPECIFIED = 0; // Runtime default.
-      ATTRIBUTES_MINIMAL = 1;     // IDs and timing only.
-      ATTRIBUTES_STANDARD = 2;    // Safe default attributes.
-      ATTRIBUTES_VERBOSE = 3;     // Debug-level verbosity.
+      ATTRIBUTES_UNSPECIFIED = 0;
+      ATTRIBUTES_MINIMAL = 1;
+      ATTRIBUTES_STANDARD = 2;
+      ATTRIBUTES_VERBOSE = 3;
     }
 
-    // Attribute verbosity level for tracing.
-    AttributeLevel attribute_level = 9;
+    AttributeLevel attribute_level = 7;
 
-    // Expected end-to-end latency budget (milliseconds).
-    // Used for observability context only (not enforced).
-    uint32 latency_budget_ms = 10;
+    uint32 latency_budget_ms = 8;
   }
 
-  // Tracing configuration block.
-  TracingConfig tracing = 4;
+  TracingConfig tracing = 6;
 
   // ==========================================================
   // Metrics configuration
   // ==========================================================
   message MetricsConfig {
 
-    // --------------------------------------------------------
-    // Metrics granularity controls
-    // --------------------------------------------------------
-
-    // Emit per-stage metrics.
+    // Granularity controls
     bool stage_metrics_enabled = 1;
-
-    // Emit queue-level metrics.
     bool queue_metrics_enabled = 2;
-
-    // Emit flow-level aggregate metrics.
     bool flow_metrics_enabled = 3;
 
-    // --------------------------------------------------------
-    // Cost and cardinality controls
-    // --------------------------------------------------------
-
-    // Emit latency histogram metrics.
+    // Cost / cardinality controls
     bool latency_histograms_enabled = 4;
-
-    // Emit counters only (no gauges or histograms).
     bool counters_only = 5;
 
-    // --------------------------------------------------------
-    // Metrics collection interval hints
-    // --------------------------------------------------------
-
-    // Minimum metrics emission interval (milliseconds).
+    // Collection interval hints
     uint32 min_collection_interval_ms = 6;
-
-    // Preferred metrics emission interval (milliseconds).
     uint32 collection_interval_ms = 7;
-
-    // Expected latency budget for metric tagging and alerting.
     uint32 latency_budget_ms = 8;
   }
 
-  // Metrics configuration block.
-  MetricsConfig metrics = 5;
+  MetricsConfig metrics = 7;
 
   // ==========================================================
   // Logging configuration
   // ==========================================================
   message LoggingConfig {
 
-    // --------------------------------------------------------
-    // Log processing strategy
-    // --------------------------------------------------------
-
     enum LogProcessorType {
-      LOG_PROCESSOR_UNSPECIFIED = 0; // Runtime default.
-      LOG_PROCESSOR_SIMPLE = 1; // Synchronous export.
-      LOG_PROCESSOR_BATCH = 2; // Asynchronous batch export.
+      LOG_PROCESSOR_UNSPECIFIED = 0;
+      LOG_PROCESSOR_SIMPLE = 1;
+      LOG_PROCESSOR_BATCH = 2;
     }
 
-    // Log processor selection.
     LogProcessorType processor = 1;
 
-    // --------------------------------------------------------
-    // Batch log processor tuning
-    // --------------------------------------------------------
-
     message BatchConfig {
-      uint32 max_queue_size = 1; // Max queued log records
-      uint32 max_export_batch_size = 2; // Max records per export
-      uint32 schedule_delay_ms = 3; // Delay before export
-      uint32 export_timeout_ms = 4; // Export timeout
+      uint32 max_queue_size = 1;
+      uint32 max_export_batch_size = 2;
+      uint32 schedule_delay_ms = 3;
+      uint32 export_timeout_ms = 4;
     }
 
-    // Batch processor configuration.
     BatchConfig batch = 2;
   }
 
-  // Logging configuration block.
-  LoggingConfig logging = 6;
+  LoggingConfig logging = 8;
 
   // ----------------------------------------------------------
   // Debug intent
   // ----------------------------------------------------------
 
-  // Indicates this flow is under investigation and may emit
-  // higher-cost observability signals.
-  bool debug = 7;
+  bool debug = 9;
 }

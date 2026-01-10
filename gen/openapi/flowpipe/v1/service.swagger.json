@@ -246,19 +246,16 @@
         "LOG_PROCESSOR_SIMPLE",
         "LOG_PROCESSOR_BATCH"
       ],
-      "default": "LOG_PROCESSOR_UNSPECIFIED",
-      "description": " - LOG_PROCESSOR_UNSPECIFIED: Runtime default.\n - LOG_PROCESSOR_SIMPLE: Synchronous export.\n - LOG_PROCESSOR_BATCH: Asynchronous batch export."
+      "default": "LOG_PROCESSOR_UNSPECIFIED"
     },
     "ObservabilityConfigLoggingConfig": {
       "type": "object",
       "properties": {
         "processor": {
-          "$ref": "#/definitions/LoggingConfigLogProcessorType",
-          "description": "Log processor selection."
+          "$ref": "#/definitions/LoggingConfigLogProcessorType"
         },
         "batch": {
-          "$ref": "#/definitions/ObservabilityConfigLoggingConfigBatchConfig",
-          "description": "Batch processor configuration."
+          "$ref": "#/definitions/ObservabilityConfigLoggingConfigBatchConfig"
         }
       },
       "title": "==========================================================\nLogging configuration\n=========================================================="
@@ -268,23 +265,19 @@
       "properties": {
         "maxQueueSize": {
           "type": "integer",
-          "format": "int64",
-          "title": "Max queued log records"
+          "format": "int64"
         },
         "maxExportBatchSize": {
           "type": "integer",
-          "format": "int64",
-          "title": "Max records per export"
+          "format": "int64"
         },
         "scheduleDelayMs": {
           "type": "integer",
-          "format": "int64",
-          "title": "Delay before export"
+          "format": "int64"
         },
         "exportTimeoutMs": {
           "type": "integer",
-          "format": "int64",
-          "title": "Export timeout"
+          "format": "int64"
         }
       }
     },
@@ -293,38 +286,33 @@
       "properties": {
         "stageMetricsEnabled": {
           "type": "boolean",
-          "description": "Emit per-stage metrics."
+          "title": "Granularity controls"
         },
         "queueMetricsEnabled": {
-          "type": "boolean",
-          "description": "Emit queue-level metrics."
+          "type": "boolean"
         },
         "flowMetricsEnabled": {
-          "type": "boolean",
-          "description": "Emit flow-level aggregate metrics."
+          "type": "boolean"
         },
         "latencyHistogramsEnabled": {
           "type": "boolean",
-          "description": "Emit latency histogram metrics."
+          "title": "Cost / cardinality controls"
         },
         "countersOnly": {
-          "type": "boolean",
-          "description": "Emit counters only (no gauges or histograms)."
+          "type": "boolean"
         },
         "minCollectionIntervalMs": {
           "type": "integer",
           "format": "int64",
-          "description": "Minimum metrics emission interval (milliseconds)."
+          "title": "Collection interval hints"
         },
         "collectionIntervalMs": {
           "type": "integer",
-          "format": "int64",
-          "description": "Preferred metrics emission interval (milliseconds)."
+          "format": "int64"
         },
         "latencyBudgetMs": {
           "type": "integer",
-          "format": "int64",
-          "description": "Expected latency budget for metric tagging and alerting."
+          "format": "int64"
         }
       },
       "title": "==========================================================\nMetrics configuration\n=========================================================="
@@ -333,37 +321,30 @@
       "type": "object",
       "properties": {
         "traceHint": {
-          "$ref": "#/definitions/TracingConfigTraceHint",
-          "description": "Sampling intent hint for this flow."
+          "$ref": "#/definitions/TracingConfigTraceHint"
         },
         "processor": {
-          "$ref": "#/definitions/TracingConfigTraceProcessorType",
-          "description": "Trace processor selection."
+          "$ref": "#/definitions/TracingConfigTraceProcessorType"
         },
         "batch": {
-          "$ref": "#/definitions/ObservabilityConfigTracingConfigBatchConfig",
-          "description": "Batch processor configuration."
+          "$ref": "#/definitions/ObservabilityConfigTracingConfigBatchConfig"
         },
         "stageSpansEnabled": {
           "type": "boolean",
-          "description": "Emit spans for stage execution."
+          "title": "--------------------------------------------------------\nSpan granularity controls\n--------------------------------------------------------"
         },
         "queueSpansEnabled": {
-          "type": "boolean",
-          "description": "Emit spans for queue wait and dequeue."
+          "type": "boolean"
         },
         "recordSpansEnabled": {
-          "type": "boolean",
-          "description": "Emit per-record spans (high overhead)."
+          "type": "boolean"
         },
         "attributeLevel": {
-          "$ref": "#/definitions/TracingConfigAttributeLevel",
-          "description": "Attribute verbosity level for tracing."
+          "$ref": "#/definitions/TracingConfigAttributeLevel"
         },
         "latencyBudgetMs": {
           "type": "integer",
-          "format": "int64",
-          "description": "Expected end-to-end latency budget (milliseconds).\nUsed for observability context only (not enforced)."
+          "format": "int64"
         }
       },
       "title": "==========================================================\nTracing configuration\n=========================================================="
@@ -373,25 +354,22 @@
       "properties": {
         "maxQueueSize": {
           "type": "integer",
-          "format": "int64",
-          "description": "Maximum number of spans queued in memory.\nSpans are dropped once this limit is reached."
+          "format": "int64"
         },
         "maxExportBatchSize": {
           "type": "integer",
-          "format": "int64",
-          "description": "Maximum number of spans sent per export.\nMust be \u003c= max_queue_size."
+          "format": "int64"
         },
         "scheduleDelayMs": {
           "type": "integer",
-          "format": "int64",
-          "description": "Delay between two consecutive exports (milliseconds)."
+          "format": "int64"
         },
         "exportTimeoutMs": {
           "type": "integer",
-          "format": "int64",
-          "description": "Maximum time allowed for an export attempt (milliseconds).\nNOTE: Currently ignored by the OTEL C++ SDK but preserved\nfor forward compatibility."
+          "format": "int64"
         }
-      }
+      },
+      "title": "--------------------------------------------------------\nBatch trace processor tuning\n--------------------------------------------------------"
     },
     "TracingConfigAttributeLevel": {
       "type": "string",
@@ -402,7 +380,7 @@
         "ATTRIBUTES_VERBOSE"
       ],
       "default": "ATTRIBUTES_UNSPECIFIED",
-      "description": " - ATTRIBUTES_UNSPECIFIED: Runtime default.\n - ATTRIBUTES_MINIMAL: IDs and timing only.\n - ATTRIBUTES_STANDARD: Safe default attributes.\n - ATTRIBUTES_VERBOSE: Debug-level verbosity."
+      "title": "--------------------------------------------------------\nTrace attribute verbosity\n--------------------------------------------------------"
     },
     "TracingConfigTraceHint": {
       "type": "string",
@@ -413,7 +391,7 @@
         "TRACE_HINT_NEVER"
       ],
       "default": "TRACE_HINT_UNSPECIFIED",
-      "description": " - TRACE_HINT_UNSPECIFIED: Use runtime default behavior.\n - TRACE_HINT_DEFAULT: Normal sampling behavior.\n - TRACE_HINT_ALWAYS: Force tracing for this flow.\n - TRACE_HINT_NEVER: Suppress tracing for this flow."
+      "title": "--------------------------------------------------------\nTracing sampling intent\n--------------------------------------------------------"
     },
     "TracingConfigTraceProcessorType": {
       "type": "string",
@@ -423,7 +401,7 @@
         "TRACE_PROCESSOR_BATCH"
       ],
       "default": "TRACE_PROCESSOR_UNSPECIFIED",
-      "description": " - TRACE_PROCESSOR_UNSPECIFIED: Runtime default.\n - TRACE_PROCESSOR_SIMPLE: Synchronous export.\n - TRACE_PROCESSOR_BATCH: Asynchronous batch export."
+      "title": "--------------------------------------------------------\nTrace processing strategy\n--------------------------------------------------------"
     },
     "protobufAny": {
       "type": "object",
@@ -661,40 +639,31 @@
       "type": "object",
       "properties": {
         "metricsEnabled": {
-          "type": "boolean",
-          "description": "Allow metrics emission for this flow."
+          "type": "boolean"
         },
         "tracingEnabled": {
-          "type": "boolean",
-          "description": "Allow tracing emission for this flow."
+          "type": "boolean"
         },
         "logsEnabled": {
-          "type": "boolean",
-          "description": "Allow log emission for this flow."
+          "type": "boolean"
         },
         "otlpEndpoint": {
-          "type": "string",
-          "description": "Optional OTLP endpoint override for observability (host:port).\nIf unset, the global runtime OTEL endpoint is used."
+          "type": "string"
         },
         "transport": {
-          "$ref": "#/definitions/v1OtlpTransport",
-          "description": "OTLP transport selection (gRPC or HTTP).\nIf unspecified, runtime default is used."
+          "$ref": "#/definitions/v1OtlpTransport"
         },
         "tracing": {
-          "$ref": "#/definitions/ObservabilityConfigTracingConfig",
-          "description": "Tracing configuration block."
+          "$ref": "#/definitions/ObservabilityConfigTracingConfig"
         },
         "metrics": {
-          "$ref": "#/definitions/ObservabilityConfigMetricsConfig",
-          "description": "Metrics configuration block."
+          "$ref": "#/definitions/ObservabilityConfigMetricsConfig"
         },
         "logging": {
-          "$ref": "#/definitions/ObservabilityConfigLoggingConfig",
-          "description": "Logging configuration block."
+          "$ref": "#/definitions/ObservabilityConfigLoggingConfig"
         },
         "debug": {
-          "type": "boolean",
-          "description": "Indicates this flow is under investigation and may emit\nhigher-cost observability signals."
+          "type": "boolean"
         }
       }
     },
@@ -706,7 +675,7 @@
         "OTLP_TRANSPORT_HTTP"
       ],
       "default": "OTLP_TRANSPORT_UNSPECIFIED",
-      "description": "Defines which OTLP transport should be used when exporting\ntelemetry. This is a hint only and may be ignored by runtime\npolicy.\n\n - OTLP_TRANSPORT_UNSPECIFIED: Runtime default (typically gRPC)\n - OTLP_TRANSPORT_GRPC: OTLP over gRPC\n - OTLP_TRANSPORT_HTTP: OTLP over HTTP/protobuf",
+      "description": "- OTLP_TRANSPORT_UNSPECIFIED: Runtime default (typically gRPC)\n - OTLP_TRANSPORT_GRPC: OTLP over gRPC\n - OTLP_TRANSPORT_HTTP: OTLP over HTTP/protobuf",
       "title": "------------------------------------------------------------\nOTLP transport selection\n------------------------------------------------------------"
     },
     "v1QueueSpec": {

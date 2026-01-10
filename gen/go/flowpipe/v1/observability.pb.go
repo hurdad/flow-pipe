@@ -24,10 +24,6 @@ const (
 // ------------------------------------------------------------
 // OTLP transport selection
 // ------------------------------------------------------------
-//
-// Defines which OTLP transport should be used when exporting
-// telemetry. This is a hint only and may be ignored by runtime
-// policy.
 type OtlpTransport int32
 
 const (
@@ -77,13 +73,16 @@ func (OtlpTransport) EnumDescriptor() ([]byte, []int) {
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0}
 }
 
+// --------------------------------------------------------
+// Tracing sampling intent
+// --------------------------------------------------------
 type ObservabilityConfig_TracingConfig_TraceHint int32
 
 const (
-	ObservabilityConfig_TracingConfig_TRACE_HINT_UNSPECIFIED ObservabilityConfig_TracingConfig_TraceHint = 0 // Use runtime default behavior.
-	ObservabilityConfig_TracingConfig_TRACE_HINT_DEFAULT     ObservabilityConfig_TracingConfig_TraceHint = 1 // Normal sampling behavior.
-	ObservabilityConfig_TracingConfig_TRACE_HINT_ALWAYS      ObservabilityConfig_TracingConfig_TraceHint = 2 // Force tracing for this flow.
-	ObservabilityConfig_TracingConfig_TRACE_HINT_NEVER       ObservabilityConfig_TracingConfig_TraceHint = 3 // Suppress tracing for this flow.
+	ObservabilityConfig_TracingConfig_TRACE_HINT_UNSPECIFIED ObservabilityConfig_TracingConfig_TraceHint = 0
+	ObservabilityConfig_TracingConfig_TRACE_HINT_DEFAULT     ObservabilityConfig_TracingConfig_TraceHint = 1
+	ObservabilityConfig_TracingConfig_TRACE_HINT_ALWAYS      ObservabilityConfig_TracingConfig_TraceHint = 2
+	ObservabilityConfig_TracingConfig_TRACE_HINT_NEVER       ObservabilityConfig_TracingConfig_TraceHint = 3
 )
 
 // Enum value maps for ObservabilityConfig_TracingConfig_TraceHint.
@@ -129,12 +128,15 @@ func (ObservabilityConfig_TracingConfig_TraceHint) EnumDescriptor() ([]byte, []i
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0, 0, 0}
 }
 
+// --------------------------------------------------------
+// Trace processing strategy
+// --------------------------------------------------------
 type ObservabilityConfig_TracingConfig_TraceProcessorType int32
 
 const (
-	ObservabilityConfig_TracingConfig_TRACE_PROCESSOR_UNSPECIFIED ObservabilityConfig_TracingConfig_TraceProcessorType = 0 // Runtime default.
-	ObservabilityConfig_TracingConfig_TRACE_PROCESSOR_SIMPLE      ObservabilityConfig_TracingConfig_TraceProcessorType = 1 // Synchronous export.
-	ObservabilityConfig_TracingConfig_TRACE_PROCESSOR_BATCH       ObservabilityConfig_TracingConfig_TraceProcessorType = 2 // Asynchronous batch export.
+	ObservabilityConfig_TracingConfig_TRACE_PROCESSOR_UNSPECIFIED ObservabilityConfig_TracingConfig_TraceProcessorType = 0
+	ObservabilityConfig_TracingConfig_TRACE_PROCESSOR_SIMPLE      ObservabilityConfig_TracingConfig_TraceProcessorType = 1
+	ObservabilityConfig_TracingConfig_TRACE_PROCESSOR_BATCH       ObservabilityConfig_TracingConfig_TraceProcessorType = 2
 )
 
 // Enum value maps for ObservabilityConfig_TracingConfig_TraceProcessorType.
@@ -178,13 +180,16 @@ func (ObservabilityConfig_TracingConfig_TraceProcessorType) EnumDescriptor() ([]
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0, 0, 1}
 }
 
+// --------------------------------------------------------
+// Trace attribute verbosity
+// --------------------------------------------------------
 type ObservabilityConfig_TracingConfig_AttributeLevel int32
 
 const (
-	ObservabilityConfig_TracingConfig_ATTRIBUTES_UNSPECIFIED ObservabilityConfig_TracingConfig_AttributeLevel = 0 // Runtime default.
-	ObservabilityConfig_TracingConfig_ATTRIBUTES_MINIMAL     ObservabilityConfig_TracingConfig_AttributeLevel = 1 // IDs and timing only.
-	ObservabilityConfig_TracingConfig_ATTRIBUTES_STANDARD    ObservabilityConfig_TracingConfig_AttributeLevel = 2 // Safe default attributes.
-	ObservabilityConfig_TracingConfig_ATTRIBUTES_VERBOSE     ObservabilityConfig_TracingConfig_AttributeLevel = 3 // Debug-level verbosity.
+	ObservabilityConfig_TracingConfig_ATTRIBUTES_UNSPECIFIED ObservabilityConfig_TracingConfig_AttributeLevel = 0
+	ObservabilityConfig_TracingConfig_ATTRIBUTES_MINIMAL     ObservabilityConfig_TracingConfig_AttributeLevel = 1
+	ObservabilityConfig_TracingConfig_ATTRIBUTES_STANDARD    ObservabilityConfig_TracingConfig_AttributeLevel = 2
+	ObservabilityConfig_TracingConfig_ATTRIBUTES_VERBOSE     ObservabilityConfig_TracingConfig_AttributeLevel = 3
 )
 
 // Enum value maps for ObservabilityConfig_TracingConfig_AttributeLevel.
@@ -233,9 +238,9 @@ func (ObservabilityConfig_TracingConfig_AttributeLevel) EnumDescriptor() ([]byte
 type ObservabilityConfig_LoggingConfig_LogProcessorType int32
 
 const (
-	ObservabilityConfig_LoggingConfig_LOG_PROCESSOR_UNSPECIFIED ObservabilityConfig_LoggingConfig_LogProcessorType = 0 // Runtime default.
-	ObservabilityConfig_LoggingConfig_LOG_PROCESSOR_SIMPLE      ObservabilityConfig_LoggingConfig_LogProcessorType = 1 // Synchronous export.
-	ObservabilityConfig_LoggingConfig_LOG_PROCESSOR_BATCH       ObservabilityConfig_LoggingConfig_LogProcessorType = 2 // Asynchronous batch export.
+	ObservabilityConfig_LoggingConfig_LOG_PROCESSOR_UNSPECIFIED ObservabilityConfig_LoggingConfig_LogProcessorType = 0
+	ObservabilityConfig_LoggingConfig_LOG_PROCESSOR_SIMPLE      ObservabilityConfig_LoggingConfig_LogProcessorType = 1
+	ObservabilityConfig_LoggingConfig_LOG_PROCESSOR_BATCH       ObservabilityConfig_LoggingConfig_LogProcessorType = 2
 )
 
 // Enum value maps for ObservabilityConfig_LoggingConfig_LogProcessorType.
@@ -280,30 +285,18 @@ func (ObservabilityConfig_LoggingConfig_LogProcessorType) EnumDescriptor() ([]by
 }
 
 type ObservabilityConfig struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Allow metrics emission for this flow.
-	MetricsEnabled bool `protobuf:"varint,1,opt,name=metrics_enabled,json=metricsEnabled,proto3" json:"metrics_enabled,omitempty"`
-	// Allow tracing emission for this flow.
-	TracingEnabled bool `protobuf:"varint,2,opt,name=tracing_enabled,json=tracingEnabled,proto3" json:"tracing_enabled,omitempty"`
-	// Allow log emission for this flow.
-	LogsEnabled bool `protobuf:"varint,3,opt,name=logs_enabled,json=logsEnabled,proto3" json:"logs_enabled,omitempty"`
-	// Optional OTLP endpoint override for observability (host:port).
-	// If unset, the global runtime OTEL endpoint is used.
-	OtlpEndpoint string `protobuf:"bytes,8,opt,name=otlp_endpoint,json=otlpEndpoint,proto3" json:"otlp_endpoint,omitempty"`
-	// OTLP transport selection (gRPC or HTTP).
-	// If unspecified, runtime default is used.
-	Transport OtlpTransport `protobuf:"varint,9,opt,name=transport,proto3,enum=flowpipe.v1.OtlpTransport" json:"transport,omitempty"`
-	// Tracing configuration block.
-	Tracing *ObservabilityConfig_TracingConfig `protobuf:"bytes,4,opt,name=tracing,proto3" json:"tracing,omitempty"`
-	// Metrics configuration block.
-	Metrics *ObservabilityConfig_MetricsConfig `protobuf:"bytes,5,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	// Logging configuration block.
-	Logging *ObservabilityConfig_LoggingConfig `protobuf:"bytes,6,opt,name=logging,proto3" json:"logging,omitempty"`
-	// Indicates this flow is under investigation and may emit
-	// higher-cost observability signals.
-	Debug         bool `protobuf:"varint,7,opt,name=debug,proto3" json:"debug,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState             `protogen:"open.v1"`
+	MetricsEnabled bool                               `protobuf:"varint,1,opt,name=metrics_enabled,json=metricsEnabled,proto3" json:"metrics_enabled,omitempty"`
+	TracingEnabled bool                               `protobuf:"varint,2,opt,name=tracing_enabled,json=tracingEnabled,proto3" json:"tracing_enabled,omitempty"`
+	LogsEnabled    bool                               `protobuf:"varint,3,opt,name=logs_enabled,json=logsEnabled,proto3" json:"logs_enabled,omitempty"`
+	OtlpEndpoint   string                             `protobuf:"bytes,4,opt,name=otlp_endpoint,json=otlpEndpoint,proto3" json:"otlp_endpoint,omitempty"`
+	Transport      OtlpTransport                      `protobuf:"varint,5,opt,name=transport,proto3,enum=flowpipe.v1.OtlpTransport" json:"transport,omitempty"`
+	Tracing        *ObservabilityConfig_TracingConfig `protobuf:"bytes,6,opt,name=tracing,proto3" json:"tracing,omitempty"`
+	Metrics        *ObservabilityConfig_MetricsConfig `protobuf:"bytes,7,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	Logging        *ObservabilityConfig_LoggingConfig `protobuf:"bytes,8,opt,name=logging,proto3" json:"logging,omitempty"`
+	Debug          bool                               `protobuf:"varint,9,opt,name=debug,proto3" json:"debug,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ObservabilityConfig) Reset() {
@@ -403,26 +396,20 @@ func (x *ObservabilityConfig) GetDebug() bool {
 // Tracing configuration
 // ==========================================================
 type ObservabilityConfig_TracingConfig struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Sampling intent hint for this flow.
-	TraceHint ObservabilityConfig_TracingConfig_TraceHint `protobuf:"varint,3,opt,name=trace_hint,json=traceHint,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceHint" json:"trace_hint,omitempty"`
-	// Trace processor selection.
-	Processor ObservabilityConfig_TracingConfig_TraceProcessorType `protobuf:"varint,1,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceProcessorType" json:"processor,omitempty"`
-	// Batch processor configuration.
-	Batch *ObservabilityConfig_TracingConfig_BatchConfig `protobuf:"bytes,5,opt,name=batch,proto3" json:"batch,omitempty"`
-	// Emit spans for stage execution.
-	StageSpansEnabled bool `protobuf:"varint,6,opt,name=stage_spans_enabled,json=stageSpansEnabled,proto3" json:"stage_spans_enabled,omitempty"`
-	// Emit spans for queue wait and dequeue.
-	QueueSpansEnabled bool `protobuf:"varint,7,opt,name=queue_spans_enabled,json=queueSpansEnabled,proto3" json:"queue_spans_enabled,omitempty"`
-	// Emit per-record spans (high overhead).
-	RecordSpansEnabled bool `protobuf:"varint,8,opt,name=record_spans_enabled,json=recordSpansEnabled,proto3" json:"record_spans_enabled,omitempty"`
-	// Attribute verbosity level for tracing.
-	AttributeLevel ObservabilityConfig_TracingConfig_AttributeLevel `protobuf:"varint,9,opt,name=attribute_level,json=attributeLevel,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_AttributeLevel" json:"attribute_level,omitempty"`
-	// Expected end-to-end latency budget (milliseconds).
-	// Used for observability context only (not enforced).
-	LatencyBudgetMs uint32 `protobuf:"varint,10,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state     protoimpl.MessageState                               `protogen:"open.v1"`
+	TraceHint ObservabilityConfig_TracingConfig_TraceHint          `protobuf:"varint,1,opt,name=trace_hint,json=traceHint,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceHint" json:"trace_hint,omitempty"`
+	Processor ObservabilityConfig_TracingConfig_TraceProcessorType `protobuf:"varint,2,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_TraceProcessorType" json:"processor,omitempty"`
+	Batch     *ObservabilityConfig_TracingConfig_BatchConfig       `protobuf:"bytes,3,opt,name=batch,proto3" json:"batch,omitempty"`
+	// --------------------------------------------------------
+	// Span granularity controls
+	// --------------------------------------------------------
+	StageSpansEnabled  bool                                             `protobuf:"varint,4,opt,name=stage_spans_enabled,json=stageSpansEnabled,proto3" json:"stage_spans_enabled,omitempty"`
+	QueueSpansEnabled  bool                                             `protobuf:"varint,5,opt,name=queue_spans_enabled,json=queueSpansEnabled,proto3" json:"queue_spans_enabled,omitempty"`
+	RecordSpansEnabled bool                                             `protobuf:"varint,6,opt,name=record_spans_enabled,json=recordSpansEnabled,proto3" json:"record_spans_enabled,omitempty"`
+	AttributeLevel     ObservabilityConfig_TracingConfig_AttributeLevel `protobuf:"varint,7,opt,name=attribute_level,json=attributeLevel,proto3,enum=flowpipe.v1.ObservabilityConfig_TracingConfig_AttributeLevel" json:"attribute_level,omitempty"`
+	LatencyBudgetMs    uint32                                           `protobuf:"varint,8,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ObservabilityConfig_TracingConfig) Reset() {
@@ -516,24 +503,19 @@ func (x *ObservabilityConfig_TracingConfig) GetLatencyBudgetMs() uint32 {
 // ==========================================================
 type ObservabilityConfig_MetricsConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Emit per-stage metrics.
+	// Granularity controls
 	StageMetricsEnabled bool `protobuf:"varint,1,opt,name=stage_metrics_enabled,json=stageMetricsEnabled,proto3" json:"stage_metrics_enabled,omitempty"`
-	// Emit queue-level metrics.
 	QueueMetricsEnabled bool `protobuf:"varint,2,opt,name=queue_metrics_enabled,json=queueMetricsEnabled,proto3" json:"queue_metrics_enabled,omitempty"`
-	// Emit flow-level aggregate metrics.
-	FlowMetricsEnabled bool `protobuf:"varint,3,opt,name=flow_metrics_enabled,json=flowMetricsEnabled,proto3" json:"flow_metrics_enabled,omitempty"`
-	// Emit latency histogram metrics.
+	FlowMetricsEnabled  bool `protobuf:"varint,3,opt,name=flow_metrics_enabled,json=flowMetricsEnabled,proto3" json:"flow_metrics_enabled,omitempty"`
+	// Cost / cardinality controls
 	LatencyHistogramsEnabled bool `protobuf:"varint,4,opt,name=latency_histograms_enabled,json=latencyHistogramsEnabled,proto3" json:"latency_histograms_enabled,omitempty"`
-	// Emit counters only (no gauges or histograms).
-	CountersOnly bool `protobuf:"varint,5,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
-	// Minimum metrics emission interval (milliseconds).
+	CountersOnly             bool `protobuf:"varint,5,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
+	// Collection interval hints
 	MinCollectionIntervalMs uint32 `protobuf:"varint,6,opt,name=min_collection_interval_ms,json=minCollectionIntervalMs,proto3" json:"min_collection_interval_ms,omitempty"`
-	// Preferred metrics emission interval (milliseconds).
-	CollectionIntervalMs uint32 `protobuf:"varint,7,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
-	// Expected latency budget for metric tagging and alerting.
-	LatencyBudgetMs uint32 `protobuf:"varint,8,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	CollectionIntervalMs    uint32 `protobuf:"varint,7,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
+	LatencyBudgetMs         uint32 `protobuf:"varint,8,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *ObservabilityConfig_MetricsConfig) Reset() {
@@ -626,11 +608,9 @@ func (x *ObservabilityConfig_MetricsConfig) GetLatencyBudgetMs() uint32 {
 // Logging configuration
 // ==========================================================
 type ObservabilityConfig_LoggingConfig struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Log processor selection.
-	Processor ObservabilityConfig_LoggingConfig_LogProcessorType `protobuf:"varint,1,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_LoggingConfig_LogProcessorType" json:"processor,omitempty"`
-	// Batch processor configuration.
-	Batch         *ObservabilityConfig_LoggingConfig_BatchConfig `protobuf:"bytes,2,opt,name=batch,proto3" json:"batch,omitempty"`
+	state         protoimpl.MessageState                             `protogen:"open.v1"`
+	Processor     ObservabilityConfig_LoggingConfig_LogProcessorType `protobuf:"varint,1,opt,name=processor,proto3,enum=flowpipe.v1.ObservabilityConfig_LoggingConfig_LogProcessorType" json:"processor,omitempty"`
+	Batch         *ObservabilityConfig_LoggingConfig_BatchConfig     `protobuf:"bytes,2,opt,name=batch,proto3" json:"batch,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -679,22 +659,17 @@ func (x *ObservabilityConfig_LoggingConfig) GetBatch() *ObservabilityConfig_Logg
 	return nil
 }
 
+// --------------------------------------------------------
+// Batch trace processor tuning
+// --------------------------------------------------------
 type ObservabilityConfig_TracingConfig_BatchConfig struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Maximum number of spans queued in memory.
-	// Spans are dropped once this limit is reached.
-	MaxQueueSize uint32 `protobuf:"varint,1,opt,name=max_queue_size,json=maxQueueSize,proto3" json:"max_queue_size,omitempty"`
-	// Maximum number of spans sent per export.
-	// Must be <= max_queue_size.
-	MaxExportBatchSize uint32 `protobuf:"varint,2,opt,name=max_export_batch_size,json=maxExportBatchSize,proto3" json:"max_export_batch_size,omitempty"`
-	// Delay between two consecutive exports (milliseconds).
-	ScheduleDelayMs uint32 `protobuf:"varint,3,opt,name=schedule_delay_ms,json=scheduleDelayMs,proto3" json:"schedule_delay_ms,omitempty"`
-	// Maximum time allowed for an export attempt (milliseconds).
-	// NOTE: Currently ignored by the OTEL C++ SDK but preserved
-	// for forward compatibility.
-	ExportTimeoutMs uint32 `protobuf:"varint,4,opt,name=export_timeout_ms,json=exportTimeoutMs,proto3" json:"export_timeout_ms,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	MaxQueueSize       uint32                 `protobuf:"varint,1,opt,name=max_queue_size,json=maxQueueSize,proto3" json:"max_queue_size,omitempty"`
+	MaxExportBatchSize uint32                 `protobuf:"varint,2,opt,name=max_export_batch_size,json=maxExportBatchSize,proto3" json:"max_export_batch_size,omitempty"`
+	ScheduleDelayMs    uint32                 `protobuf:"varint,3,opt,name=schedule_delay_ms,json=scheduleDelayMs,proto3" json:"schedule_delay_ms,omitempty"`
+	ExportTimeoutMs    uint32                 `protobuf:"varint,4,opt,name=export_timeout_ms,json=exportTimeoutMs,proto3" json:"export_timeout_ms,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ObservabilityConfig_TracingConfig_BatchConfig) Reset() {
@@ -757,10 +732,10 @@ func (x *ObservabilityConfig_TracingConfig_BatchConfig) GetExportTimeoutMs() uin
 
 type ObservabilityConfig_LoggingConfig_BatchConfig struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	MaxQueueSize       uint32                 `protobuf:"varint,1,opt,name=max_queue_size,json=maxQueueSize,proto3" json:"max_queue_size,omitempty"`                     // Max queued log records
-	MaxExportBatchSize uint32                 `protobuf:"varint,2,opt,name=max_export_batch_size,json=maxExportBatchSize,proto3" json:"max_export_batch_size,omitempty"` // Max records per export
-	ScheduleDelayMs    uint32                 `protobuf:"varint,3,opt,name=schedule_delay_ms,json=scheduleDelayMs,proto3" json:"schedule_delay_ms,omitempty"`            // Delay before export
-	ExportTimeoutMs    uint32                 `protobuf:"varint,4,opt,name=export_timeout_ms,json=exportTimeoutMs,proto3" json:"export_timeout_ms,omitempty"`            // Export timeout
+	MaxQueueSize       uint32                 `protobuf:"varint,1,opt,name=max_queue_size,json=maxQueueSize,proto3" json:"max_queue_size,omitempty"`
+	MaxExportBatchSize uint32                 `protobuf:"varint,2,opt,name=max_export_batch_size,json=maxExportBatchSize,proto3" json:"max_export_batch_size,omitempty"`
+	ScheduleDelayMs    uint32                 `protobuf:"varint,3,opt,name=schedule_delay_ms,json=scheduleDelayMs,proto3" json:"schedule_delay_ms,omitempty"`
+	ExportTimeoutMs    uint32                 `protobuf:"varint,4,opt,name=export_timeout_ms,json=exportTimeoutMs,proto3" json:"export_timeout_ms,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -832,23 +807,22 @@ const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\x0fmetrics_enabled\x18\x01 \x01(\bR\x0emetricsEnabled\x12'\n" +
 	"\x0ftracing_enabled\x18\x02 \x01(\bR\x0etracingEnabled\x12!\n" +
 	"\flogs_enabled\x18\x03 \x01(\bR\vlogsEnabled\x12#\n" +
-	"\rotlp_endpoint\x18\b \x01(\tR\fotlpEndpoint\x128\n" +
-	"\ttransport\x18\t \x01(\x0e2\x1a.flowpipe.v1.OtlpTransportR\ttransport\x12H\n" +
-	"\atracing\x18\x04 \x01(\v2..flowpipe.v1.ObservabilityConfig.TracingConfigR\atracing\x12H\n" +
-	"\ametrics\x18\x05 \x01(\v2..flowpipe.v1.ObservabilityConfig.MetricsConfigR\ametrics\x12H\n" +
-	"\alogging\x18\x06 \x01(\v2..flowpipe.v1.ObservabilityConfig.LoggingConfigR\alogging\x12\x14\n" +
-	"\x05debug\x18\a \x01(\bR\x05debug\x1a\xd5\b\n" +
+	"\rotlp_endpoint\x18\x04 \x01(\tR\fotlpEndpoint\x128\n" +
+	"\ttransport\x18\x05 \x01(\x0e2\x1a.flowpipe.v1.OtlpTransportR\ttransport\x12H\n" +
+	"\atracing\x18\x06 \x01(\v2..flowpipe.v1.ObservabilityConfig.TracingConfigR\atracing\x12H\n" +
+	"\ametrics\x18\a \x01(\v2..flowpipe.v1.ObservabilityConfig.MetricsConfigR\ametrics\x12H\n" +
+	"\alogging\x18\b \x01(\v2..flowpipe.v1.ObservabilityConfig.LoggingConfigR\alogging\x12\x14\n" +
+	"\x05debug\x18\t \x01(\bR\x05debug\x1a\xd5\b\n" +
 	"\rTracingConfig\x12W\n" +
 	"\n" +
-	"trace_hint\x18\x03 \x01(\x0e28.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceHintR\ttraceHint\x12_\n" +
-	"\tprocessor\x18\x01 \x01(\x0e2A.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceProcessorTypeR\tprocessor\x12P\n" +
-	"\x05batch\x18\x05 \x01(\v2:.flowpipe.v1.ObservabilityConfig.TracingConfig.BatchConfigR\x05batch\x12.\n" +
-	"\x13stage_spans_enabled\x18\x06 \x01(\bR\x11stageSpansEnabled\x12.\n" +
-	"\x13queue_spans_enabled\x18\a \x01(\bR\x11queueSpansEnabled\x120\n" +
-	"\x14record_spans_enabled\x18\b \x01(\bR\x12recordSpansEnabled\x12f\n" +
-	"\x0fattribute_level\x18\t \x01(\x0e2=.flowpipe.v1.ObservabilityConfig.TracingConfig.AttributeLevelR\x0eattributeLevel\x12*\n" +
-	"\x11latency_budget_ms\x18\n" +
-	" \x01(\rR\x0flatencyBudgetMs\x1a\xbe\x01\n" +
+	"trace_hint\x18\x01 \x01(\x0e28.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceHintR\ttraceHint\x12_\n" +
+	"\tprocessor\x18\x02 \x01(\x0e2A.flowpipe.v1.ObservabilityConfig.TracingConfig.TraceProcessorTypeR\tprocessor\x12P\n" +
+	"\x05batch\x18\x03 \x01(\v2:.flowpipe.v1.ObservabilityConfig.TracingConfig.BatchConfigR\x05batch\x12.\n" +
+	"\x13stage_spans_enabled\x18\x04 \x01(\bR\x11stageSpansEnabled\x12.\n" +
+	"\x13queue_spans_enabled\x18\x05 \x01(\bR\x11queueSpansEnabled\x120\n" +
+	"\x14record_spans_enabled\x18\x06 \x01(\bR\x12recordSpansEnabled\x12f\n" +
+	"\x0fattribute_level\x18\a \x01(\x0e2=.flowpipe.v1.ObservabilityConfig.TracingConfig.AttributeLevelR\x0eattributeLevel\x12*\n" +
+	"\x11latency_budget_ms\x18\b \x01(\rR\x0flatencyBudgetMs\x1a\xbe\x01\n" +
 	"\vBatchConfig\x12$\n" +
 	"\x0emax_queue_size\x18\x01 \x01(\rR\fmaxQueueSize\x121\n" +
 	"\x15max_export_batch_size\x18\x02 \x01(\rR\x12maxExportBatchSize\x12*\n" +
