@@ -57,6 +57,11 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 	if spec == nil {
 		// Flow deleted or not yet fully written
 		c.logger.Info(ctx, "flow not found or incomplete", slog.String("flow", name))
+		if err := deleteRuntimeResources(ctx, c.kube, c.runtimeNamespace, name); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return err
+		}
 		span.SetAttributes(attribute.String("result", "missing"))
 		return nil
 	}
