@@ -62,17 +62,19 @@ static trace_sdk::BatchSpanProcessorOptions CreateBatchTraceOptions(
 // ------------------------------------------------------------
 // Init tracing
 // ------------------------------------------------------------
-void InitTracing(const flowpipe::v1::ObservabilityConfig::TracingConfig* cfg,
-                 const GlobalDefaults& global, bool debug) {
+void InitTracing(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefaults& global,
+                 bool debug) {
   auto& state = GetOtelState();
 
   if (!cfg || state.tracer_provider)
     return;
 
+  const auto& tracing_cfg = cfg->tracing();
+
   // ----------------------------------------------------------
   // Endpoint & transport resolution
   // ----------------------------------------------------------
-  std::string endpoint = global.tracing_endpoint;
+  std::string endpoint = global.otlp_endpoint;
   auto transport = flowpipe::v1::OTLP_TRANSPORT_GRPC;
 
   if (!cfg->otlp_endpoint().empty() && global.allow_endpoint_overrides)
@@ -101,11 +103,11 @@ void InitTracing(const flowpipe::v1::ObservabilityConfig::TracingConfig* cfg,
   // ----------------------------------------------------------
   std::unique_ptr<trace_sdk::SpanProcessor> processor;
 
-  if (cfg->processor() ==
+  if (tracing_cfg.processor() ==
       flowpipe::v1::ObservabilityConfig::TracingConfig::TRACE_PROCESSOR_SIMPLE) {
     processor = trace_sdk::SimpleSpanProcessorFactory::Create(std::move(exporter));
   } else {
-    auto opts = CreateBatchTraceOptions(cfg->batch(), debug);
+    auto opts = CreateBatchTraceOptions(tracing_cfg.batch(), debug);
     processor = trace_sdk::BatchSpanProcessorFactory::Create(std::move(exporter), opts);
   }
 
@@ -123,8 +125,7 @@ void InitTracing(const flowpipe::v1::ObservabilityConfig::TracingConfig* cfg,
 
 namespace flowpipe::observability {
 
-void InitTracing(const flowpipe::v1::ObservabilityConfig::TracingConfig*, const GlobalDefaults&,
-                 bool) {}
+void InitTracing(const flowpipe::v1::ObservabilityConfig*, const GlobalDefaults&, bool) {}
 
 }  // namespace flowpipe::observability
 

@@ -16,10 +16,8 @@ struct GlobalDefaults {
   bool tracing_enabled = false;  // Are traces allowed at all?
   bool logs_enabled = false;     // Are logs allowed at all?
 
-  // Default OTLP endpoints (used when flow does not override)
-  std::string metrics_endpoint;  // Metrics OTLP endpoint
-  std::string tracing_endpoint;  // Tracing OTLP endpoint
-  std::string logging_endpoint;  // Logging OTLP endpoint
+  // Default OTLP endpoint (used when flow does not override)
+  std::string otlp_endpoint;  // OTEL OTLP gRPC endpoint
 
   // Whether flow-level endpoint overrides are permitted
   bool allow_endpoint_overrides = false;

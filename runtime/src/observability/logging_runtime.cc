@@ -60,18 +60,20 @@ static logs_sdk::BatchLogRecordProcessorOptions CreateBatchLoggingOptions(
 // ------------------------------------------------------------
 // Runtime-only logging initialization
 // ------------------------------------------------------------
-void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
-                 const GlobalDefaults& global, bool debug) {
+void InitLogging(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefaults& global,
+                 bool debug) {
   auto& state = GetOtelState();
 
   // Idempotent
   if (!cfg || state.logger_provider)
     return;
 
+  const auto& logging_cfg = cfg->logging();
+
   // ----------------------------------------------------------
   // Resolve endpoint & transport
   // ----------------------------------------------------------
-  std::string endpoint = global.logging_endpoint;
+  std::string endpoint = global.otlp_endpoint;
   auto transport = flowpipe::v1::OTLP_TRANSPORT_GRPC;
 
   if (!cfg->otlp_endpoint().empty() && global.allow_endpoint_overrides)
@@ -100,10 +102,11 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
   // ----------------------------------------------------------
   std::unique_ptr<logs_sdk::LogRecordProcessor> processor;
 
-  if (cfg->processor() == flowpipe::v1::ObservabilityConfig::LoggingConfig::LOG_PROCESSOR_SIMPLE) {
+  if (logging_cfg.processor() ==
+      flowpipe::v1::ObservabilityConfig::LoggingConfig::LOG_PROCESSOR_SIMPLE) {
     processor = logs_sdk::SimpleLogRecordProcessorFactory::Create(std::move(exporter));
   } else {
-    auto opts = CreateBatchLoggingOptions(cfg->batch(), debug);
+    auto opts = CreateBatchLoggingOptions(logging_cfg.batch(), debug);
     processor = logs_sdk::BatchLogRecordProcessorFactory::Create(std::move(exporter), opts);
   }
 
@@ -121,8 +124,7 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
 
 namespace flowpipe::observability {
 
-void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig*, const GlobalDefaults&,
-                 bool) {}
+void InitLogging(const flowpipe::v1::ObservabilityConfig*, const GlobalDefaults&, bool) {}
 
 }  // namespace flowpipe::observability
 
