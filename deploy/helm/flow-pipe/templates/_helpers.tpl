@@ -41,6 +41,9 @@ http://flow-pipe-alloy:4317
 {{- $metricsEndpoint := dig "exporters" "metrics" "endpoint" "" $alloy -}}
 {{- $tracesEndpoint := dig "exporters" "traces" "endpoint" "" $alloy -}}
 {{- $logsEndpoint := dig "exporters" "logs" "endpoint" "" $alloy -}}
+{{- $metricsEnabled := ne $metricsEndpoint "" -}}
+{{- $tracesEnabled := ne $tracesEndpoint "" -}}
+{{- $logsEnabled := ne $logsEndpoint "" -}}
 logging {
   level = "debug"
 }
@@ -55,45 +58,63 @@ otelcol.receiver.otlp "default" {
   }
 
   output {
+    {{- if $tracesEnabled }}
     traces  = [otelcol.processor.batch.default.input]
+    {{- end }}
+    {{- if $metricsEnabled }}
     metrics = [otelcol.processor.batch.default.input]
+    {{- end }}
+    {{- if $logsEnabled }}
     logs    = [otelcol.processor.batch.default.input]
+    {{- end }}
   }
 }
 
 otelcol.processor.batch "default" {
   output {
+    {{- if $tracesEnabled }}
     traces  = [otelcol.exporter.otlp.traces.input]
+    {{- end }}
+    {{- if $metricsEnabled }}
     metrics = [otelcol.exporter.otlp.metrics.input]
+    {{- end }}
+    {{- if $logsEnabled }}
     logs    = [otelcol.exporter.otlp.logs.input]
+    {{- end }}
   }
 }
 
+{{- if $tracesEnabled }}
 otelcol.exporter.otlp "traces" {
   client {
-    endpoint = "otel.tracing.endpoint"
+    endpoint = "{{ $tracesEndpoint }}"
     tls {
       insecure = true
     }
   }
 }
+{{- end }}
 
+{{- if $metricsEnabled }}
 otelcol.exporter.otlp "metrics" {
   client {
-    endpoint = "otel.metrics.endpoint"
+    endpoint = "{{ $metricsEndpoint }}"
     tls {
       insecure = true
     }
   }
 }
+{{- end }}
 
+{{- if $logsEnabled }}
 otelcol.exporter.otlp "logs" {
   client {
-    endpoint = "otel.logs.endpoint"
+    endpoint = "{{ $logsEndpoint }}"
     tls {
       insecure = true
     }
   }
 }
+{{- end }}
 
 {{- end }}
