@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
@@ -9,7 +10,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/yaml"
@@ -100,7 +101,7 @@ func applyConfigMap(
 	cmClient := client.CoreV1().ConfigMaps(namespace)
 	current, err := cmClient.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			_, err = cmClient.Create(ctx, desired, metav1.CreateOptions{})
 			return err
 		}
@@ -178,7 +179,7 @@ func applyDeployment(
 	deployments := client.AppsV1().Deployments(namespace)
 	current, err := deployments.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			_, err = deployments.Create(ctx, desired, metav1.CreateOptions{})
 			return name, err
 		}
@@ -251,13 +252,47 @@ func applyJob(
 	jobs := client.BatchV1().Jobs(namespace)
 	_, err := jobs.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			_, err = jobs.Create(ctx, desired, metav1.CreateOptions{})
 		}
 		return name, err
 	}
 
 	return name, nil
+}
+
+func deleteRuntimeResources(
+	ctx context.Context,
+	client kubernetes.Interface,
+	namespace string,
+	flowName string,
+) error {
+	if client == nil {
+		return fmt.Errorf("kubernetes client is required for runtime deletion")
+	}
+	if flowName == "" {
+		return fmt.Errorf("flow name is required for runtime deletion")
+	}
+
+	var errs []error
+	deploymentName := fmt.Sprintf("%s-runtime", flowName)
+	if err := client.AppsV1().Deployments(namespace).Delete(ctx, deploymentName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		errs = append(errs, fmt.Errorf("delete deployment %q: %w", deploymentName, err))
+	}
+
+	if err := client.BatchV1().Jobs(namespace).Delete(ctx, flowName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		errs = append(errs, fmt.Errorf("delete job %q: %w", flowName, err))
+	}
+
+	configMapName := fmt.Sprintf("%s-config", flowName)
+	if err := client.CoreV1().ConfigMaps(namespace).Delete(ctx, configMapName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		errs = append(errs, fmt.Errorf("delete configmap %q: %w", configMapName, err))
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	return nil
 }
 
 func pullPolicyFromSpec(spec *flowpipev1.FlowSpec) corev1.PullPolicy {
