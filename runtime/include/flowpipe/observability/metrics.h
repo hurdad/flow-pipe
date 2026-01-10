@@ -12,7 +12,7 @@ namespace flowpipe::observability {
 // Initialize OTEL metrics from metrics config.
 // This function is a no-op when OTEL is disabled or metrics
 // are not enabled by configuration.
-void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
-                 const GlobalDefaults& global, bool debug);
+void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefaults& global,
+                 bool debug);
 
 }  // namespace flowpipe::observability

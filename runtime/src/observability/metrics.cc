@@ -75,22 +75,24 @@ static metrics_sdk::PeriodicExportingMetricReaderOptions CreatePeriodicMetricRea
 // ------------------------------------------------------------
 // Init metrics
 // ------------------------------------------------------------
-void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
-                 const GlobalDefaults& global, bool debug) {
+void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefaults& global,
+                 bool debug) {
   auto& state = GetOtelState();
 
   if (!cfg || state.meter_provider) {
     return;
   }
 
+  const auto& metrics_cfg = cfg->metrics();
+
   // ----------------------------------------------------------
   // Cache runtime flags
   // ----------------------------------------------------------
-  state.stage_metrics_enabled = cfg->stage_metrics_enabled();
-  state.queue_metrics_enabled = cfg->queue_metrics_enabled();
-  state.flow_metrics_enabled = cfg->flow_metrics_enabled();
-  state.latency_histograms = cfg->latency_histograms_enabled();
-  state.metrics_counters_only = cfg->counters_only();
+  state.stage_metrics_enabled = metrics_cfg.stage_metrics_enabled();
+  state.queue_metrics_enabled = metrics_cfg.queue_metrics_enabled();
+  state.flow_metrics_enabled = metrics_cfg.flow_metrics_enabled();
+  state.latency_histograms = metrics_cfg.latency_histograms_enabled();
+  state.metrics_counters_only = metrics_cfg.counters_only();
 
   if (!state.stage_metrics_enabled && !state.queue_metrics_enabled && !state.flow_metrics_enabled) {
     return;
@@ -99,7 +101,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
   // ----------------------------------------------------------
   // Endpoint & transport
   // ----------------------------------------------------------
-  std::string endpoint = global.metrics_endpoint;
+  std::string endpoint = global.otlp_endpoint;
   auto transport = flowpipe::v1::OTLP_TRANSPORT_GRPC;
 
   if (!cfg->otlp_endpoint().empty() && global.allow_endpoint_overrides) {
@@ -128,7 +130,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
   // ----------------------------------------------------------
   // Metric reader
   // ----------------------------------------------------------
-  auto reader_opts = CreatePeriodicMetricReaderOptions(*cfg, global, debug);
+  auto reader_opts = CreatePeriodicMetricReaderOptions(metrics_cfg, global, debug);
 
   auto reader =
       metrics_sdk::PeriodicExportingMetricReaderFactory::Create(std::move(exporter), reader_opts);
@@ -248,8 +250,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig* cfg,
 
 namespace flowpipe::observability {
 
-void InitMetrics(const flowpipe::v1::ObservabilityConfig::MetricsConfig*, const GlobalDefaults&,
-                 bool) {}
+void InitMetrics(const flowpipe::v1::ObservabilityConfig*, const GlobalDefaults&, bool) {}
 
 }  // namespace flowpipe::observability
 

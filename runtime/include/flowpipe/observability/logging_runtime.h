@@ -13,8 +13,8 @@ namespace flowpipe::observability {
 // ------------------------------------------------------------
 // Runtime-only logging initialization
 // ------------------------------------------------------------
-void InitLogging(const flowpipe::v1::ObservabilityConfig::LoggingConfig* cfg,
-                 const GlobalDefaults& global, bool debug);
+void InitLogging(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefaults& global,
+                 bool debug);
 
 // ------------------------------------------------------------
 // Runtime-only lazy formatting helper

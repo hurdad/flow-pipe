@@ -75,21 +75,21 @@ void InitFromProto(const flowpipe::v1::ObservabilityConfig* cfg) {
   // ----------------------------------------------------------
   if (tracing) {
     FP_LOG_DEBUG("observability: initializing tracing");
-    InitTracing(cfg ? &cfg->tracing() : nullptr, global, debug);
+    InitTracing(cfg, global, debug);
   } else {
     FP_LOG_DEBUG("observability: tracing disabled");
   }
 
   if (logs) {
     FP_LOG_DEBUG("observability: initializing logging");
-    InitLogging(cfg ? &cfg->logging() : nullptr, global, debug);
+    InitLogging(cfg, global, debug);
   } else {
     FP_LOG_DEBUG("observability: logging disabled");
   }
 
   if (metrics) {
     FP_LOG_DEBUG("observability: initializing metrics");
-    InitMetrics(cfg ? &cfg->metrics() : nullptr, global, debug);
+    InitMetrics(cfg, global, debug);
   } else {
     FP_LOG_DEBUG("observability: metrics disabled");
   }

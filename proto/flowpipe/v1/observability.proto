@@ -43,18 +43,24 @@ message ObservabilityConfig {
   // Allow log emission for this flow.
   bool logs_enabled = 3;
 
+  // ----------------------------------------------------------
+  // OTLP endpoint & transport selection
+  // ----------------------------------------------------------
+
+  // Optional OTLP endpoint override for observability (host:port).
+  // If unset, the global runtime OTEL endpoint is used.
+  string otlp_endpoint = 8;
+
+  // OTLP transport selection (gRPC or HTTP).
+  // If unspecified, runtime default is used.
+  OtlpTransport transport = 9;
+
   // ==========================================================
   // Tracing configuration
   // ==========================================================
   message TracingConfig {
 
-    // Optional OTLP endpoint override for tracing (host:port).
-    // If unset, the global runtime tracing endpoint is used.
-    string otlp_endpoint = 1;
-
-    // OTLP transport selection (gRPC or HTTP).
-    // If unspecified, runtime default is used.
-    OtlpTransport transport = 2;
+    reserved 1, 2;
 
     // --------------------------------------------------------
     // Tracing sampling intent
@@ -149,13 +155,7 @@ message ObservabilityConfig {
   // ==========================================================
   message MetricsConfig {
 
-    // Optional OTLP endpoint override for metrics (host:port).
-    // If unset, the global runtime metrics endpoint is used.
-    string otlp_endpoint = 1;
-
-    // OTLP transport selection (gRPC or HTTP).
-    // If unspecified, runtime default is used.
-    OtlpTransport transport = 2;
+    reserved 1, 2;
 
     // --------------------------------------------------------
     // Metrics granularity controls
@@ -202,13 +202,7 @@ message ObservabilityConfig {
   // ==========================================================
   message LoggingConfig {
 
-    // Optional OTLP endpoint override for logs (host:port).
-    // If unset, the global runtime logging endpoint is used.
-    string otlp_endpoint = 1;
-
-    // OTLP transport selection (gRPC or HTTP).
-    // If unspecified, runtime default is used.
-    OtlpTransport transport = 2;
+    reserved 1, 2;
 
     // --------------------------------------------------------
     // Log processing strategy
