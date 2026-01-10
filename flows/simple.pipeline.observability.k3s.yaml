@@ -1,26 +1,36 @@
-name: noop-observability-k3s
+name: simple-pipeline-job-observability-k3s
 execution:
-  mode: EXECUTION_MODE_STREAMING
+  mode: EXECUTION_MODE_JOB
 kubernetes:
   image: ghcr.io/hurdad/flow-pipe-runtime:main-ubuntu24.04
   image_pull_policy: IMAGE_PULL_POLICY_ALWAYS
   restart_policy: RESTART_POLICY_ALWAYS
 queues:
   - name: q1
-    capacity: 128
+    capacity: 256
+  - name: q2
+    capacity: 256
 stages:
-  - name: src
+  - name: source
     type: noop_source
     threads: 1
     output_queue: q1
     config:
       delay_ms: 200
-      message: "FOOBAR"
-      max_messages: 0
+      message: "DEADBEEF"
+      max_messages: 20
+  - name: transform
+    type: noop_transform
+    threads: 2
+    input_queue: q1
+    output_queue: q2
+    config:
+      verbose: true
+      delay_ms: 50
   - name: sink
     type: stdout_sink
     threads: 1
-    input_queue: q1
+    input_queue: q2
 observability:
   metrics_enabled: true
   tracing_enabled: true
