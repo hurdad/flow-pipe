@@ -36,6 +36,21 @@ GlobalDefaults LoadFromEnv() {
   cfg.otlp_endpoint = GetEnvString("FLOWPIPE_OTEL_ENDPOINT",
                                    GetEnvString("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"));
 
+  // OTLP gRPC SSL/TLS credentials selection
+  cfg.otlp_use_ssl_credentials = false;
+  if (const char* insecure = std::getenv("OTEL_EXPORTER_OTLP_INSECURE")) {
+    std::string s(insecure);
+    if (s == "1" || s == "true" || s == "TRUE") {
+      cfg.otlp_use_ssl_credentials = false;
+    } else if (s == "0" || s == "false" || s == "FALSE") {
+      cfg.otlp_use_ssl_credentials = true;
+    }
+  }
+  if (const char* v = std::getenv("FLOWPIPE_OTEL_USE_SSL_CREDENTIALS")) {
+    cfg.otlp_use_ssl_credentials =
+        GetEnvBool("FLOWPIPE_OTEL_USE_SSL_CREDENTIALS", cfg.otlp_use_ssl_credentials);
+  }
+
   // Policy: can flows override endpoints?
   cfg.allow_endpoint_overrides = GetEnvBool("FLOWPIPE_ALLOW_FLOW_ENDPOINT_OVERRIDES", false);
 

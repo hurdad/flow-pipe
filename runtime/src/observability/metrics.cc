@@ -124,6 +124,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   } else {
     otlp::OtlpGrpcMetricExporterOptions opts;
     opts.endpoint = endpoint;
+    opts.use_ssl_credentials = global.otlp_use_ssl_credentials;
     exporter = otlp::OtlpGrpcMetricExporterFactory::Create(opts);
   }
 

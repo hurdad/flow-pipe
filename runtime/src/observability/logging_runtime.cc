@@ -94,6 +94,7 @@ void InitLogging(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   } else {
     otlp::OtlpGrpcLogRecordExporterOptions opts;
     opts.endpoint = endpoint;
+    opts.use_ssl_credentials = global.otlp_use_ssl_credentials;
     exporter = otlp::OtlpGrpcLogRecordExporterFactory::Create(opts);
   }
 
