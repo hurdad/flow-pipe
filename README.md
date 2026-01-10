@@ -92,32 +92,30 @@ The runtime is **Kubernetes-agnostic**. Kubernetes is used only for lifecycle an
 ```yaml
 name: trade-ingest
 execution:
-  mode: STREAMING
+  mode: EXECUTION_MODE_STREAMING
 
 stages:
   - name: sqs_listener
     type: sqs_listener
     threads: 2
-    output: objects
+    output_queue: objects
 
   - name: parser
     type: csv_parser
     threads: 4
-    input: objects
-    output: trades
+    input_queue: objects
+    output_queue: trades
 
   - name: writer
     type: db_writer
     threads: 2
-    input: trades
+    input_queue: trades
 
 queues:
   - name: objects
-    type: mpsc
     capacity: 1024
 
   - name: trades
-    type: mpmc
     capacity: 65536
 ```
 
