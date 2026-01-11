@@ -195,6 +195,7 @@ CMake defaults to installing the runtime under `/opt/flow-pipe` inside the Docke
 
 - Sample flow definitions live in [`flows/`](flows/README.md).
 - Example stage plugins live in [`stages/`](stages/).
+- Example custom stage repo: https://github.com/hurdad/flow-pipe-stage-example (walkthrough for building your own stage).
 - Docker images for the runtime and SDK are documented in [`runtime/docker/README.md`](runtime/docker/README.md).
 
 ---
