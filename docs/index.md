@@ -9,6 +9,11 @@ core concepts, deployment details, and the project scope.
 - [Deployment](deployment.md)
 - [Non-Goals](non-goals.md)
 
+## Getting Started
+
+- [Run locally](deployment.md#running-locally)
+- [Run on Kubernetes](deployment.md#running-on-kubernetes)
+
 ## About Flow Pipe
 
 Flow Pipe is a declarative pipeline system built around immutable flows,
