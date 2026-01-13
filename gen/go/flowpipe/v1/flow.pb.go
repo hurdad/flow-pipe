@@ -189,6 +189,70 @@ func (ExecutionMode) EnumDescriptor() ([]byte, []int) {
 	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
 }
 
+type QueueSchemaFormat int32
+
+const (
+	// Format not specified.
+	QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED QueueSchemaFormat = 0
+	// Apache Avro schema.
+	QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_AVRO QueueSchemaFormat = 1
+	// JSON Schema.
+	QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON QueueSchemaFormat = 2
+	// Protocol Buffers.
+	QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_PROTOBUF QueueSchemaFormat = 3
+	// FlatBuffers schema.
+	QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_FLATBUFFERS QueueSchemaFormat = 4
+	// Apache Parquet schema.
+	QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_PARQUET QueueSchemaFormat = 5
+)
+
+// Enum value maps for QueueSchemaFormat.
+var (
+	QueueSchemaFormat_name = map[int32]string{
+		0: "QUEUE_SCHEMA_FORMAT_UNSPECIFIED",
+		1: "QUEUE_SCHEMA_FORMAT_AVRO",
+		2: "QUEUE_SCHEMA_FORMAT_JSON",
+		3: "QUEUE_SCHEMA_FORMAT_PROTOBUF",
+		4: "QUEUE_SCHEMA_FORMAT_FLATBUFFERS",
+		5: "QUEUE_SCHEMA_FORMAT_PARQUET",
+	}
+	QueueSchemaFormat_value = map[string]int32{
+		"QUEUE_SCHEMA_FORMAT_UNSPECIFIED": 0,
+		"QUEUE_SCHEMA_FORMAT_AVRO":        1,
+		"QUEUE_SCHEMA_FORMAT_JSON":        2,
+		"QUEUE_SCHEMA_FORMAT_PROTOBUF":    3,
+		"QUEUE_SCHEMA_FORMAT_FLATBUFFERS": 4,
+		"QUEUE_SCHEMA_FORMAT_PARQUET":     5,
+	}
+)
+
+func (x QueueSchemaFormat) Enum() *QueueSchemaFormat {
+	p := new(QueueSchemaFormat)
+	*p = x
+	return p
+}
+
+func (x QueueSchemaFormat) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (QueueSchemaFormat) Descriptor() protoreflect.EnumDescriptor {
+	return file_flowpipe_v1_flow_proto_enumTypes[3].Descriptor()
+}
+
+func (QueueSchemaFormat) Type() protoreflect.EnumType {
+	return &file_flowpipe_v1_flow_proto_enumTypes[3]
+}
+
+func (x QueueSchemaFormat) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use QueueSchemaFormat.Descriptor instead.
+func (QueueSchemaFormat) EnumDescriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
+}
+
 type FlowState int32
 
 const (
@@ -241,11 +305,11 @@ func (x FlowState) String() string {
 }
 
 func (FlowState) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[3].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[4].Descriptor()
 }
 
 func (FlowState) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[3]
+	return &file_flowpipe_v1_flow_proto_enumTypes[4]
 }
 
 func (x FlowState) Number() protoreflect.EnumNumber {
@@ -254,7 +318,7 @@ func (x FlowState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FlowState.Descriptor instead.
 func (FlowState) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
 }
 
 type Flow struct {
@@ -668,7 +732,9 @@ type QueueSpec struct {
 	// Queue name.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Maximum buffered elements.
-	Capacity      uint32 `protobuf:"varint,2,opt,name=capacity,proto3" json:"capacity,omitempty"`
+	Capacity uint32 `protobuf:"varint,2,opt,name=capacity,proto3" json:"capacity,omitempty"`
+	// Optional schema definition for queue payloads.
+	Schema        *QueueSchema `protobuf:"bytes,3,opt,name=schema,proto3,oneof" json:"schema,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -717,6 +783,85 @@ func (x *QueueSpec) GetCapacity() uint32 {
 	return 0
 }
 
+func (x *QueueSpec) GetSchema() *QueueSchema {
+	if x != nil {
+		return x.Schema
+	}
+	return nil
+}
+
+type QueueSchema struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Schema format identifier.
+	Format QueueSchemaFormat `protobuf:"varint,1,opt,name=format,proto3,enum=flowpipe.v1.QueueSchemaFormat" json:"format,omitempty"`
+	// Schema registry identifier.
+	RegistryId string `protobuf:"bytes,2,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	// Schema version in the registry.
+	Version *uint32 `protobuf:"varint,3,opt,name=version,proto3,oneof" json:"version,omitempty"`
+	// Optional registry base URL override.
+	RegistryUrl   *string `protobuf:"bytes,4,opt,name=registry_url,json=registryUrl,proto3,oneof" json:"registry_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QueueSchema) Reset() {
+	*x = QueueSchema{}
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QueueSchema) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueueSchema) ProtoMessage() {}
+
+func (x *QueueSchema) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueueSchema.ProtoReflect.Descriptor instead.
+func (*QueueSchema) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *QueueSchema) GetFormat() QueueSchemaFormat {
+	if x != nil {
+		return x.Format
+	}
+	return QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED
+}
+
+func (x *QueueSchema) GetRegistryId() string {
+	if x != nil {
+		return x.RegistryId
+	}
+	return ""
+}
+
+func (x *QueueSchema) GetVersion() uint32 {
+	if x != nil && x.Version != nil {
+		return *x.Version
+	}
+	return 0
+}
+
+func (x *QueueSchema) GetRegistryUrl() string {
+	if x != nil && x.RegistryUrl != nil {
+		return *x.RegistryUrl
+	}
+	return ""
+}
+
 type Resources struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Preferred total CPU cores.
@@ -731,7 +876,7 @@ type Resources struct {
 
 func (x *Resources) Reset() {
 	*x = Resources{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -743,7 +888,7 @@ func (x *Resources) String() string {
 func (*Resources) ProtoMessage() {}
 
 func (x *Resources) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -756,7 +901,7 @@ func (x *Resources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resources.ProtoReflect.Descriptor instead.
 func (*Resources) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Resources) GetCpuCores() uint32 {
@@ -790,7 +935,7 @@ type CpuSet struct {
 
 func (x *CpuSet) Reset() {
 	*x = CpuSet{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -802,7 +947,7 @@ func (x *CpuSet) String() string {
 func (*CpuSet) ProtoMessage() {}
 
 func (x *CpuSet) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -815,7 +960,7 @@ func (x *CpuSet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CpuSet.ProtoReflect.Descriptor instead.
 func (*CpuSet) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CpuSet) GetCpu() []uint32 {
@@ -843,7 +988,7 @@ type FlowStatus struct {
 
 func (x *FlowStatus) Reset() {
 	*x = FlowStatus{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -855,7 +1000,7 @@ func (x *FlowStatus) String() string {
 func (*FlowStatus) ProtoMessage() {}
 
 func (x *FlowStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -868,7 +1013,7 @@ func (x *FlowStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlowStatus.ProtoReflect.Descriptor instead.
 func (*FlowStatus) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *FlowStatus) GetState() FlowState {
@@ -961,10 +1106,21 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x06plugin\x18\a \x01(\tH\x02R\x06plugin\x88\x01\x01B\x0e\n" +
 	"\f_input_queueB\x0f\n" +
 	"\r_output_queueB\t\n" +
-	"\a_plugin\";\n" +
+	"\a_plugin\"}\n" +
 	"\tQueueSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bcapacity\x18\x02 \x01(\rR\bcapacity\"\x96\x01\n" +
+	"\bcapacity\x18\x02 \x01(\rR\bcapacity\x125\n" +
+	"\x06schema\x18\x03 \x01(\v2\x18.flowpipe.v1.QueueSchemaH\x00R\x06schema\x88\x01\x01B\t\n" +
+	"\a_schema\"\xca\x01\n" +
+	"\vQueueSchema\x126\n" +
+	"\x06format\x18\x01 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1f\n" +
+	"\vregistry_id\x18\x02 \x01(\tR\n" +
+	"registryId\x12\x1d\n" +
+	"\aversion\x18\x03 \x01(\rH\x00R\aversion\x88\x01\x01\x12&\n" +
+	"\fregistry_url\x18\x04 \x01(\tH\x01R\vregistryUrl\x88\x01\x01B\n" +
+	"\n" +
+	"\b_versionB\x0f\n" +
+	"\r_registry_url\"\x96\x01\n" +
 	"\tResources\x12 \n" +
 	"\tcpu_cores\x18\x01 \x01(\rH\x00R\bcpuCores\x88\x01\x01\x12 \n" +
 	"\tmemory_mb\x18\x02 \x01(\rH\x01R\bmemoryMb\x88\x01\x01\x12\x1d\n" +
@@ -997,7 +1153,14 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\rExecutionMode\x12\x1e\n" +
 	"\x1aEXECUTION_MODE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18EXECUTION_MODE_STREAMING\x10\x01\x12\x16\n" +
-	"\x12EXECUTION_MODE_JOB\x10\x02*\xba\x01\n" +
+	"\x12EXECUTION_MODE_JOB\x10\x02*\xdc\x01\n" +
+	"\x11QueueSchemaFormat\x12#\n" +
+	"\x1fQUEUE_SCHEMA_FORMAT_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18QUEUE_SCHEMA_FORMAT_AVRO\x10\x01\x12\x1c\n" +
+	"\x18QUEUE_SCHEMA_FORMAT_JSON\x10\x02\x12 \n" +
+	"\x1cQUEUE_SCHEMA_FORMAT_PROTOBUF\x10\x03\x12#\n" +
+	"\x1fQUEUE_SCHEMA_FORMAT_FLATBUFFERS\x10\x04\x12\x1f\n" +
+	"\x1bQUEUE_SCHEMA_FORMAT_PARQUET\x10\x05*\xba\x01\n" +
 	"\tFlowState\x12\x1a\n" +
 	"\x16FLOW_STATE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12FLOW_STATE_PENDING\x10\x01\x12\x18\n" +
@@ -1019,51 +1182,55 @@ func file_flowpipe_v1_flow_proto_rawDescGZIP() []byte {
 	return file_flowpipe_v1_flow_proto_rawDescData
 }
 
-var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_flowpipe_v1_flow_proto_goTypes = []any{
 	(ImagePullPolicy)(0),          // 0: flowpipe.v1.ImagePullPolicy
 	(RestartPolicy)(0),            // 1: flowpipe.v1.RestartPolicy
 	(ExecutionMode)(0),            // 2: flowpipe.v1.ExecutionMode
-	(FlowState)(0),                // 3: flowpipe.v1.FlowState
-	(*Flow)(nil),                  // 4: flowpipe.v1.Flow
-	(*FlowSpec)(nil),              // 5: flowpipe.v1.FlowSpec
-	(*KubernetesSettings)(nil),    // 6: flowpipe.v1.KubernetesSettings
-	(*Execution)(nil),             // 7: flowpipe.v1.Execution
-	(*StageSpec)(nil),             // 8: flowpipe.v1.StageSpec
-	(*QueueSpec)(nil),             // 9: flowpipe.v1.QueueSpec
-	(*Resources)(nil),             // 10: flowpipe.v1.Resources
-	(*CpuSet)(nil),                // 11: flowpipe.v1.CpuSet
-	(*FlowStatus)(nil),            // 12: flowpipe.v1.FlowStatus
-	nil,                           // 13: flowpipe.v1.FlowSpec.LabelsEntry
-	nil,                           // 14: flowpipe.v1.KubernetesSettings.CpuPinningEntry
-	(*ObservabilityConfig)(nil),   // 15: flowpipe.v1.ObservabilityConfig
-	(*structpb.Struct)(nil),       // 16: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
+	(QueueSchemaFormat)(0),        // 3: flowpipe.v1.QueueSchemaFormat
+	(FlowState)(0),                // 4: flowpipe.v1.FlowState
+	(*Flow)(nil),                  // 5: flowpipe.v1.Flow
+	(*FlowSpec)(nil),              // 6: flowpipe.v1.FlowSpec
+	(*KubernetesSettings)(nil),    // 7: flowpipe.v1.KubernetesSettings
+	(*Execution)(nil),             // 8: flowpipe.v1.Execution
+	(*StageSpec)(nil),             // 9: flowpipe.v1.StageSpec
+	(*QueueSpec)(nil),             // 10: flowpipe.v1.QueueSpec
+	(*QueueSchema)(nil),           // 11: flowpipe.v1.QueueSchema
+	(*Resources)(nil),             // 12: flowpipe.v1.Resources
+	(*CpuSet)(nil),                // 13: flowpipe.v1.CpuSet
+	(*FlowStatus)(nil),            // 14: flowpipe.v1.FlowStatus
+	nil,                           // 15: flowpipe.v1.FlowSpec.LabelsEntry
+	nil,                           // 16: flowpipe.v1.KubernetesSettings.CpuPinningEntry
+	(*ObservabilityConfig)(nil),   // 17: flowpipe.v1.ObservabilityConfig
+	(*structpb.Struct)(nil),       // 18: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 19: google.protobuf.Timestamp
 }
 var file_flowpipe_v1_flow_proto_depIdxs = []int32{
-	5,  // 0: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
-	12, // 1: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
-	7,  // 2: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
-	8,  // 3: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
-	9,  // 4: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
-	13, // 5: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
-	15, // 6: flowpipe.v1.FlowSpec.observability:type_name -> flowpipe.v1.ObservabilityConfig
-	6,  // 7: flowpipe.v1.FlowSpec.kubernetes:type_name -> flowpipe.v1.KubernetesSettings
+	6,  // 0: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
+	14, // 1: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
+	8,  // 2: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
+	9,  // 3: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
+	10, // 4: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
+	15, // 5: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
+	17, // 6: flowpipe.v1.FlowSpec.observability:type_name -> flowpipe.v1.ObservabilityConfig
+	7,  // 7: flowpipe.v1.FlowSpec.kubernetes:type_name -> flowpipe.v1.KubernetesSettings
 	0,  // 8: flowpipe.v1.KubernetesSettings.image_pull_policy:type_name -> flowpipe.v1.ImagePullPolicy
 	1,  // 9: flowpipe.v1.KubernetesSettings.restart_policy:type_name -> flowpipe.v1.RestartPolicy
-	14, // 10: flowpipe.v1.KubernetesSettings.cpu_pinning:type_name -> flowpipe.v1.KubernetesSettings.CpuPinningEntry
-	10, // 11: flowpipe.v1.KubernetesSettings.resources:type_name -> flowpipe.v1.Resources
+	16, // 10: flowpipe.v1.KubernetesSettings.cpu_pinning:type_name -> flowpipe.v1.KubernetesSettings.CpuPinningEntry
+	12, // 11: flowpipe.v1.KubernetesSettings.resources:type_name -> flowpipe.v1.Resources
 	2,  // 12: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
-	16, // 13: flowpipe.v1.StageSpec.config:type_name -> google.protobuf.Struct
-	3,  // 14: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
-	17, // 15: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
-	11, // 16: flowpipe.v1.KubernetesSettings.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	18, // 13: flowpipe.v1.StageSpec.config:type_name -> google.protobuf.Struct
+	11, // 14: flowpipe.v1.QueueSpec.schema:type_name -> flowpipe.v1.QueueSchema
+	3,  // 15: flowpipe.v1.QueueSchema.format:type_name -> flowpipe.v1.QueueSchemaFormat
+	4,  // 16: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
+	19, // 17: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
+	13, // 18: flowpipe.v1.KubernetesSettings.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_flow_proto_init() }
@@ -1075,14 +1242,16 @@ func file_flowpipe_v1_flow_proto_init() {
 	file_flowpipe_v1_flow_proto_msgTypes[1].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[2].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[4].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[5].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[6].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_flow_proto_rawDesc), len(file_flowpipe_v1_flow_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   11,
+			NumEnums:      5,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

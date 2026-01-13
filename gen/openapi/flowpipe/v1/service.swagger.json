@@ -678,6 +678,41 @@
       "description": "- OTLP_TRANSPORT_UNSPECIFIED: Runtime default (typically gRPC)\n - OTLP_TRANSPORT_GRPC: OTLP over gRPC\n - OTLP_TRANSPORT_HTTP: OTLP over HTTP/protobuf",
       "title": "------------------------------------------------------------\nOTLP transport selection\n------------------------------------------------------------"
     },
+    "v1QueueSchema": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "$ref": "#/definitions/v1QueueSchemaFormat",
+          "description": "Schema format identifier."
+        },
+        "registryId": {
+          "type": "string",
+          "description": "Schema registry identifier."
+        },
+        "version": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Schema version in the registry."
+        },
+        "registryUrl": {
+          "type": "string",
+          "description": "Optional registry base URL override."
+        }
+      }
+    },
+    "v1QueueSchemaFormat": {
+      "type": "string",
+      "enum": [
+        "QUEUE_SCHEMA_FORMAT_UNSPECIFIED",
+        "QUEUE_SCHEMA_FORMAT_AVRO",
+        "QUEUE_SCHEMA_FORMAT_JSON",
+        "QUEUE_SCHEMA_FORMAT_PROTOBUF",
+        "QUEUE_SCHEMA_FORMAT_FLATBUFFERS",
+        "QUEUE_SCHEMA_FORMAT_PARQUET"
+      ],
+      "default": "QUEUE_SCHEMA_FORMAT_UNSPECIFIED",
+      "description": " - QUEUE_SCHEMA_FORMAT_UNSPECIFIED: Format not specified.\n - QUEUE_SCHEMA_FORMAT_AVRO: Apache Avro schema.\n - QUEUE_SCHEMA_FORMAT_JSON: JSON Schema.\n - QUEUE_SCHEMA_FORMAT_PROTOBUF: Protocol Buffers.\n - QUEUE_SCHEMA_FORMAT_FLATBUFFERS: FlatBuffers schema.\n - QUEUE_SCHEMA_FORMAT_PARQUET: Apache Parquet schema."
+    },
     "v1QueueSpec": {
       "type": "object",
       "properties": {
@@ -689,6 +724,10 @@
           "type": "integer",
           "format": "int64",
           "description": "Maximum buffered elements."
+        },
+        "schema": {
+          "$ref": "#/definitions/v1QueueSchema",
+          "description": "Optional schema definition for queue payloads."
         }
       }
     },
