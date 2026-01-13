@@ -794,8 +794,8 @@ type QueueSchema struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Schema format identifier.
 	Format QueueSchemaFormat `protobuf:"varint,1,opt,name=format,proto3,enum=flowpipe.v1.QueueSchemaFormat" json:"format,omitempty"`
-	// Schema registry identifier.
-	RegistryId string `protobuf:"bytes,2,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	// Schema identifier.
+	SchemaId string `protobuf:"bytes,2,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty"`
 	// Schema version in the registry.
 	Version *uint32 `protobuf:"varint,3,opt,name=version,proto3,oneof" json:"version,omitempty"`
 	// Optional registry base URL override.
@@ -841,9 +841,9 @@ func (x *QueueSchema) GetFormat() QueueSchemaFormat {
 	return QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED
 }
 
-func (x *QueueSchema) GetRegistryId() string {
+func (x *QueueSchema) GetSchemaId() string {
 	if x != nil {
-		return x.RegistryId
+		return x.SchemaId
 	}
 	return ""
 }
@@ -1114,8 +1114,8 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\a_schema\"\xca\x01\n" +
 	"\vQueueSchema\x126\n" +
 	"\x06format\x18\x01 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1f\n" +
-	"\vregistry_id\x18\x02 \x01(\tR\n" +
-	"registryId\x12\x1d\n" +
+	"\tschema_id\x18\x02 \x01(\tR\b" +
+	"schemaId\x12\x1d\n" +
 	"\aversion\x18\x03 \x01(\rH\x00R\aversion\x88\x01\x01\x12&\n" +
 	"\fregistry_url\x18\x04 \x01(\tH\x01R\vregistryUrl\x88\x01\x01B\n" +
 	"\n" +

@@ -17,30 +17,30 @@ import (
 // Schema registry key layout
 // ============================================================
 //
-// /flowpipe/schemas/<registry_id>/active
-// /flowpipe/schemas/<registry_id>/versions/<version>
+// /flowpipe/schemas/<schema_id>/active
+// /flowpipe/schemas/<schema_id>/versions/<version>
 //
 
 const schemaRootPrefix = "/flowpipe/schemas"
 
-func schemaPrefix(registryID string) string {
-	return path.Join(schemaRootPrefix, registryID)
+func schemaPrefix(schemaID string) string {
+	return path.Join(schemaRootPrefix, schemaID)
 }
 
-func schemaActiveKey(registryID string) string {
-	return path.Join(schemaPrefix(registryID), "active")
+func schemaActiveKey(schemaID string) string {
+	return path.Join(schemaPrefix(schemaID), "active")
 }
 
-func schemaVersionKey(registryID string, version uint32) string {
+func schemaVersionKey(schemaID string, version uint32) string {
 	return path.Join(
-		schemaPrefix(registryID),
+		schemaPrefix(schemaID),
 		"versions",
 		strconv.FormatUint(uint64(version), 10),
 	)
 }
 
-func schemaVersionsPrefix(registryID string) string {
-	return path.Join(schemaPrefix(registryID), "versions") + "/"
+func schemaVersionsPrefix(schemaID string) string {
+	return path.Join(schemaPrefix(schemaID), "versions") + "/"
 }
 
 // ============================================================
@@ -54,8 +54,8 @@ func (s *EtcdStore) CreateSchema(
 	if schema == nil {
 		return nil, fmt.Errorf("schema is nil")
 	}
-	if schema.RegistryID == "" {
-		return nil, fmt.Errorf("schema registry id is required")
+	if schema.SchemaID == "" {
+		return nil, fmt.Errorf("schema id is required")
 	}
 	if schema.Format == flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED {
 		return nil, fmt.Errorf("schema format is required")
@@ -64,7 +64,7 @@ func (s *EtcdStore) CreateSchema(
 		return nil, fmt.Errorf("schema payload is required")
 	}
 
-	return s.createSchemaVersion(ctx, schema.RegistryID, schema)
+	return s.createSchemaVersion(ctx, schema.SchemaID, schema)
 }
 
 // ============================================================
@@ -73,10 +73,10 @@ func (s *EtcdStore) CreateSchema(
 
 func (s *EtcdStore) createSchemaVersion(
 	ctx context.Context,
-	registryID string,
+	schemaID string,
 	schema *model.SchemaDefinition,
 ) (*model.SchemaDefinition, error) {
-	resp, err := s.cli.Get(ctx, schemaActiveKey(registryID))
+	resp, err := s.cli.Get(ctx, schemaActiveKey(schemaID))
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (s *EtcdStore) createSchemaVersion(
 	if len(resp.Kvs) == 0 {
 		txn = txn.If(
 			clientv3.Compare(
-				clientv3.CreateRevision(schemaActiveKey(registryID)),
+				clientv3.CreateRevision(schemaActiveKey(schemaID)),
 				"=",
 				0,
 			),
@@ -114,7 +114,7 @@ func (s *EtcdStore) createSchemaVersion(
 	} else {
 		txn = txn.If(
 			clientv3.Compare(
-				clientv3.Value(schemaActiveKey(registryID)),
+				clientv3.Value(schemaActiveKey(schemaID)),
 				"=",
 				string(resp.Kvs[0].Value),
 			),
@@ -122,8 +122,8 @@ func (s *EtcdStore) createSchemaVersion(
 	}
 
 	txn = txn.Then(
-		clientv3.OpPut(schemaVersionKey(registryID, uint32(nextVersion)), string(payload)),
-		clientv3.OpPut(schemaActiveKey(registryID), strconv.FormatUint(nextVersion, 10)),
+		clientv3.OpPut(schemaVersionKey(schemaID, uint32(nextVersion)), string(payload)),
+		clientv3.OpPut(schemaActiveKey(schemaID), strconv.FormatUint(nextVersion, 10)),
 	)
 
 	res, err := txn.Commit()
@@ -131,7 +131,7 @@ func (s *EtcdStore) createSchemaVersion(
 		return nil, err
 	}
 	if !res.Succeeded {
-		return nil, fmt.Errorf("schema %q modified concurrently", registryID)
+		return nil, fmt.Errorf("schema %q modified concurrently", schemaID)
 	}
 
 	return schema, nil
@@ -143,20 +143,20 @@ func (s *EtcdStore) createSchemaVersion(
 
 func (s *EtcdStore) GetSchema(
 	ctx context.Context,
-	registryID string,
+	schemaID string,
 	version uint32,
 ) (*model.SchemaDefinition, error) {
-	if registryID == "" {
-		return nil, fmt.Errorf("schema registry id is required")
+	if schemaID == "" {
+		return nil, fmt.Errorf("schema id is required")
 	}
 
 	if version == 0 {
-		activeResp, err := s.cli.Get(ctx, schemaActiveKey(registryID))
+		activeResp, err := s.cli.Get(ctx, schemaActiveKey(schemaID))
 		if err != nil {
 			return nil, err
 		}
 		if len(activeResp.Kvs) == 0 {
-			return nil, fmt.Errorf("schema %q not found", registryID)
+			return nil, fmt.Errorf("schema %q not found", schemaID)
 		}
 		activeVersion, err := strconv.ParseUint(string(activeResp.Kvs[0].Value), 10, 64)
 		if err != nil {
@@ -165,12 +165,12 @@ func (s *EtcdStore) GetSchema(
 		version = uint32(activeVersion)
 	}
 
-	resp, err := s.cli.Get(ctx, schemaVersionKey(registryID, version))
+	resp, err := s.cli.Get(ctx, schemaVersionKey(schemaID, version))
 	if err != nil {
 		return nil, err
 	}
 	if len(resp.Kvs) == 0 {
-		return nil, fmt.Errorf("schema %q version %d not found", registryID, version)
+		return nil, fmt.Errorf("schema %q version %d not found", schemaID, version)
 	}
 
 	var schema model.SchemaDefinition
@@ -187,13 +187,13 @@ func (s *EtcdStore) GetSchema(
 
 func (s *EtcdStore) ListSchemaVersions(
 	ctx context.Context,
-	registryID string,
+	schemaID string,
 ) ([]*model.SchemaDefinition, error) {
-	if registryID == "" {
-		return nil, fmt.Errorf("schema registry id is required")
+	if schemaID == "" {
+		return nil, fmt.Errorf("schema id is required")
 	}
 
-	resp, err := s.cli.Get(ctx, schemaVersionsPrefix(registryID), clientv3.WithPrefix())
+	resp, err := s.cli.Get(ctx, schemaVersionsPrefix(schemaID), clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
@@ -220,12 +220,12 @@ func (s *EtcdStore) ListSchemaVersions(
 
 func (s *EtcdStore) DeleteSchema(
 	ctx context.Context,
-	registryID string,
+	schemaID string,
 ) error {
-	if registryID == "" {
-		return fmt.Errorf("schema registry id is required")
+	if schemaID == "" {
+		return fmt.Errorf("schema id is required")
 	}
 
-	_, err := s.cli.Delete(ctx, schemaPrefix(registryID), clientv3.WithPrefix())
+	_, err := s.cli.Delete(ctx, schemaPrefix(schemaID), clientv3.WithPrefix())
 	return err
 }

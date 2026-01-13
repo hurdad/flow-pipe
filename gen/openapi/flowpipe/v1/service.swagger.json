@@ -273,9 +273,9 @@
         ]
       }
     },
-    "/v1/schemas/{registryId}": {
+    "/v1/schemas/{schemaId}": {
       "delete": {
-        "summary": "Delete all schema versions for a registry id.",
+        "summary": "Delete all schema versions for a schema id.",
         "operationId": "SchemaRegistryService_DeleteSchema",
         "responses": {
           "200": {
@@ -294,7 +294,7 @@
         },
         "parameters": [
           {
-            "name": "registryId",
+            "name": "schemaId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -305,9 +305,9 @@
         ]
       }
     },
-    "/v1/schemas/{registryId}/versions": {
+    "/v1/schemas/{schemaId}/versions": {
       "get": {
-        "summary": "List schema versions for a registry id.",
+        "summary": "List schema versions for a schema id.",
         "operationId": "SchemaRegistryService_ListSchemaVersions",
         "responses": {
           "200": {
@@ -325,7 +325,7 @@
         },
         "parameters": [
           {
-            "name": "registryId",
+            "name": "schemaId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -336,9 +336,9 @@
         ]
       }
     },
-    "/v1/schemas/{registryId}/versions/{version}": {
+    "/v1/schemas/{schemaId}/versions/{version}": {
       "get": {
-        "summary": "Get a schema by registry id and version.",
+        "summary": "Get a schema by schema id and version.",
         "operationId": "SchemaRegistryService_GetSchema",
         "responses": {
           "200": {
@@ -356,7 +356,7 @@
         },
         "parameters": [
           {
-            "name": "registryId",
+            "name": "schemaId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -834,9 +834,9 @@
           "$ref": "#/definitions/v1QueueSchemaFormat",
           "description": "Schema format identifier."
         },
-        "registryId": {
+        "schemaId": {
           "type": "string",
-          "description": "Schema registry identifier."
+          "description": "Schema schema identifier."
         },
         "version": {
           "type": "integer",
@@ -913,9 +913,9 @@
     "v1SchemaDefinition": {
       "type": "object",
       "properties": {
-        "registryId": {
+        "schemaId": {
           "type": "string",
-          "description": "Schema registry identifier."
+          "description": "Schema schema identifier."
         },
         "version": {
           "type": "integer",

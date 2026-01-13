@@ -85,24 +85,24 @@ service SchemaRegistryService {
     };
   }
 
-  // Get a schema by registry id and version.
+  // Get a schema by schema id and version.
   rpc GetSchema(GetSchemaRequest) returns (SchemaDefinition) {
     option (google.api.http) = {
-      get: "/v1/schemas/{registry_id}/versions/{version}"
+      get: "/v1/schemas/{schema_id}/versions/{version}"
     };
   }
 
-  // List schema versions for a registry id.
+  // List schema versions for a schema id.
   rpc ListSchemaVersions(ListSchemaVersionsRequest) returns (ListSchemaVersionsResponse) {
     option (google.api.http) = {
-      get: "/v1/schemas/{registry_id}/versions"
+      get: "/v1/schemas/{schema_id}/versions"
     };
   }
 
-  // Delete all schema versions for a registry id.
+  // Delete all schema versions for a schema id.
   rpc DeleteSchema(DeleteSchemaRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/v1/schemas/{registry_id}"
+      delete: "/v1/schemas/{schema_id}"
     };
   }
 }
@@ -144,8 +144,8 @@ message RollbackFlowRequest {
 }
 
 message SchemaDefinition {
-  // Schema registry identifier.
-  string registry_id = 1;
+  // Schema identifier.
+  string schema_id = 1;
 
   // Schema version in the registry.
   uint32 version = 2;
@@ -162,12 +162,12 @@ message CreateSchemaRequest {
 }
 
 message GetSchemaRequest {
-  string registry_id = 1;
+  string schema_id = 1;
   uint32 version = 2;
 }
 
 message ListSchemaVersionsRequest {
-  string registry_id = 1;
+  string schema_id = 1;
 }
 
 message ListSchemaVersionsResponse {
@@ -175,5 +175,5 @@ message ListSchemaVersionsResponse {
 }
 
 message DeleteSchemaRequest {
-  string registry_id = 1;
+  string schema_id = 1;
 }

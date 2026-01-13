@@ -200,14 +200,14 @@ Behavior:
 
 Manage schema registry entries via the API.
 
-Schema registry entries are versioned by `registry-id` and each new `create` call registers the next version.
+Schema registry entries are versioned by `schema-id` and each new `create` call registers the next version.
 
 #### `schema create`
 
 Create a new schema version.
 
 ```bash
-flowctl schema create registry-id \\
+flowctl schema create schema-id \\
   --format json \\
   --schema-file schema.json \\
   --api localhost:9090
@@ -218,7 +218,7 @@ Formats: `avro`, `json` (aliases: `json-schema`, `jsonschema`), `protobuf` (alia
 Use `--schema-file -` to read from stdin:
 
 ```bash
-cat schema.json | flowctl schema create registry-id --format json --schema-file -
+cat schema.json | flowctl schema create schema-id --format json --schema-file -
 ```
 
 #### `schema get`
@@ -226,27 +226,27 @@ cat schema.json | flowctl schema create registry-id --format json --schema-file 
 Fetch a specific schema version.
 
 ```bash
-flowctl schema get registry-id 1 --api localhost:9090
+flowctl schema get schema-id 1 --api localhost:9090
 ```
 
 The version must be a positive integer.
 
 #### `schema list`
 
-List all versions for a schema registry id.
+List all versions for a schema id.
 
 ```bash
-flowctl schema list registry-id --api localhost:9090
+flowctl schema list schema-id --api localhost:9090
 ```
 
-Returns the available versions for the registry id.
+Returns the available versions for the schema id.
 
 #### `schema delete`
 
-Delete all versions for a schema registry id.
+Delete all versions for a schema id.
 
 ```bash
-flowctl schema delete registry-id --api localhost:9090
+flowctl schema delete schema-id --api localhost:9090
 ```
 
 ---

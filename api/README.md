@@ -82,13 +82,13 @@ The API uses generated protobuf types from `gen/` in the repository root.
 
 ### Schema Registry
 
-Queue schemas are stored in etcd so that `QueueSchema.registry_id` and
+Queue schemas are stored in etcd so that `QueueSchema.schema_id` and
 `QueueSchema.version` can reference an immutable payload. The registry uses
 `QueueSchemaFormat` to identify the encoding format and stores the raw schema
 payload as bytes (JSON-encoded in etcd for the API implementation).
 
 ```
-/flowpipe/schemas/<registry_id>/
+/flowpipe/schemas/<schema_id>/
 ├── versions/
 │   ├── 1
 │   ├── 2
@@ -98,8 +98,15 @@ payload as bytes (JSON-encoded in etcd for the API implementation).
 
 Populate queues with:
 - `QueueSchema.format` = one of the `QueueSchemaFormat` enum values (Avro, JSON Schema, Protobuf, etc.)
-- `QueueSchema.registry_id` = registry key for the schema
+- `QueueSchema.schema_id` = registry key for the schema
 - `QueueSchema.version` = optional version (omit/zero to resolve the active schema)
+
+#### Migration note (registry_id → schema_id)
+
+The schema registry identifiers were renamed from `registry_id` to `schema_id` in the v1 API.
+This is a breaking change for REST path parameters and request fields. Update any clients,
+configs, and stored queue specs to use `schema_id` and the `/v1/schemas/{schema_id}/...` paths.
+The old `registry_id` paths are not supported and should be considered removed.
 
 ---
 

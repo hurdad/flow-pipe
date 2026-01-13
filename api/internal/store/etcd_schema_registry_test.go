@@ -32,9 +32,9 @@ func TestSchemaRegistryLifecycle(t *testing.T) {
 	ctx := context.Background()
 
 	first, err := store.CreateSchema(ctx, &model.SchemaDefinition{
-		RegistryID: "orders",
-		Format:     flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON,
-		RawSchema:  []byte(`{"type":"object"}`),
+		SchemaID:  "orders",
+		Format:    flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON,
+		RawSchema: []byte(`{"type":"object"}`),
 	})
 	if err != nil {
 		t.Fatalf("create schema v1: %v", err)
@@ -44,9 +44,9 @@ func TestSchemaRegistryLifecycle(t *testing.T) {
 	}
 
 	second, err := store.CreateSchema(ctx, &model.SchemaDefinition{
-		RegistryID: "orders",
-		Format:     flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON,
-		RawSchema:  []byte(`{"type":"object","version":2}`),
+		SchemaID:  "orders",
+		Format:    flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON,
+		RawSchema: []byte(`{"type":"object","version":2}`),
 	})
 	if err != nil {
 		t.Fatalf("create schema v2: %v", err)

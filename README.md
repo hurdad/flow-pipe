@@ -94,10 +94,10 @@ The runtime is **Kubernetes-agnostic**. Kubernetes is used only for lifecycle an
 ## Schema Registry Service
 
 flow-pipe ships with a schema registry service to manage versioned queue schemas.
-Queue specs can reference schemas via `QueueSchema.registry_id` and
+Queue specs can reference schemas via `QueueSchema.schema_id` and
 `QueueSchema.version` (omit/zero to use the active version). The service exposes
-REST endpoints such as `POST /v1/schemas`, `GET /v1/schemas/{registry_id}/versions/{version}`,
-and `GET /v1/schemas/{registry_id}/versions` for managing schema payloads.
+REST endpoints such as `POST /v1/schemas`, `GET /v1/schemas/{schema_id}/versions/{version}`,
+and `GET /v1/schemas/{schema_id}/versions` for managing schema payloads.
 
 ---
 
