@@ -6,6 +6,7 @@ core concepts, deployment details, and the project scope.
 ## Documentation
 
 - [Core Concepts](concepts.md)
+- [Schema Registry (Core Concepts)](concepts.md#schema-registry)
 - [Deployment](deployment.md)
 - [Non-Goals](non-goals.md)
 
