@@ -383,6 +383,306 @@ func (x *RollbackFlowRequest) GetVersion() uint64 {
 	return 0
 }
 
+type SchemaDefinition struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Schema registry identifier.
+	RegistryId string `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	// Schema version in the registry.
+	Version uint32 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	// Schema format identifier.
+	Format QueueSchemaFormat `protobuf:"varint,3,opt,name=format,proto3,enum=flowpipe.v1.QueueSchemaFormat" json:"format,omitempty"`
+	// Raw schema payload.
+	RawSchema     []byte `protobuf:"bytes,4,opt,name=raw_schema,json=rawSchema,proto3" json:"raw_schema,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SchemaDefinition) Reset() {
+	*x = SchemaDefinition{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SchemaDefinition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SchemaDefinition) ProtoMessage() {}
+
+func (x *SchemaDefinition) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SchemaDefinition.ProtoReflect.Descriptor instead.
+func (*SchemaDefinition) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SchemaDefinition) GetRegistryId() string {
+	if x != nil {
+		return x.RegistryId
+	}
+	return ""
+}
+
+func (x *SchemaDefinition) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *SchemaDefinition) GetFormat() QueueSchemaFormat {
+	if x != nil {
+		return x.Format
+	}
+	return QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED
+}
+
+func (x *SchemaDefinition) GetRawSchema() []byte {
+	if x != nil {
+		return x.RawSchema
+	}
+	return nil
+}
+
+type CreateSchemaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Schema        *SchemaDefinition      `protobuf:"bytes,1,opt,name=schema,proto3" json:"schema,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateSchemaRequest) Reset() {
+	*x = CreateSchemaRequest{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSchemaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSchemaRequest) ProtoMessage() {}
+
+func (x *CreateSchemaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSchemaRequest.ProtoReflect.Descriptor instead.
+func (*CreateSchemaRequest) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CreateSchemaRequest) GetSchema() *SchemaDefinition {
+	if x != nil {
+		return x.Schema
+	}
+	return nil
+}
+
+type GetSchemaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RegistryId    string                 `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	Version       uint32                 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSchemaRequest) Reset() {
+	*x = GetSchemaRequest{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSchemaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSchemaRequest) ProtoMessage() {}
+
+func (x *GetSchemaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSchemaRequest.ProtoReflect.Descriptor instead.
+func (*GetSchemaRequest) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetSchemaRequest) GetRegistryId() string {
+	if x != nil {
+		return x.RegistryId
+	}
+	return ""
+}
+
+func (x *GetSchemaRequest) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+type ListSchemaVersionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RegistryId    string                 `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSchemaVersionsRequest) Reset() {
+	*x = ListSchemaVersionsRequest{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSchemaVersionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSchemaVersionsRequest) ProtoMessage() {}
+
+func (x *ListSchemaVersionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSchemaVersionsRequest.ProtoReflect.Descriptor instead.
+func (*ListSchemaVersionsRequest) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListSchemaVersionsRequest) GetRegistryId() string {
+	if x != nil {
+		return x.RegistryId
+	}
+	return ""
+}
+
+type ListSchemaVersionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Schemas       []*SchemaDefinition    `protobuf:"bytes,1,rep,name=schemas,proto3" json:"schemas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSchemaVersionsResponse) Reset() {
+	*x = ListSchemaVersionsResponse{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSchemaVersionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSchemaVersionsResponse) ProtoMessage() {}
+
+func (x *ListSchemaVersionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSchemaVersionsResponse.ProtoReflect.Descriptor instead.
+func (*ListSchemaVersionsResponse) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListSchemaVersionsResponse) GetSchemas() []*SchemaDefinition {
+	if x != nil {
+		return x.Schemas
+	}
+	return nil
+}
+
+type DeleteSchemaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RegistryId    string                 `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteSchemaRequest) Reset() {
+	*x = DeleteSchemaRequest{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteSchemaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteSchemaRequest) ProtoMessage() {}
+
+func (x *DeleteSchemaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteSchemaRequest.ProtoReflect.Descriptor instead.
+func (*DeleteSchemaRequest) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteSchemaRequest) GetRegistryId() string {
+	if x != nil {
+		return x.RegistryId
+	}
+	return ""
+}
+
 var File_flowpipe_v1_service_proto protoreflect.FileDescriptor
 
 const file_flowpipe_v1_service_proto_rawDesc = "" +
@@ -404,7 +704,28 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"C\n" +
 	"\x13RollbackFlowRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\x04R\aversion2\xbc\x05\n" +
+	"\aversion\x18\x02 \x01(\x04R\aversion\"\xa4\x01\n" +
+	"\x10SchemaDefinition\x12\x1f\n" +
+	"\vregistry_id\x18\x01 \x01(\tR\n" +
+	"registryId\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\rR\aversion\x126\n" +
+	"\x06format\x18\x03 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1d\n" +
+	"\n" +
+	"raw_schema\x18\x04 \x01(\fR\trawSchema\"L\n" +
+	"\x13CreateSchemaRequest\x125\n" +
+	"\x06schema\x18\x01 \x01(\v2\x1d.flowpipe.v1.SchemaDefinitionR\x06schema\"M\n" +
+	"\x10GetSchemaRequest\x12\x1f\n" +
+	"\vregistry_id\x18\x01 \x01(\tR\n" +
+	"registryId\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\rR\aversion\"<\n" +
+	"\x19ListSchemaVersionsRequest\x12\x1f\n" +
+	"\vregistry_id\x18\x01 \x01(\tR\n" +
+	"registryId\"U\n" +
+	"\x1aListSchemaVersionsResponse\x127\n" +
+	"\aschemas\x18\x01 \x03(\v2\x1d.flowpipe.v1.SchemaDefinitionR\aschemas\"6\n" +
+	"\x13DeleteSchemaRequest\x12\x1f\n" +
+	"\vregistry_id\x18\x01 \x01(\tR\n" +
+	"registryId2\xbc\x05\n" +
 	"\vFlowService\x12X\n" +
 	"\n" +
 	"CreateFlow\x12\x1e.flowpipe.v1.CreateFlowRequest\x1a\x11.flowpipe.v1.Flow\"\x17\x82\xd3\xe4\x93\x02\x11:\x04spec\"\t/v1/flows\x12_\n" +
@@ -415,7 +736,12 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\aGetFlow\x12\x1b.flowpipe.v1.GetFlowRequest\x1a\x11.flowpipe.v1.Flow\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/flows/{name}\x12]\n" +
 	"\tListFlows\x12\x1d.flowpipe.v1.ListFlowsRequest\x1a\x1e.flowpipe.v1.ListFlowsResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/flows\x12l\n" +
 	"\rGetFlowStatus\x12!.flowpipe.v1.GetFlowStatusRequest\x1a\x17.flowpipe.v1.FlowStatus\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/v1/flows/{name}/status\x12p\n" +
-	"\fRollbackFlow\x12 .flowpipe.v1.RollbackFlowRequest\x1a\x11.flowpipe.v1.Flow\"+\x82\xd3\xe4\x93\x02%\"#/v1/flows/{name}/rollback/{version}B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
+	"\fRollbackFlow\x12 .flowpipe.v1.RollbackFlowRequest\x1a\x11.flowpipe.v1.Flow\"+\x82\xd3\xe4\x93\x02%\"#/v1/flows/{name}/rollback/{version}2\x87\x04\n" +
+	"\x15SchemaRegistryService\x12l\n" +
+	"\fCreateSchema\x12 .flowpipe.v1.CreateSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"\x1b\x82\xd3\xe4\x93\x02\x15:\x06schema\"\v/v1/schemas\x12\x7f\n" +
+	"\tGetSchema\x12\x1d.flowpipe.v1.GetSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"4\x82\xd3\xe4\x93\x02.\x12,/v1/schemas/{registry_id}/versions/{version}\x12\x91\x01\n" +
+	"\x12ListSchemaVersions\x12&.flowpipe.v1.ListSchemaVersionsRequest\x1a'.flowpipe.v1.ListSchemaVersionsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/schemas/{registry_id}/versions\x12k\n" +
+	"\fDeleteSchema\x12 .flowpipe.v1.DeleteSchemaRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b*\x19/v1/schemas/{registry_id}B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
 
 var (
 	file_flowpipe_v1_service_proto_rawDescOnce sync.Once
@@ -429,44 +755,62 @@ func file_flowpipe_v1_service_proto_rawDescGZIP() []byte {
 	return file_flowpipe_v1_service_proto_rawDescData
 }
 
-var file_flowpipe_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_flowpipe_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_flowpipe_v1_service_proto_goTypes = []any{
-	(*CreateFlowRequest)(nil),    // 0: flowpipe.v1.CreateFlowRequest
-	(*UpdateFlowRequest)(nil),    // 1: flowpipe.v1.UpdateFlowRequest
-	(*DeleteFlowRequest)(nil),    // 2: flowpipe.v1.DeleteFlowRequest
-	(*GetFlowRequest)(nil),       // 3: flowpipe.v1.GetFlowRequest
-	(*ListFlowsRequest)(nil),     // 4: flowpipe.v1.ListFlowsRequest
-	(*ListFlowsResponse)(nil),    // 5: flowpipe.v1.ListFlowsResponse
-	(*GetFlowStatusRequest)(nil), // 6: flowpipe.v1.GetFlowStatusRequest
-	(*RollbackFlowRequest)(nil),  // 7: flowpipe.v1.RollbackFlowRequest
-	(*FlowSpec)(nil),             // 8: flowpipe.v1.FlowSpec
-	(*Flow)(nil),                 // 9: flowpipe.v1.Flow
-	(*emptypb.Empty)(nil),        // 10: google.protobuf.Empty
-	(*FlowStatus)(nil),           // 11: flowpipe.v1.FlowStatus
+	(*CreateFlowRequest)(nil),          // 0: flowpipe.v1.CreateFlowRequest
+	(*UpdateFlowRequest)(nil),          // 1: flowpipe.v1.UpdateFlowRequest
+	(*DeleteFlowRequest)(nil),          // 2: flowpipe.v1.DeleteFlowRequest
+	(*GetFlowRequest)(nil),             // 3: flowpipe.v1.GetFlowRequest
+	(*ListFlowsRequest)(nil),           // 4: flowpipe.v1.ListFlowsRequest
+	(*ListFlowsResponse)(nil),          // 5: flowpipe.v1.ListFlowsResponse
+	(*GetFlowStatusRequest)(nil),       // 6: flowpipe.v1.GetFlowStatusRequest
+	(*RollbackFlowRequest)(nil),        // 7: flowpipe.v1.RollbackFlowRequest
+	(*SchemaDefinition)(nil),           // 8: flowpipe.v1.SchemaDefinition
+	(*CreateSchemaRequest)(nil),        // 9: flowpipe.v1.CreateSchemaRequest
+	(*GetSchemaRequest)(nil),           // 10: flowpipe.v1.GetSchemaRequest
+	(*ListSchemaVersionsRequest)(nil),  // 11: flowpipe.v1.ListSchemaVersionsRequest
+	(*ListSchemaVersionsResponse)(nil), // 12: flowpipe.v1.ListSchemaVersionsResponse
+	(*DeleteSchemaRequest)(nil),        // 13: flowpipe.v1.DeleteSchemaRequest
+	(*FlowSpec)(nil),                   // 14: flowpipe.v1.FlowSpec
+	(*Flow)(nil),                       // 15: flowpipe.v1.Flow
+	(QueueSchemaFormat)(0),             // 16: flowpipe.v1.QueueSchemaFormat
+	(*emptypb.Empty)(nil),              // 17: google.protobuf.Empty
+	(*FlowStatus)(nil),                 // 18: flowpipe.v1.FlowStatus
 }
 var file_flowpipe_v1_service_proto_depIdxs = []int32{
-	8,  // 0: flowpipe.v1.CreateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
-	8,  // 1: flowpipe.v1.UpdateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
-	9,  // 2: flowpipe.v1.ListFlowsResponse.flows:type_name -> flowpipe.v1.Flow
-	0,  // 3: flowpipe.v1.FlowService.CreateFlow:input_type -> flowpipe.v1.CreateFlowRequest
-	1,  // 4: flowpipe.v1.FlowService.UpdateFlow:input_type -> flowpipe.v1.UpdateFlowRequest
-	2,  // 5: flowpipe.v1.FlowService.DeleteFlow:input_type -> flowpipe.v1.DeleteFlowRequest
-	3,  // 6: flowpipe.v1.FlowService.GetFlow:input_type -> flowpipe.v1.GetFlowRequest
-	4,  // 7: flowpipe.v1.FlowService.ListFlows:input_type -> flowpipe.v1.ListFlowsRequest
-	6,  // 8: flowpipe.v1.FlowService.GetFlowStatus:input_type -> flowpipe.v1.GetFlowStatusRequest
-	7,  // 9: flowpipe.v1.FlowService.RollbackFlow:input_type -> flowpipe.v1.RollbackFlowRequest
-	9,  // 10: flowpipe.v1.FlowService.CreateFlow:output_type -> flowpipe.v1.Flow
-	9,  // 11: flowpipe.v1.FlowService.UpdateFlow:output_type -> flowpipe.v1.Flow
-	10, // 12: flowpipe.v1.FlowService.DeleteFlow:output_type -> google.protobuf.Empty
-	9,  // 13: flowpipe.v1.FlowService.GetFlow:output_type -> flowpipe.v1.Flow
-	5,  // 14: flowpipe.v1.FlowService.ListFlows:output_type -> flowpipe.v1.ListFlowsResponse
-	11, // 15: flowpipe.v1.FlowService.GetFlowStatus:output_type -> flowpipe.v1.FlowStatus
-	9,  // 16: flowpipe.v1.FlowService.RollbackFlow:output_type -> flowpipe.v1.Flow
-	10, // [10:17] is the sub-list for method output_type
-	3,  // [3:10] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	14, // 0: flowpipe.v1.CreateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
+	14, // 1: flowpipe.v1.UpdateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
+	15, // 2: flowpipe.v1.ListFlowsResponse.flows:type_name -> flowpipe.v1.Flow
+	16, // 3: flowpipe.v1.SchemaDefinition.format:type_name -> flowpipe.v1.QueueSchemaFormat
+	8,  // 4: flowpipe.v1.CreateSchemaRequest.schema:type_name -> flowpipe.v1.SchemaDefinition
+	8,  // 5: flowpipe.v1.ListSchemaVersionsResponse.schemas:type_name -> flowpipe.v1.SchemaDefinition
+	0,  // 6: flowpipe.v1.FlowService.CreateFlow:input_type -> flowpipe.v1.CreateFlowRequest
+	1,  // 7: flowpipe.v1.FlowService.UpdateFlow:input_type -> flowpipe.v1.UpdateFlowRequest
+	2,  // 8: flowpipe.v1.FlowService.DeleteFlow:input_type -> flowpipe.v1.DeleteFlowRequest
+	3,  // 9: flowpipe.v1.FlowService.GetFlow:input_type -> flowpipe.v1.GetFlowRequest
+	4,  // 10: flowpipe.v1.FlowService.ListFlows:input_type -> flowpipe.v1.ListFlowsRequest
+	6,  // 11: flowpipe.v1.FlowService.GetFlowStatus:input_type -> flowpipe.v1.GetFlowStatusRequest
+	7,  // 12: flowpipe.v1.FlowService.RollbackFlow:input_type -> flowpipe.v1.RollbackFlowRequest
+	9,  // 13: flowpipe.v1.SchemaRegistryService.CreateSchema:input_type -> flowpipe.v1.CreateSchemaRequest
+	10, // 14: flowpipe.v1.SchemaRegistryService.GetSchema:input_type -> flowpipe.v1.GetSchemaRequest
+	11, // 15: flowpipe.v1.SchemaRegistryService.ListSchemaVersions:input_type -> flowpipe.v1.ListSchemaVersionsRequest
+	13, // 16: flowpipe.v1.SchemaRegistryService.DeleteSchema:input_type -> flowpipe.v1.DeleteSchemaRequest
+	15, // 17: flowpipe.v1.FlowService.CreateFlow:output_type -> flowpipe.v1.Flow
+	15, // 18: flowpipe.v1.FlowService.UpdateFlow:output_type -> flowpipe.v1.Flow
+	17, // 19: flowpipe.v1.FlowService.DeleteFlow:output_type -> google.protobuf.Empty
+	15, // 20: flowpipe.v1.FlowService.GetFlow:output_type -> flowpipe.v1.Flow
+	5,  // 21: flowpipe.v1.FlowService.ListFlows:output_type -> flowpipe.v1.ListFlowsResponse
+	18, // 22: flowpipe.v1.FlowService.GetFlowStatus:output_type -> flowpipe.v1.FlowStatus
+	15, // 23: flowpipe.v1.FlowService.RollbackFlow:output_type -> flowpipe.v1.Flow
+	8,  // 24: flowpipe.v1.SchemaRegistryService.CreateSchema:output_type -> flowpipe.v1.SchemaDefinition
+	8,  // 25: flowpipe.v1.SchemaRegistryService.GetSchema:output_type -> flowpipe.v1.SchemaDefinition
+	12, // 26: flowpipe.v1.SchemaRegistryService.ListSchemaVersions:output_type -> flowpipe.v1.ListSchemaVersionsResponse
+	17, // 27: flowpipe.v1.SchemaRegistryService.DeleteSchema:output_type -> google.protobuf.Empty
+	17, // [17:28] is the sub-list for method output_type
+	6,  // [6:17] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_service_proto_init() }
@@ -481,9 +825,9 @@ func file_flowpipe_v1_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_service_proto_rawDesc), len(file_flowpipe_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   14,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_flowpipe_v1_service_proto_goTypes,
 		DependencyIndexes: file_flowpipe_v1_service_proto_depIdxs,

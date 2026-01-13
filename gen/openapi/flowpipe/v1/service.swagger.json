@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "FlowService"
+    },
+    {
+      "name": "SchemaRegistryService"
     }
   ],
   "consumes": [
@@ -234,6 +237,140 @@
         ],
         "tags": [
           "FlowService"
+        ]
+      }
+    },
+    "/v1/schemas": {
+      "post": {
+        "summary": "Create a new schema (version starts at 1).",
+        "operationId": "SchemaRegistryService_CreateSchema",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SchemaDefinition"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "schema",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SchemaDefinition"
+            }
+          }
+        ],
+        "tags": [
+          "SchemaRegistryService"
+        ]
+      }
+    },
+    "/v1/schemas/{registryId}": {
+      "delete": {
+        "summary": "Delete all schema versions for a registry id.",
+        "operationId": "SchemaRegistryService_DeleteSchema",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "registryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SchemaRegistryService"
+        ]
+      }
+    },
+    "/v1/schemas/{registryId}/versions": {
+      "get": {
+        "summary": "List schema versions for a registry id.",
+        "operationId": "SchemaRegistryService_ListSchemaVersions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSchemaVersionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "registryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SchemaRegistryService"
+        ]
+      }
+    },
+    "/v1/schemas/{registryId}/versions/{version}": {
+      "get": {
+        "summary": "Get a schema by registry id and version.",
+        "operationId": "SchemaRegistryService_GetSchema",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SchemaDefinition"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "registryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "SchemaRegistryService"
         ]
       }
     }
@@ -635,6 +772,18 @@
         }
       }
     },
+    "v1ListSchemaVersionsResponse": {
+      "type": "object",
+      "properties": {
+        "schemas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SchemaDefinition"
+          }
+        }
+      }
+    },
     "v1ObservabilityConfig": {
       "type": "object",
       "properties": {
@@ -760,6 +909,29 @@
       ],
       "default": "RESTART_POLICY_UNSPECIFIED",
       "description": "Kubernetes restart policy for runtime pods.\n\n - RESTART_POLICY_UNSPECIFIED: Restart policy not specified (controller default).\n - RESTART_POLICY_ALWAYS: Always restart the pod.\n - RESTART_POLICY_ON_FAILURE: Restart on failure.\n - RESTART_POLICY_NEVER: Never restart the pod."
+    },
+    "v1SchemaDefinition": {
+      "type": "object",
+      "properties": {
+        "registryId": {
+          "type": "string",
+          "description": "Schema registry identifier."
+        },
+        "version": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Schema version in the registry."
+        },
+        "format": {
+          "$ref": "#/definitions/v1QueueSchemaFormat",
+          "description": "Schema format identifier."
+        },
+        "rawSchema": {
+          "type": "string",
+          "format": "byte",
+          "description": "Raw schema payload."
+        }
+      }
     },
     "v1StageSpec": {
       "type": "object",

@@ -362,3 +362,227 @@ var FlowService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "flowpipe/v1/service.proto",
 }
+
+const (
+	SchemaRegistryService_CreateSchema_FullMethodName       = "/flowpipe.v1.SchemaRegistryService/CreateSchema"
+	SchemaRegistryService_GetSchema_FullMethodName          = "/flowpipe.v1.SchemaRegistryService/GetSchema"
+	SchemaRegistryService_ListSchemaVersions_FullMethodName = "/flowpipe.v1.SchemaRegistryService/ListSchemaVersions"
+	SchemaRegistryService_DeleteSchema_FullMethodName       = "/flowpipe.v1.SchemaRegistryService/DeleteSchema"
+)
+
+// SchemaRegistryServiceClient is the client API for SchemaRegistryService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SchemaRegistryServiceClient interface {
+	// Create a new schema (version starts at 1).
+	CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*SchemaDefinition, error)
+	// Get a schema by registry id and version.
+	GetSchema(ctx context.Context, in *GetSchemaRequest, opts ...grpc.CallOption) (*SchemaDefinition, error)
+	// List schema versions for a registry id.
+	ListSchemaVersions(ctx context.Context, in *ListSchemaVersionsRequest, opts ...grpc.CallOption) (*ListSchemaVersionsResponse, error)
+	// Delete all schema versions for a registry id.
+	DeleteSchema(ctx context.Context, in *DeleteSchemaRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+}
+
+type schemaRegistryServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSchemaRegistryServiceClient(cc grpc.ClientConnInterface) SchemaRegistryServiceClient {
+	return &schemaRegistryServiceClient{cc}
+}
+
+func (c *schemaRegistryServiceClient) CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*SchemaDefinition, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SchemaDefinition)
+	err := c.cc.Invoke(ctx, SchemaRegistryService_CreateSchema_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schemaRegistryServiceClient) GetSchema(ctx context.Context, in *GetSchemaRequest, opts ...grpc.CallOption) (*SchemaDefinition, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SchemaDefinition)
+	err := c.cc.Invoke(ctx, SchemaRegistryService_GetSchema_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schemaRegistryServiceClient) ListSchemaVersions(ctx context.Context, in *ListSchemaVersionsRequest, opts ...grpc.CallOption) (*ListSchemaVersionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSchemaVersionsResponse)
+	err := c.cc.Invoke(ctx, SchemaRegistryService_ListSchemaVersions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *schemaRegistryServiceClient) DeleteSchema(ctx context.Context, in *DeleteSchemaRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, SchemaRegistryService_DeleteSchema_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SchemaRegistryServiceServer is the server API for SchemaRegistryService service.
+// All implementations must embed UnimplementedSchemaRegistryServiceServer
+// for forward compatibility.
+type SchemaRegistryServiceServer interface {
+	// Create a new schema (version starts at 1).
+	CreateSchema(context.Context, *CreateSchemaRequest) (*SchemaDefinition, error)
+	// Get a schema by registry id and version.
+	GetSchema(context.Context, *GetSchemaRequest) (*SchemaDefinition, error)
+	// List schema versions for a registry id.
+	ListSchemaVersions(context.Context, *ListSchemaVersionsRequest) (*ListSchemaVersionsResponse, error)
+	// Delete all schema versions for a registry id.
+	DeleteSchema(context.Context, *DeleteSchemaRequest) (*emptypb.Empty, error)
+	mustEmbedUnimplementedSchemaRegistryServiceServer()
+}
+
+// UnimplementedSchemaRegistryServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedSchemaRegistryServiceServer struct{}
+
+func (UnimplementedSchemaRegistryServiceServer) CreateSchema(context.Context, *CreateSchemaRequest) (*SchemaDefinition, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateSchema not implemented")
+}
+func (UnimplementedSchemaRegistryServiceServer) GetSchema(context.Context, *GetSchemaRequest) (*SchemaDefinition, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSchema not implemented")
+}
+func (UnimplementedSchemaRegistryServiceServer) ListSchemaVersions(context.Context, *ListSchemaVersionsRequest) (*ListSchemaVersionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSchemaVersions not implemented")
+}
+func (UnimplementedSchemaRegistryServiceServer) DeleteSchema(context.Context, *DeleteSchemaRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteSchema not implemented")
+}
+func (UnimplementedSchemaRegistryServiceServer) mustEmbedUnimplementedSchemaRegistryServiceServer() {}
+func (UnimplementedSchemaRegistryServiceServer) testEmbeddedByValue()                               {}
+
+// UnsafeSchemaRegistryServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SchemaRegistryServiceServer will
+// result in compilation errors.
+type UnsafeSchemaRegistryServiceServer interface {
+	mustEmbedUnimplementedSchemaRegistryServiceServer()
+}
+
+func RegisterSchemaRegistryServiceServer(s grpc.ServiceRegistrar, srv SchemaRegistryServiceServer) {
+	// If the following call panics, it indicates UnimplementedSchemaRegistryServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&SchemaRegistryService_ServiceDesc, srv)
+}
+
+func _SchemaRegistryService_CreateSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSchemaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchemaRegistryServiceServer).CreateSchema(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SchemaRegistryService_CreateSchema_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchemaRegistryServiceServer).CreateSchema(ctx, req.(*CreateSchemaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SchemaRegistryService_GetSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSchemaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchemaRegistryServiceServer).GetSchema(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SchemaRegistryService_GetSchema_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchemaRegistryServiceServer).GetSchema(ctx, req.(*GetSchemaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SchemaRegistryService_ListSchemaVersions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSchemaVersionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchemaRegistryServiceServer).ListSchemaVersions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SchemaRegistryService_ListSchemaVersions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchemaRegistryServiceServer).ListSchemaVersions(ctx, req.(*ListSchemaVersionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SchemaRegistryService_DeleteSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSchemaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchemaRegistryServiceServer).DeleteSchema(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SchemaRegistryService_DeleteSchema_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchemaRegistryServiceServer).DeleteSchema(ctx, req.(*DeleteSchemaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SchemaRegistryService_ServiceDesc is the grpc.ServiceDesc for SchemaRegistryService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SchemaRegistryService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "flowpipe.v1.SchemaRegistryService",
+	HandlerType: (*SchemaRegistryServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateSchema",
+			Handler:    _SchemaRegistryService_CreateSchema_Handler,
+		},
+		{
+			MethodName: "GetSchema",
+			Handler:    _SchemaRegistryService_GetSchema_Handler,
+		},
+		{
+			MethodName: "ListSchemaVersions",
+			Handler:    _SchemaRegistryService_ListSchemaVersions_Handler,
+		},
+		{
+			MethodName: "DeleteSchema",
+			Handler:    _SchemaRegistryService_DeleteSchema_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "flowpipe/v1/service.proto",
+}
