@@ -7,6 +7,7 @@ It is used to:
 - run flows locally during development
 - submit flows to the flow-pipe API for execution
 - manage flows in the flow-pipe API (get, list, status, update, rollback, delete)
+- manage schema registry entries (create, get, list, delete)
 
 The same flow definition is intended to work **locally and remotely** without modification.
 
@@ -192,6 +193,49 @@ flowctl status flow-name --api localhost:9090
 Behavior:
 - fetch the current flow status
 - print the status as JSON (proto field names)
+
+---
+
+### `schema`
+
+Manage schema registry entries via the API.
+
+#### `schema create`
+
+Create a new schema version.
+
+```bash
+flowctl schema create registry-id \\
+  --format json \\
+  --schema-file schema.json \\
+  --api localhost:9090
+```
+
+Use `--schema-file -` to read from stdin.
+
+#### `schema get`
+
+Fetch a specific schema version.
+
+```bash
+flowctl schema get registry-id 1 --api localhost:9090
+```
+
+#### `schema list`
+
+List all versions for a schema registry id.
+
+```bash
+flowctl schema list registry-id --api localhost:9090
+```
+
+#### `schema delete`
+
+Delete all versions for a schema registry id.
+
+```bash
+flowctl schema delete registry-id --api localhost:9090
+```
 
 ---
 
