@@ -4,12 +4,13 @@
 #include <cstdint>
 #include <memory>
 #include <new>
+#include <string>
 
 namespace flowpipe {
 
 /**
  * Per-record metadata carried with each payload.
- * Small, fixed-size, and cheap to copy.
+ * Small and cheap to copy.
  */
 struct PayloadMeta {
   static constexpr int trace_id_size = 16;
@@ -24,6 +25,11 @@ struct PayloadMeta {
 
   // Bit flags (sampled, error, future use)
   uint32_t flags = 0;
+
+  // Schema identifier for payload validation (optional).
+  std::string schema_id;
+
+  bool has_schema_id() const noexcept { return !schema_id.empty(); }
 
   constexpr bool has_trace() const noexcept {
     for (int i = 0; i < trace_id_size; ++i) {

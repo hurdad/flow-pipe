@@ -83,11 +83,13 @@ class FakeTransformStage : public ITransformStage {
   std::vector<PayloadMeta> seen_inputs;
 };
 
-QueueRuntime MakeQueueRuntime(const std::string& name, uint32_t capacity) {
+QueueRuntime MakeQueueRuntime(const std::string& name, uint32_t capacity,
+                              std::string schema_id = {}) {
   return QueueRuntime{
       .name = name,
       .capacity = capacity,
       .queue = std::make_shared<BoundedQueue<Payload>>(capacity),
+      .schema_id = std::move(schema_id),
   };
 }
 
@@ -114,6 +116,22 @@ TEST(RunSourceStageTest, EnqueuesPayloadsAndRecordsMetrics) {
   EXPECT_EQ(metrics.latency_calls, 2);
   EXPECT_GT(first->meta.enqueue_ts_ns, 0u);
   EXPECT_GT(second->meta.enqueue_ts_ns, 0u);
+}
+
+TEST(RunSourceStageTest, AppliesQueueSchemaIdToPayloads) {
+  auto output = MakeQueueRuntime("out", 2, "schema-1");
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  std::vector<Payload> payloads(1);
+  FakeSourceStage stage(std::move(payloads));
+  RecordingStageMetrics metrics;
+
+  RunSourceStage(&stage, ctx, output, &metrics);
+
+  auto first = output.queue->pop(ctx.stop);
+  ASSERT_TRUE(first.has_value());
+  EXPECT_EQ(first->meta.schema_id, "schema-1");
 }
 
 TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
@@ -165,6 +183,29 @@ TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
   EXPECT_GT(out_payload->meta.enqueue_ts_ns, 0u);
   ASSERT_EQ(stage.seen_inputs.size(), 1u);
   EXPECT_EQ(stage.seen_inputs.back().trace_id[0], 0xAA);
+}
+
+TEST(RunTransformStageTest, DropsPayloadsWithSchemaMismatch) {
+  auto input = MakeQueueRuntime("in", 1, "schema-a");
+  auto output = MakeQueueRuntime("out", 1, "schema-b");
+
+  Payload input_payload;
+  input_payload.meta.schema_id = "schema-wrong";
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(input_payload, ctx.stop));
+  input.queue->close();
+
+  FakeTransformStage stage;
+  RecordingStageMetrics metrics;
+
+  RunTransformStage(&stage, ctx, input, output, &metrics);
+
+  auto out_payload = output.queue->pop(ctx.stop);
+  EXPECT_FALSE(out_payload.has_value());
+  EXPECT_EQ(metrics.error_calls, 1);
 }
 
 TEST(RunTransformStageTest, StopsWhenCancelledBeforeWork) {
