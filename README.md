@@ -32,6 +32,7 @@ A pipe can:
 - **Runtime** – Stateless C++ process that executes a flow
 - **Controller** – Kubernetes reconciler that deploys flows
 - **Flow API** – Control-plane API for managing flow specs
+- **Schema Registry Service** – Versioned store for queue schemas used by flows
 
 ---
 
@@ -59,6 +60,9 @@ User / CI / Git
 |  - validate      |
 |  - version       |
 |  - write spec    |
+|   Schema Registry|  (Go)
+|  - store schemas |
+|  - version       |
 +------------------+
           |
           v
@@ -84,6 +88,16 @@ User / CI / Git
 ```
 
 The runtime is **Kubernetes-agnostic**. Kubernetes is used only for lifecycle and scheduling.
+
+---
+
+## Schema Registry Service
+
+flow-pipe ships with a schema registry service to manage versioned queue schemas.
+Queue specs can reference schemas via `QueueSchema.registry_id` and
+`QueueSchema.version` (omit/zero to use the active version). The service exposes
+REST endpoints such as `POST /v1/schemas`, `GET /v1/schemas/{registry_id}/versions/{version}`,
+and `GET /v1/schemas/{registry_id}/versions` for managing schema payloads.
 
 ---
 
