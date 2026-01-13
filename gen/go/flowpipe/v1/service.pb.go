@@ -704,28 +704,24 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"C\n" +
 	"\x13RollbackFlowRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\x04R\aversion\"\xa4\x01\n" +
-	"\x10SchemaDefinition\x12\x1d\n" +
-	"\tschema_id\x18\x01 \x01(\tR\b" +
-	"schemaId\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\x04R\aversion\"\xa0\x01\n" +
+	"\x10SchemaDefinition\x12\x1b\n" +
+	"\tschema_id\x18\x01 \x01(\tR\bschemaId\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\rR\aversion\x126\n" +
 	"\x06format\x18\x03 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1d\n" +
 	"\n" +
 	"raw_schema\x18\x04 \x01(\fR\trawSchema\"L\n" +
 	"\x13CreateSchemaRequest\x125\n" +
-	"\x06schema\x18\x01 \x01(\v2\x1d.flowpipe.v1.SchemaDefinitionR\x06schema\"M\n" +
-	"\x10GetSchemaRequest\x12\x1d\n" +
-	"\tschema_id\x18\x01 \x01(\tR\b" +
-	"schemaId\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\rR\aversion\"<\n" +
-	"\x19ListSchemaVersionsRequest\x12\x1d\n" +
-	"\tschema_id\x18\x01 \x01(\tR\b" +
-	"schemaId\"U\n" +
+	"\x06schema\x18\x01 \x01(\v2\x1d.flowpipe.v1.SchemaDefinitionR\x06schema\"I\n" +
+	"\x10GetSchemaRequest\x12\x1b\n" +
+	"\tschema_id\x18\x01 \x01(\tR\bschemaId\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\rR\aversion\"8\n" +
+	"\x19ListSchemaVersionsRequest\x12\x1b\n" +
+	"\tschema_id\x18\x01 \x01(\tR\bschemaId\"U\n" +
 	"\x1aListSchemaVersionsResponse\x127\n" +
-	"\aschemas\x18\x01 \x03(\v2\x1d.flowpipe.v1.SchemaDefinitionR\aschemas\"6\n" +
-	"\x13DeleteSchemaRequest\x12\x1d\n" +
-	"\tschema_id\x18\x01 \x01(\tR\b" +
-	"schemaId2\xbc\x05\n" +
+	"\aschemas\x18\x01 \x03(\v2\x1d.flowpipe.v1.SchemaDefinitionR\aschemas\"2\n" +
+	"\x13DeleteSchemaRequest\x12\x1b\n" +
+	"\tschema_id\x18\x01 \x01(\tR\bschemaId2\xbc\x05\n" +
 	"\vFlowService\x12X\n" +
 	"\n" +
 	"CreateFlow\x12\x1e.flowpipe.v1.CreateFlowRequest\x1a\x11.flowpipe.v1.Flow\"\x17\x82\xd3\xe4\x93\x02\x11:\x04spec\"\t/v1/flows\x12_\n" +
@@ -736,12 +732,12 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\aGetFlow\x12\x1b.flowpipe.v1.GetFlowRequest\x1a\x11.flowpipe.v1.Flow\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/flows/{name}\x12]\n" +
 	"\tListFlows\x12\x1d.flowpipe.v1.ListFlowsRequest\x1a\x1e.flowpipe.v1.ListFlowsResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/flows\x12l\n" +
 	"\rGetFlowStatus\x12!.flowpipe.v1.GetFlowStatusRequest\x1a\x17.flowpipe.v1.FlowStatus\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/v1/flows/{name}/status\x12p\n" +
-	"\fRollbackFlow\x12 .flowpipe.v1.RollbackFlowRequest\x1a\x11.flowpipe.v1.Flow\"+\x82\xd3\xe4\x93\x02%\"#/v1/flows/{name}/rollback/{version}2\x87\x04\n" +
+	"\fRollbackFlow\x12 .flowpipe.v1.RollbackFlowRequest\x1a\x11.flowpipe.v1.Flow\"+\x82\xd3\xe4\x93\x02%\"#/v1/flows/{name}/rollback/{version}2\x81\x04\n" +
 	"\x15SchemaRegistryService\x12l\n" +
-	"\fCreateSchema\x12 .flowpipe.v1.CreateSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"\x1b\x82\xd3\xe4\x93\x02\x15:\x06schema\"\v/v1/schemas\x12\x7f\n" +
-	"\tGetSchema\x12\x1d.flowpipe.v1.GetSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"4\x82\xd3\xe4\x93\x02.\x12,/v1/schemas/{schema_id}/versions/{version}\x12\x91\x01\n" +
-	"\x12ListSchemaVersions\x12&.flowpipe.v1.ListSchemaVersionsRequest\x1a'.flowpipe.v1.ListSchemaVersionsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/schemas/{schema_id}/versions\x12k\n" +
-	"\fDeleteSchema\x12 .flowpipe.v1.DeleteSchemaRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b*\x19/v1/schemas/{schema_id}B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
+	"\fCreateSchema\x12 .flowpipe.v1.CreateSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"\x1b\x82\xd3\xe4\x93\x02\x15:\x06schema\"\v/v1/schemas\x12}\n" +
+	"\tGetSchema\x12\x1d.flowpipe.v1.GetSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"2\x82\xd3\xe4\x93\x02,\x12*/v1/schemas/{schema_id}/versions/{version}\x12\x8f\x01\n" +
+	"\x12ListSchemaVersions\x12&.flowpipe.v1.ListSchemaVersionsRequest\x1a'.flowpipe.v1.ListSchemaVersionsResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/schemas/{schema_id}/versions\x12i\n" +
+	"\fDeleteSchema\x12 .flowpipe.v1.DeleteSchemaRequest\x1a\x16.google.protobuf.Empty\"\x1f\x82\xd3\xe4\x93\x02\x19*\x17/v1/schemas/{schema_id}B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
 
 var (
 	file_flowpipe_v1_service_proto_rawDescOnce sync.Once

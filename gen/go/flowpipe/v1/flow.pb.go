@@ -1111,11 +1111,10 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bcapacity\x18\x02 \x01(\rR\bcapacity\x125\n" +
 	"\x06schema\x18\x03 \x01(\v2\x18.flowpipe.v1.QueueSchemaH\x00R\x06schema\x88\x01\x01B\t\n" +
-	"\a_schema\"\xca\x01\n" +
+	"\a_schema\"\xc6\x01\n" +
 	"\vQueueSchema\x126\n" +
-	"\x06format\x18\x01 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1f\n" +
-	"\tschema_id\x18\x02 \x01(\tR\b" +
-	"schemaId\x12\x1d\n" +
+	"\x06format\x18\x01 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1b\n" +
+	"\tschema_id\x18\x02 \x01(\tR\bschemaId\x12\x1d\n" +
 	"\aversion\x18\x03 \x01(\rH\x00R\aversion\x88\x01\x01\x12&\n" +
 	"\fregistry_url\x18\x04 \x01(\tH\x01R\vregistryUrl\x88\x01\x01B\n" +
 	"\n" +

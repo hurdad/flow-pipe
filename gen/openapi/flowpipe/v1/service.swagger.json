@@ -836,7 +836,7 @@
         },
         "schemaId": {
           "type": "string",
-          "description": "Schema schema identifier."
+          "description": "Schema identifier."
         },
         "version": {
           "type": "integer",
@@ -915,7 +915,7 @@
       "properties": {
         "schemaId": {
           "type": "string",
-          "description": "Schema schema identifier."
+          "description": "Schema identifier."
         },
         "version": {
           "type": "integer",
