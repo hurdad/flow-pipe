@@ -29,6 +29,8 @@ This mirrors the Kubernetes API / controller separation.
   - `/flows/*/versions/*/spec`
   - `/flows/*/active`
   - `/flows/*/meta`
+  - `/schemas/*/versions/*`
+  - `/schemas/*/active`
 
 ### The API **never**
 - writes `/status`
@@ -77,6 +79,27 @@ The API uses generated protobuf types from `gen/` in the repository root.
 ├── meta
 └── status      (controller-owned)
 ```
+
+### Schema Registry
+
+Queue schemas are stored in etcd so that `QueueSchema.registry_id` and
+`QueueSchema.version` can reference an immutable payload. The registry uses
+`QueueSchemaFormat` to identify the encoding format and stores the raw schema
+payload as bytes (JSON-encoded in etcd for the API implementation).
+
+```
+/flowpipe/schemas/<registry_id>/
+├── versions/
+│   ├── 1
+│   ├── 2
+│   └── 3
+└── active      -> "3"
+```
+
+Populate queues with:
+- `QueueSchema.format` = one of the `QueueSchemaFormat` enum values (Avro, JSON Schema, Protobuf, etc.)
+- `QueueSchema.registry_id` = registry key for the schema
+- `QueueSchema.version` = optional version (omit/zero to resolve the active schema)
 
 ---
 
