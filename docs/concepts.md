@@ -32,11 +32,11 @@ A bounded, in-memory channel between stages.
 
 ## Schema Registry
 Queue schemas are stored in the schema registry service so flows can reference
-versioned, immutable payloads. Each schema is identified by a `registry_id`,
+versioned, immutable payloads. Each schema is identified by a `schema_id`,
 with versions managed by the service. Queue specs reference schemas via:
 
 - `QueueSchema.format` for the encoding (Avro, JSON Schema, Protobuf, etc.).
-- `QueueSchema.registry_id` to locate the schema definition.
+- `QueueSchema.schema_id` to locate the schema definition.
 - `QueueSchema.version` to pin a specific version (omit/zero to use the active version).
 - `QueueSchema.registry_url` to override the registry base URL when needed.
 

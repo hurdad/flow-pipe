@@ -376,11 +376,11 @@ const (
 type SchemaRegistryServiceClient interface {
 	// Create a new schema (version starts at 1).
 	CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*SchemaDefinition, error)
-	// Get a schema by registry id and version.
+	// Get a schema by schema id and version.
 	GetSchema(ctx context.Context, in *GetSchemaRequest, opts ...grpc.CallOption) (*SchemaDefinition, error)
-	// List schema versions for a registry id.
+	// List schema versions for a schema id.
 	ListSchemaVersions(ctx context.Context, in *ListSchemaVersionsRequest, opts ...grpc.CallOption) (*ListSchemaVersionsResponse, error)
-	// Delete all schema versions for a registry id.
+	// Delete all schema versions for a schema id.
 	DeleteSchema(ctx context.Context, in *DeleteSchemaRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -438,11 +438,11 @@ func (c *schemaRegistryServiceClient) DeleteSchema(ctx context.Context, in *Dele
 type SchemaRegistryServiceServer interface {
 	// Create a new schema (version starts at 1).
 	CreateSchema(context.Context, *CreateSchemaRequest) (*SchemaDefinition, error)
-	// Get a schema by registry id and version.
+	// Get a schema by schema id and version.
 	GetSchema(context.Context, *GetSchemaRequest) (*SchemaDefinition, error)
-	// List schema versions for a registry id.
+	// List schema versions for a schema id.
 	ListSchemaVersions(context.Context, *ListSchemaVersionsRequest) (*ListSchemaVersionsResponse, error)
-	// Delete all schema versions for a registry id.
+	// Delete all schema versions for a schema id.
 	DeleteSchema(context.Context, *DeleteSchemaRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedSchemaRegistryServiceServer()
 }

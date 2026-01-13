@@ -26,11 +26,11 @@ var (
 )
 
 var schemaCreateCmd = &cobra.Command{
-	Use:   "create <registry-id>",
+	Use:   "create <schema-id>",
 	Short: "Create a new schema version",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		registryID := args[0]
+		schemaID := args[0]
 		format, err := parseQueueSchemaFormat(schemaCreateFormat)
 		if err != nil {
 			return err
@@ -53,9 +53,9 @@ var schemaCreateCmd = &cobra.Command{
 		client := flowpipev1.NewSchemaRegistryServiceClient(conn)
 		resp, err := client.CreateSchema(ctx, &flowpipev1.CreateSchemaRequest{
 			Schema: &flowpipev1.SchemaDefinition{
-				RegistryId: registryID,
-				Format:     format,
-				RawSchema:  payload,
+				SchemaId:  schemaID,
+				Format:    format,
+				RawSchema: payload,
 			},
 		})
 		if err != nil {
@@ -72,11 +72,11 @@ var (
 )
 
 var schemaGetCmd = &cobra.Command{
-	Use:   "get <registry-id> <version>",
+	Use:   "get <schema-id> <version>",
 	Short: "Get a schema version",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		registryID := args[0]
+		schemaID := args[0]
 		version, err := parseSchemaVersion(args[1])
 		if err != nil {
 			return err
@@ -93,8 +93,8 @@ var schemaGetCmd = &cobra.Command{
 
 		client := flowpipev1.NewSchemaRegistryServiceClient(conn)
 		resp, err := client.GetSchema(ctx, &flowpipev1.GetSchemaRequest{
-			RegistryId: registryID,
-			Version:    version,
+			SchemaId: schemaID,
+			Version:  version,
 		})
 		if err != nil {
 			return fmt.Errorf("get schema: %w", err)
@@ -110,11 +110,11 @@ var (
 )
 
 var schemaListCmd = &cobra.Command{
-	Use:   "list <registry-id>",
+	Use:   "list <schema-id>",
 	Short: "List schema versions",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		registryID := args[0]
+		schemaID := args[0]
 
 		ctx, cancel := context.WithTimeout(context.Background(), schemaListTimeout)
 		defer cancel()
@@ -127,7 +127,7 @@ var schemaListCmd = &cobra.Command{
 
 		client := flowpipev1.NewSchemaRegistryServiceClient(conn)
 		resp, err := client.ListSchemaVersions(ctx, &flowpipev1.ListSchemaVersionsRequest{
-			RegistryId: registryID,
+			SchemaId: schemaID,
 		})
 		if err != nil {
 			return fmt.Errorf("list schema versions: %w", err)
@@ -143,11 +143,11 @@ var (
 )
 
 var schemaDeleteCmd = &cobra.Command{
-	Use:   "delete <registry-id>",
+	Use:   "delete <schema-id>",
 	Short: "Delete all schema versions",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		registryID := args[0]
+		schemaID := args[0]
 
 		ctx, cancel := context.WithTimeout(context.Background(), schemaDeleteTimeout)
 		defer cancel()
@@ -160,7 +160,7 @@ var schemaDeleteCmd = &cobra.Command{
 
 		client := flowpipev1.NewSchemaRegistryServiceClient(conn)
 		resp, err := client.DeleteSchema(ctx, &flowpipev1.DeleteSchemaRequest{
-			RegistryId: registryID,
+			SchemaId: schemaID,
 		})
 		if err != nil {
 			return fmt.Errorf("delete schema: %w", err)

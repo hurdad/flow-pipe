@@ -21,11 +21,11 @@ func NewSchemaRegistryServer(store store.SchemaRegistryStore) *SchemaRegistrySer
 
 func (s *SchemaRegistryServer) CreateSchema(ctx context.Context, r *flowpipev1.CreateSchemaRequest) (*flowpipev1.SchemaDefinition, error) {
 	schema := r.GetSchema()
-	registryID := ""
+	schemaID := ""
 	if schema != nil {
-		registryID = schema.GetRegistryId()
+		schemaID = schema.GetSchemaId()
 	}
-	slog.DebugContext(ctx, "create schema request", slog.String("registry_id", registryID))
+	slog.DebugContext(ctx, "create schema request", slog.String("schema_id", schemaID))
 
 	created, err := s.store.CreateSchema(ctx, schemaToModel(schema))
 	if err != nil {
@@ -35,8 +35,8 @@ func (s *SchemaRegistryServer) CreateSchema(ctx context.Context, r *flowpipev1.C
 }
 
 func (s *SchemaRegistryServer) GetSchema(ctx context.Context, r *flowpipev1.GetSchemaRequest) (*flowpipev1.SchemaDefinition, error) {
-	slog.DebugContext(ctx, "get schema request", slog.String("registry_id", r.GetRegistryId()), slog.Uint64("version", uint64(r.GetVersion())))
-	schema, err := s.store.GetSchema(ctx, r.GetRegistryId(), r.GetVersion())
+	slog.DebugContext(ctx, "get schema request", slog.String("schema_id", r.GetSchemaId()), slog.Uint64("version", uint64(r.GetVersion())))
+	schema, err := s.store.GetSchema(ctx, r.GetSchemaId(), r.GetVersion())
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +44,8 @@ func (s *SchemaRegistryServer) GetSchema(ctx context.Context, r *flowpipev1.GetS
 }
 
 func (s *SchemaRegistryServer) ListSchemaVersions(ctx context.Context, r *flowpipev1.ListSchemaVersionsRequest) (*flowpipev1.ListSchemaVersionsResponse, error) {
-	slog.DebugContext(ctx, "list schema versions request", slog.String("registry_id", r.GetRegistryId()))
-	schemas, err := s.store.ListSchemaVersions(ctx, r.GetRegistryId())
+	slog.DebugContext(ctx, "list schema versions request", slog.String("schema_id", r.GetSchemaId()))
+	schemas, err := s.store.ListSchemaVersions(ctx, r.GetSchemaId())
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +53,8 @@ func (s *SchemaRegistryServer) ListSchemaVersions(ctx context.Context, r *flowpi
 }
 
 func (s *SchemaRegistryServer) DeleteSchema(ctx context.Context, r *flowpipev1.DeleteSchemaRequest) (*emptypb.Empty, error) {
-	slog.DebugContext(ctx, "delete schema request", slog.String("registry_id", r.GetRegistryId()))
-	if err := s.store.DeleteSchema(ctx, r.GetRegistryId()); err != nil {
+	slog.DebugContext(ctx, "delete schema request", slog.String("schema_id", r.GetSchemaId()))
+	if err := s.store.DeleteSchema(ctx, r.GetSchemaId()); err != nil {
 		return nil, err
 	}
 	return &emptypb.Empty{}, nil
@@ -65,10 +65,10 @@ func schemaToModel(schema *flowpipev1.SchemaDefinition) *model.SchemaDefinition 
 		return nil
 	}
 	return &model.SchemaDefinition{
-		RegistryID: schema.GetRegistryId(),
-		Version:    schema.GetVersion(),
-		Format:     schema.GetFormat(),
-		RawSchema:  schema.GetRawSchema(),
+		SchemaID:  schema.GetSchemaId(),
+		Version:   schema.GetVersion(),
+		Format:    schema.GetFormat(),
+		RawSchema: schema.GetRawSchema(),
 	}
 }
 
@@ -77,10 +77,10 @@ func modelToSchema(schema *model.SchemaDefinition) *flowpipev1.SchemaDefinition 
 		return nil
 	}
 	return &flowpipev1.SchemaDefinition{
-		RegistryId: schema.RegistryID,
-		Version:    schema.Version,
-		Format:     schema.Format,
-		RawSchema:  schema.RawSchema,
+		SchemaId:  schema.SchemaID,
+		Version:   schema.Version,
+		Format:    schema.Format,
+		RawSchema: schema.RawSchema,
 	}
 }
 

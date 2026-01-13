@@ -385,8 +385,8 @@ func (x *RollbackFlowRequest) GetVersion() uint64 {
 
 type SchemaDefinition struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Schema registry identifier.
-	RegistryId string `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	// Schema identifier.
+	SchemaId string `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty"`
 	// Schema version in the registry.
 	Version uint32 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
 	// Schema format identifier.
@@ -427,9 +427,9 @@ func (*SchemaDefinition) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *SchemaDefinition) GetRegistryId() string {
+func (x *SchemaDefinition) GetSchemaId() string {
 	if x != nil {
-		return x.RegistryId
+		return x.SchemaId
 	}
 	return ""
 }
@@ -501,7 +501,7 @@ func (x *CreateSchemaRequest) GetSchema() *SchemaDefinition {
 
 type GetSchemaRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegistryId    string                 `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	SchemaId      string                 `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty"`
 	Version       uint32                 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -537,9 +537,9 @@ func (*GetSchemaRequest) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *GetSchemaRequest) GetRegistryId() string {
+func (x *GetSchemaRequest) GetSchemaId() string {
 	if x != nil {
-		return x.RegistryId
+		return x.SchemaId
 	}
 	return ""
 }
@@ -553,7 +553,7 @@ func (x *GetSchemaRequest) GetVersion() uint32 {
 
 type ListSchemaVersionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegistryId    string                 `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	SchemaId      string                 `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -588,9 +588,9 @@ func (*ListSchemaVersionsRequest) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *ListSchemaVersionsRequest) GetRegistryId() string {
+func (x *ListSchemaVersionsRequest) GetSchemaId() string {
 	if x != nil {
-		return x.RegistryId
+		return x.SchemaId
 	}
 	return ""
 }
@@ -641,7 +641,7 @@ func (x *ListSchemaVersionsResponse) GetSchemas() []*SchemaDefinition {
 
 type DeleteSchemaRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RegistryId    string                 `protobuf:"bytes,1,opt,name=registry_id,json=registryId,proto3" json:"registry_id,omitempty"`
+	SchemaId      string                 `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -676,9 +676,9 @@ func (*DeleteSchemaRequest) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *DeleteSchemaRequest) GetRegistryId() string {
+func (x *DeleteSchemaRequest) GetSchemaId() string {
 	if x != nil {
-		return x.RegistryId
+		return x.SchemaId
 	}
 	return ""
 }
@@ -705,27 +705,27 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\x13RollbackFlowRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\x04R\aversion\"\xa4\x01\n" +
-	"\x10SchemaDefinition\x12\x1f\n" +
-	"\vregistry_id\x18\x01 \x01(\tR\n" +
-	"registryId\x12\x18\n" +
+	"\x10SchemaDefinition\x12\x1d\n" +
+	"\tschema_id\x18\x01 \x01(\tR\b" +
+	"schemaId\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\rR\aversion\x126\n" +
 	"\x06format\x18\x03 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1d\n" +
 	"\n" +
 	"raw_schema\x18\x04 \x01(\fR\trawSchema\"L\n" +
 	"\x13CreateSchemaRequest\x125\n" +
 	"\x06schema\x18\x01 \x01(\v2\x1d.flowpipe.v1.SchemaDefinitionR\x06schema\"M\n" +
-	"\x10GetSchemaRequest\x12\x1f\n" +
-	"\vregistry_id\x18\x01 \x01(\tR\n" +
-	"registryId\x12\x18\n" +
+	"\x10GetSchemaRequest\x12\x1d\n" +
+	"\tschema_id\x18\x01 \x01(\tR\b" +
+	"schemaId\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\rR\aversion\"<\n" +
-	"\x19ListSchemaVersionsRequest\x12\x1f\n" +
-	"\vregistry_id\x18\x01 \x01(\tR\n" +
-	"registryId\"U\n" +
+	"\x19ListSchemaVersionsRequest\x12\x1d\n" +
+	"\tschema_id\x18\x01 \x01(\tR\b" +
+	"schemaId\"U\n" +
 	"\x1aListSchemaVersionsResponse\x127\n" +
 	"\aschemas\x18\x01 \x03(\v2\x1d.flowpipe.v1.SchemaDefinitionR\aschemas\"6\n" +
-	"\x13DeleteSchemaRequest\x12\x1f\n" +
-	"\vregistry_id\x18\x01 \x01(\tR\n" +
-	"registryId2\xbc\x05\n" +
+	"\x13DeleteSchemaRequest\x12\x1d\n" +
+	"\tschema_id\x18\x01 \x01(\tR\b" +
+	"schemaId2\xbc\x05\n" +
 	"\vFlowService\x12X\n" +
 	"\n" +
 	"CreateFlow\x12\x1e.flowpipe.v1.CreateFlowRequest\x1a\x11.flowpipe.v1.Flow\"\x17\x82\xd3\xe4\x93\x02\x11:\x04spec\"\t/v1/flows\x12_\n" +
@@ -739,9 +739,9 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\fRollbackFlow\x12 .flowpipe.v1.RollbackFlowRequest\x1a\x11.flowpipe.v1.Flow\"+\x82\xd3\xe4\x93\x02%\"#/v1/flows/{name}/rollback/{version}2\x87\x04\n" +
 	"\x15SchemaRegistryService\x12l\n" +
 	"\fCreateSchema\x12 .flowpipe.v1.CreateSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"\x1b\x82\xd3\xe4\x93\x02\x15:\x06schema\"\v/v1/schemas\x12\x7f\n" +
-	"\tGetSchema\x12\x1d.flowpipe.v1.GetSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"4\x82\xd3\xe4\x93\x02.\x12,/v1/schemas/{registry_id}/versions/{version}\x12\x91\x01\n" +
-	"\x12ListSchemaVersions\x12&.flowpipe.v1.ListSchemaVersionsRequest\x1a'.flowpipe.v1.ListSchemaVersionsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/schemas/{registry_id}/versions\x12k\n" +
-	"\fDeleteSchema\x12 .flowpipe.v1.DeleteSchemaRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b*\x19/v1/schemas/{registry_id}B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
+	"\tGetSchema\x12\x1d.flowpipe.v1.GetSchemaRequest\x1a\x1d.flowpipe.v1.SchemaDefinition\"4\x82\xd3\xe4\x93\x02.\x12,/v1/schemas/{schema_id}/versions/{version}\x12\x91\x01\n" +
+	"\x12ListSchemaVersions\x12&.flowpipe.v1.ListSchemaVersionsRequest\x1a'.flowpipe.v1.ListSchemaVersionsResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/schemas/{schema_id}/versions\x12k\n" +
+	"\fDeleteSchema\x12 .flowpipe.v1.DeleteSchemaRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b*\x19/v1/schemas/{schema_id}B;Z9github.com/hurdad/flow-pipe/gen/go/flowpipe/v1;flowpipev1b\x06proto3"
 
 var (
 	file_flowpipe_v1_service_proto_rawDescOnce sync.Once

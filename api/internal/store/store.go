@@ -19,9 +19,9 @@ type APIStore interface {
 
 type SchemaRegistryStore interface {
 	CreateSchema(ctx context.Context, schema *model.SchemaDefinition) (*model.SchemaDefinition, error)
-	GetSchema(ctx context.Context, registryID string, version uint32) (*model.SchemaDefinition, error)
-	ListSchemaVersions(ctx context.Context, registryID string) ([]*model.SchemaDefinition, error)
-	DeleteSchema(ctx context.Context, registryID string) error
+	GetSchema(ctx context.Context, schemaID string, version uint32) (*model.SchemaDefinition, error)
+	ListSchemaVersions(ctx context.Context, schemaID string) ([]*model.SchemaDefinition, error)
+	DeleteSchema(ctx context.Context, schemaID string) error
 }
 
 type Store interface {

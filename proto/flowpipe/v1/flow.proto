@@ -170,8 +170,8 @@ message QueueSchema {
   // Schema format identifier.
   QueueSchemaFormat format = 1;
 
-  // Schema registry identifier.
-  string registry_id = 2;
+  // Schema identifier.
+  string schema_id = 2;
 
   // Schema version in the registry.
   optional uint32 version = 3;
