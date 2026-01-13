@@ -57,7 +57,9 @@ func NewGRPCServer(cfg config.Config, store store.Store) (*GRPCServer, error) {
 		grpc.ChainUnaryInterceptor(unaryTracingInterceptor(tracer, requestCount, latency)),
 	)
 	flowServer := service.NewFlowServer(store)
+	schemaRegistryServer := service.NewSchemaRegistryServer(store)
 	flowpipev1.RegisterFlowServiceServer(grpcServer, flowServer)
+	flowpipev1.RegisterSchemaRegistryServiceServer(grpcServer, schemaRegistryServer)
 
 	reflection.Register(grpcServer)
 

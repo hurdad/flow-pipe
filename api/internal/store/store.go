@@ -7,7 +7,7 @@ import (
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 )
 
-type Store interface {
+type APIStore interface {
 	CreateFlow(ctx context.Context, spec *flowpipev1.FlowSpec) (*flowpipev1.Flow, error)
 	UpdateFlow(ctx context.Context, name string, spec *flowpipev1.FlowSpec) (*flowpipev1.Flow, error)
 	GetFlow(ctx context.Context, name string) (*flowpipev1.Flow, error)
@@ -22,4 +22,9 @@ type SchemaRegistryStore interface {
 	GetSchema(ctx context.Context, registryID string, version uint32) (*model.SchemaDefinition, error)
 	ListSchemaVersions(ctx context.Context, registryID string) ([]*model.SchemaDefinition, error)
 	DeleteSchema(ctx context.Context, registryID string) error
+}
+
+type Store interface {
+	SchemaRegistryStore
+	APIStore
 }
