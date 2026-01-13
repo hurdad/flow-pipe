@@ -161,6 +161,43 @@ message QueueSpec {
 
   // Maximum buffered elements.
   uint32 capacity = 2;
+
+  // Optional schema definition for queue payloads.
+  optional QueueSchema schema = 3;
+}
+
+message QueueSchema {
+  // Schema format identifier.
+  QueueSchemaFormat format = 1;
+
+  // Schema registry identifier.
+  string registry_id = 2;
+
+  // Schema version in the registry.
+  optional uint32 version = 3;
+
+  // Optional registry base URL override.
+  optional string registry_url = 4;
+}
+
+enum QueueSchemaFormat {
+  // Format not specified.
+  QUEUE_SCHEMA_FORMAT_UNSPECIFIED = 0;
+
+  // Apache Avro schema.
+  QUEUE_SCHEMA_FORMAT_AVRO = 1;
+
+  // JSON Schema.
+  QUEUE_SCHEMA_FORMAT_JSON = 2;
+
+  // Protocol Buffers.
+  QUEUE_SCHEMA_FORMAT_PROTOBUF = 3;
+
+  // FlatBuffers schema.
+  QUEUE_SCHEMA_FORMAT_FLATBUFFERS = 4;
+
+  // Apache Parquet schema.
+  QUEUE_SCHEMA_FORMAT_PARQUET = 5;
 }
 
 // ============================================================
