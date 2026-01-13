@@ -200,6 +200,8 @@ Behavior:
 
 Manage schema registry entries via the API.
 
+Schema registry entries are versioned by `registry-id` and each new `create` call registers the next version.
+
 #### `schema create`
 
 Create a new schema version.
@@ -211,7 +213,13 @@ flowctl schema create registry-id \\
   --api localhost:9090
 ```
 
-Use `--schema-file -` to read from stdin.
+Formats: `avro`, `json` (aliases: `json-schema`, `jsonschema`), `protobuf` (alias: `proto`), `flatbuffers` (alias: `flatbuffer`), `parquet`.
+
+Use `--schema-file -` to read from stdin:
+
+```bash
+cat schema.json | flowctl schema create registry-id --format json --schema-file -
+```
 
 #### `schema get`
 
@@ -221,6 +229,8 @@ Fetch a specific schema version.
 flowctl schema get registry-id 1 --api localhost:9090
 ```
 
+The version must be a positive integer.
+
 #### `schema list`
 
 List all versions for a schema registry id.
@@ -228,6 +238,8 @@ List all versions for a schema registry id.
 ```bash
 flowctl schema list registry-id --api localhost:9090
 ```
+
+Returns the available versions for the registry id.
 
 #### `schema delete`
 
