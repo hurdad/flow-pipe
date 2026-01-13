@@ -41,6 +41,15 @@ func NewHTTPServer(cfg config.Config) (*HTTPServer, error) {
 		return nil, fmt.Errorf("register gateway: %w", err)
 	}
 
+	if err := flowpipev1.RegisterSchemaRegistryServiceHandlerFromEndpoint(
+		ctx,
+		mux,
+		cfg.GRPCAddr,
+		opts,
+	); err != nil {
+		return nil, fmt.Errorf("register schema registry gateway: %w", err)
+	}
+
 	meter := otel.Meter("github.com/hurdad/flow-pipe/api/http")
 	requestCount, err := meter.Int64Counter(
 		"flow_api_http_requests_total",
