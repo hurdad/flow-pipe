@@ -130,6 +130,7 @@ Optional fields:
 | `simple.pipeline.yaml` | Source → transform → sink |
 | `simple.pipeline.observability.k3s.yaml` | Job-mode simple pipeline for k3s with observability enabled |
 | `fanout.yaml` | Fan-out to multiple transforms and sinks |
+| `schema.registry.yaml` | Source → transform → sink with schema registry references |
 
 ---
 
