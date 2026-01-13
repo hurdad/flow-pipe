@@ -37,9 +37,17 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       throw std::runtime_error("queue capacity must be > 0: " + q.name());
     }
 
+    if (q.has_schema() && q.schema().schema_id().empty()) {
+      FP_LOG_ERROR_FMT("invalid queue '{}': schema_id is required when schema is set", q.name());
+      throw std::runtime_error("queue schema_id is required: " + q.name());
+    }
+
     auto qr = std::make_shared<QueueRuntime>();
     qr->name = q.name();
     qr->capacity = q.capacity();
+    if (q.has_schema()) {
+      qr->schema_id = q.schema().schema_id();
+    }
 
     qr->queue = std::make_shared<BoundedQueue<Payload>>(q.capacity());
 

@@ -18,6 +18,9 @@ struct QueueRuntime {
 
   // Runtime queue used by producers and consumers
   std::shared_ptr<BoundedQueue<Payload>> queue;
+
+  // Optional schema identifier for payload validation.
+  std::string schema_id;
 };
 
 }  // namespace flowpipe

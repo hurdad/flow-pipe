@@ -25,6 +25,49 @@ static inline uint64_t now_ns() noexcept {
       .count();
 }
 
+static inline bool ValidateInputSchema(const QueueRuntime& queue, const Payload& payload,
+                                       const char* stage_name) {
+  if (queue.schema_id.empty()) {
+    return true;
+  }
+
+  if (payload.meta.schema_id.empty()) {
+    FP_LOG_ERROR_FMT("stage '{}' received payload without schema_id on queue '{}'", stage_name,
+                     queue.name);
+    return false;
+  }
+
+  if (payload.meta.schema_id != queue.schema_id) {
+    FP_LOG_ERROR_FMT(
+        "stage '{}' received payload with schema_id '{}' on queue '{}' (expected '{}')",
+        stage_name, payload.meta.schema_id, queue.name, queue.schema_id);
+    return false;
+  }
+
+  return true;
+}
+
+static inline bool ApplyOutputSchema(const QueueRuntime& queue, Payload& payload,
+                                     const char* stage_name) {
+  if (queue.schema_id.empty()) {
+    return true;
+  }
+
+  if (payload.meta.schema_id.empty()) {
+    payload.meta.schema_id = queue.schema_id;
+    return true;
+  }
+
+  if (payload.meta.schema_id != queue.schema_id) {
+    FP_LOG_ERROR_FMT("stage '{}' produced payload with schema_id '{}' for queue '{}' (expected "
+                     "'{}')",
+                     stage_name, payload.meta.schema_id, queue.name, queue.schema_id);
+    return false;
+  }
+
+  return true;
+}
+
 #if FLOWPIPE_ENABLE_OTEL
 
 static inline bool StageSpansEnabled() noexcept {
@@ -115,6 +158,13 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
       metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
     }
 
+    if (!ApplyOutputSchema(output, payload, stage->name().c_str())) {
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+      continue;
+    }
+
     payload.meta.enqueue_ts_ns = now_ns();
     if (!output.queue->push(std::move(payload), ctx.stop)) {
       FP_LOG_DEBUG_FMT("source stage '{}' output queue closed or stop requested", stage->name());
@@ -149,6 +199,13 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 
     if (metrics) {
       metrics->RecordQueueDequeue(input, in_payload);
+    }
+
+    if (!ValidateInputSchema(input, in_payload, stage->name().c_str())) {
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+      continue;
     }
 
 #if FLOWPIPE_ENABLE_OTEL
@@ -186,6 +243,13 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
       metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
     }
 
+    if (!ApplyOutputSchema(output, out_payload, stage->name().c_str())) {
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+      continue;
+    }
+
     out_payload.meta.enqueue_ts_ns = now_ns();
     if (!output.queue->push(std::move(out_payload), ctx.stop)) {
       FP_LOG_DEBUG_FMT("transform stage '{}' output queue closed or stop requested", stage->name());
@@ -220,6 +284,13 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
 
     if (metrics) {
       metrics->RecordQueueDequeue(input, payload);
+    }
+
+    if (!ValidateInputSchema(input, payload, stage->name().c_str())) {
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+      continue;
     }
 
 #if FLOWPIPE_ENABLE_OTEL
