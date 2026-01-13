@@ -1,0 +1,40 @@
+queues:
+  - name: trades
+    capacity: 256
+    schema:
+      format: QUEUE_SCHEMA_FORMAT_JSON
+      schema_id: trade
+      version: 2
+      registry_url: http://schema-registry:8080
+
+  - name: normalized_trades
+    capacity: 256
+    schema:
+      format: QUEUE_SCHEMA_FORMAT_JSON
+      schema_id: trade_normalized
+      version: 1
+      registry_url: http://schema-registry:8080
+
+stages:
+  - name: source
+    type: noop_source
+    threads: 1
+    output_queue: trades
+    config:
+      delay_ms: 100
+      message: '{"trade_id":"t-123","symbol":"AAPL","price":189.5}'
+      max_messages: 10
+
+  - name: normalize
+    type: noop_transform
+    threads: 2
+    input_queue: trades
+    output_queue: normalized_trades
+    config:
+      verbose: true
+      delay_ms: 50
+
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: normalized_trades
