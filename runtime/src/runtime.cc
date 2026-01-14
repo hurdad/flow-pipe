@@ -2,7 +2,15 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstring>
+#include <optional>
+#ifdef __linux__
+#include <pthread.h>
+#include <sched.h>
+#endif
+#include <sstream>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -15,6 +23,73 @@
 #include "flowpipe/observability/logging_runtime.h"
 
 namespace flowpipe {
+namespace {
+
+std::optional<std::vector<uint32_t>> ResolveCpuPinning(const flowpipe::v1::FlowSpec& spec,
+                                                       const std::string& stage_name) {
+  if (!spec.has_kubernetes()) {
+    return std::nullopt;
+  }
+
+  const auto& settings = spec.kubernetes();
+  const auto& pinning = settings.cpu_pinning();
+  const auto it = pinning.find(stage_name);
+  if (it == pinning.end()) {
+    return std::nullopt;
+  }
+
+  std::vector<uint32_t> cpus;
+  cpus.reserve(it->second.cpu_size());
+  for (const auto cpu : it->second.cpu()) {
+    cpus.push_back(cpu);
+  }
+
+  return cpus;
+}
+
+std::string FormatCpuList(const std::vector<uint32_t>& cpus) {
+  std::ostringstream oss;
+  for (size_t i = 0; i < cpus.size(); ++i) {
+    if (i > 0) {
+      oss << ",";
+    }
+    oss << cpus[i];
+  }
+  return oss.str();
+}
+
+void ApplyCpuPinning(const std::string& stage_name, uint32_t worker_index,
+                     const std::vector<uint32_t>& cpus) {
+#ifdef __linux__
+  if (cpus.empty()) {
+    FP_LOG_WARN_FMT("cpu pinning requested for stage '{}' but no CPUs configured", stage_name);
+    return;
+  }
+
+  cpu_set_t mask;
+  CPU_ZERO(&mask);
+  for (const auto cpu : cpus) {
+    CPU_SET(cpu, &mask);
+  }
+
+  const int result = pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask);
+  if (result != 0) {
+    FP_LOG_WARN_FMT("stage '{}' worker {} failed to set cpu affinity: {}", stage_name, worker_index,
+                    std::strerror(result));
+    return;
+  }
+
+  FP_LOG_INFO_FMT("stage '{}' worker {} pinned to CPUs [{}]", stage_name, worker_index,
+                  FormatCpuList(cpus));
+#else
+  (void)stage_name;
+  (void)worker_index;
+  (void)cpus;
+  FP_LOG_WARN_FMT("cpu pinning requested but not supported on this platform");
+#endif
+}
+
+}  // namespace
 
 Runtime::Runtime() = default;
 
@@ -84,7 +159,8 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   // Wire stages (runtime owns execution)
   // ------------------------------------------------------------
   for (const auto& s : spec.stages()) {
-    FP_LOG_INFO_FMT("initializing stage '{}' type={} threads={}", s.name(), s.type(), s.threads());
+    const std::string stage_name = s.name();
+    FP_LOG_INFO_FMT("initializing stage '{}' type={} threads={}", stage_name, s.type(), s.threads());
 
     if (s.threads() < 1) {
       FP_LOG_ERROR_FMT("invalid stage '{}': threads must be >= 1", s.name());
@@ -93,6 +169,15 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
     const bool has_input = s.has_input_queue();
     const bool has_output = s.has_output_queue();
+    const auto stage_pinning = ResolveCpuPinning(spec, stage_name);
+    std::vector<uint32_t> pinning_cpus;
+    if (stage_pinning.has_value()) {
+      pinning_cpus = stage_pinning.value();
+      if (pinning_cpus.empty()) {
+        FP_LOG_WARN_FMT("cpu pinning configured for stage '{}' but no CPUs specified", stage_name);
+      }
+    }
+    const bool should_pin = !pinning_cpus.empty();
 
     // Resolve plugin name: explicit plugin wins, otherwise default to type-based naming.
     const std::string plugin_name =
@@ -106,36 +191,36 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     // ----------------------------
     if (dynamic_cast<ISourceStage*>(stage)) {
       kind = StageKind::kSource;
-      FP_LOG_DEBUG_FMT("stage '{}' detected as SOURCE", s.name());
+      FP_LOG_DEBUG_FMT("stage '{}' detected as SOURCE", stage_name);
 
       if (has_input || !has_output) {
-        FP_LOG_ERROR_FMT("invalid source stage wiring for '{}'", s.name());
+        FP_LOG_ERROR_FMT("invalid source stage wiring for '{}'", stage_name);
         registry_.destroy_stage(stage);
-        throw std::runtime_error("invalid source stage wiring: " + s.name());
+        throw std::runtime_error("invalid source stage wiring: " + stage_name);
       }
 
     } else if (dynamic_cast<ITransformStage*>(stage)) {
       kind = StageKind::kTransform;
-      FP_LOG_DEBUG_FMT("stage '{}' detected as TRANSFORM", s.name());
+      FP_LOG_DEBUG_FMT("stage '{}' detected as TRANSFORM", stage_name);
 
       if (!has_input || !has_output) {
-        FP_LOG_ERROR_FMT("invalid transform stage wiring for '{}'", s.name());
+        FP_LOG_ERROR_FMT("invalid transform stage wiring for '{}'", stage_name);
         registry_.destroy_stage(stage);
-        throw std::runtime_error("invalid transform stage wiring: " + s.name());
+        throw std::runtime_error("invalid transform stage wiring: " + stage_name);
       }
     } else if (dynamic_cast<ISinkStage*>(stage)) {
       kind = StageKind::kSink;
-      FP_LOG_DEBUG_FMT("stage '{}' detected as SINK", s.name());
+      FP_LOG_DEBUG_FMT("stage '{}' detected as SINK", stage_name);
 
       if (!has_input || has_output) {
-        FP_LOG_ERROR_FMT("invalid sink stage wiring for '{}'", s.name());
+        FP_LOG_ERROR_FMT("invalid sink stage wiring for '{}'", stage_name);
         registry_.destroy_stage(stage);
-        throw std::runtime_error("invalid sink stage wiring: " + s.name());
+        throw std::runtime_error("invalid sink stage wiring: " + stage_name);
       }
     } else {
-      FP_LOG_ERROR_FMT("stage '{}' does not implement a valid interface", s.name());
+      FP_LOG_ERROR_FMT("stage '{}' does not implement a valid interface", stage_name);
       registry_.destroy_stage(stage);
-      throw std::runtime_error("stage does not implement a valid interface: " + s.name());
+      throw std::runtime_error("stage does not implement a valid interface: " + stage_name);
     }
 
     registry_.destroy_stage(stage);
@@ -146,16 +231,19 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* src = dynamic_cast<ISourceStage*>(worker_stage);
         if (!src) {
-          FP_LOG_ERROR_FMT("source worker stage '{}' does not implement source interface", s.name());
+          FP_LOG_ERROR_FMT("source worker stage '{}' does not implement source interface", stage_name);
           registry_.destroy_stage(worker_stage);
-          throw std::runtime_error("worker stage is not a source: " + s.name());
+          throw std::runtime_error("worker stage is not a source: " + stage_name);
         }
-        threads.emplace_back([&, src, out, i]() {
-          FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", s.name(), i);
+        threads.emplace_back([&, src, out, i, stage_name, should_pin, pinning_cpus]() {
+          if (should_pin) {
+            ApplyCpuPinning(stage_name, i, pinning_cpus);
+          }
+          FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", stage_name, i);
 
           RunSourceStage(src, ctx, *out, &metrics);
 
-          FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", s.name(), i);
+          FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", stage_name, i);
         });
       }
     } else if (kind == StageKind::kTransform) {
@@ -165,16 +253,19 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
         if (!xf) {
-          FP_LOG_ERROR_FMT("transform worker stage '{}' does not implement transform interface", s.name());
+          FP_LOG_ERROR_FMT("transform worker stage '{}' does not implement transform interface", stage_name);
           registry_.destroy_stage(worker_stage);
-          throw std::runtime_error("worker stage is not a transform: " + s.name());
+          throw std::runtime_error("worker stage is not a transform: " + stage_name);
         }
-        threads.emplace_back([&, xf, in, out, i]() {
-          FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", s.name(), i);
+        threads.emplace_back([&, xf, in, out, i, stage_name, should_pin, pinning_cpus]() {
+          if (should_pin) {
+            ApplyCpuPinning(stage_name, i, pinning_cpus);
+          }
+          FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", stage_name, i);
 
           RunTransformStage(xf, ctx, *in, *out, &metrics);
 
-          FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", s.name(), i);
+          FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", stage_name, i);
         });
       }
     } else if (kind == StageKind::kSink) {
@@ -183,16 +274,19 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* sink = dynamic_cast<ISinkStage*>(worker_stage);
         if (!sink) {
-          FP_LOG_ERROR_FMT("sink worker stage '{}' does not implement sink interface", s.name());
+          FP_LOG_ERROR_FMT("sink worker stage '{}' does not implement sink interface", stage_name);
           registry_.destroy_stage(worker_stage);
-          throw std::runtime_error("worker stage is not a sink: " + s.name());
+          throw std::runtime_error("worker stage is not a sink: " + stage_name);
         }
-        threads.emplace_back([&, sink, in, i]() {
-          FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", s.name(), i);
+        threads.emplace_back([&, sink, in, i, stage_name, should_pin, pinning_cpus]() {
+          if (should_pin) {
+            ApplyCpuPinning(stage_name, i, pinning_cpus);
+          }
+          FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", stage_name, i);
 
           RunSinkStage(sink, ctx, *in, &metrics);
 
-          FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", s.name(), i);
+          FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", stage_name, i);
         });
       }
     }
