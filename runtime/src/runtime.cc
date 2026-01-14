@@ -73,23 +73,56 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     const bool has_input = s.has_input_queue();
     const bool has_output = s.has_output_queue();
 
-    IStage* stage = registry_.create_stage(
-        s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so", &s.config());
+    const std::string plugin_name =
+        s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so";
+    IStage* stage = registry_.create_stage(plugin_name, &s.config());
+    enum class StageKind { kSource, kTransform, kSink };
+    StageKind kind;
 
     // ----------------------------
     // Source stage
     // ----------------------------
-    if (auto* src = dynamic_cast<ISourceStage*>(stage)) {
+    if (dynamic_cast<ISourceStage*>(stage)) {
+      kind = StageKind::kSource;
       FP_LOG_DEBUG_FMT("stage '{}' detected as SOURCE", s.name());
 
       if (has_input || !has_output) {
         FP_LOG_ERROR_FMT("invalid source stage wiring for '{}'", s.name());
+        registry_.destroy_stage(stage);
         throw std::runtime_error("invalid source stage wiring: " + s.name());
       }
 
-      auto out = queues.at(s.output_queue());
+    } else if (dynamic_cast<ITransformStage*>(stage)) {
+      kind = StageKind::kTransform;
+      FP_LOG_DEBUG_FMT("stage '{}' detected as TRANSFORM", s.name());
 
+      if (!has_input || !has_output) {
+        FP_LOG_ERROR_FMT("invalid transform stage wiring for '{}'", s.name());
+        registry_.destroy_stage(stage);
+        throw std::runtime_error("invalid transform stage wiring: " + s.name());
+      }
+    } else if (dynamic_cast<ISinkStage*>(stage)) {
+      kind = StageKind::kSink;
+      FP_LOG_DEBUG_FMT("stage '{}' detected as SINK", s.name());
+
+      if (!has_input || has_output) {
+        FP_LOG_ERROR_FMT("invalid sink stage wiring for '{}'", s.name());
+        registry_.destroy_stage(stage);
+        throw std::runtime_error("invalid sink stage wiring: " + s.name());
+      }
+    } else {
+      FP_LOG_ERROR_FMT("stage '{}' does not implement a valid interface", s.name());
+      registry_.destroy_stage(stage);
+      throw std::runtime_error("stage does not implement a valid interface: " + s.name());
+    }
+
+    registry_.destroy_stage(stage);
+
+    if (kind == StageKind::kSource) {
+      auto out = queues.at(s.output_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
+        IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
+        auto* src = dynamic_cast<ISourceStage*>(worker_stage);
         threads.emplace_back([&, src, out, i]() {
           FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", s.name(), i);
 
@@ -98,24 +131,12 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", s.name(), i);
         });
       }
-      continue;
-    }
-
-    // ----------------------------
-    // Transform stage
-    // ----------------------------
-    if (auto* xf = dynamic_cast<ITransformStage*>(stage)) {
-      FP_LOG_DEBUG_FMT("stage '{}' detected as TRANSFORM", s.name());
-
-      if (!has_input || !has_output) {
-        FP_LOG_ERROR_FMT("invalid transform stage wiring for '{}'", s.name());
-        throw std::runtime_error("invalid transform stage wiring: " + s.name());
-      }
-
+    } else if (kind == StageKind::kTransform) {
       auto in = queues.at(s.input_queue());
       auto out = queues.at(s.output_queue());
-
       for (uint32_t i = 0; i < s.threads(); ++i) {
+        IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
+        auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
         threads.emplace_back([&, xf, in, out, i]() {
           FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", s.name(), i);
 
@@ -124,23 +145,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", s.name(), i);
         });
       }
-      continue;
-    }
-
-    // ----------------------------
-    // Sink stage
-    // ----------------------------
-    if (auto* sink = dynamic_cast<ISinkStage*>(stage)) {
-      FP_LOG_DEBUG_FMT("stage '{}' detected as SINK", s.name());
-
-      if (!has_input || has_output) {
-        FP_LOG_ERROR_FMT("invalid sink stage wiring for '{}'", s.name());
-        throw std::runtime_error("invalid sink stage wiring: " + s.name());
-      }
-
+    } else if (kind == StageKind::kSink) {
       auto in = queues.at(s.input_queue());
-
       for (uint32_t i = 0; i < s.threads(); ++i) {
+        IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
+        auto* sink = dynamic_cast<ISinkStage*>(worker_stage);
         threads.emplace_back([&, sink, in, i]() {
           FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", s.name(), i);
 
@@ -149,11 +158,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", s.name(), i);
         });
       }
-      continue;
     }
-
-    FP_LOG_ERROR_FMT("stage '{}' does not implement a valid interface", s.name());
-    throw std::runtime_error("stage does not implement a valid interface: " + s.name());
   }
 
   FP_LOG_INFO_FMT("runtime started {} worker threads", threads.size());
