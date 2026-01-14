@@ -139,7 +139,34 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 #endif
 
     const uint64_t start_ns = now_ns();
-    const bool produced = stage->produce(ctx, payload);
+    bool produced = false;
+    try {
+      produced = stage->produce(ctx, payload);
+    } catch (const std::exception& ex) {
+      FP_LOG_ERROR_FMT("source stage '{}' threw exception: {}", stage->name(), ex.what());
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+#if FLOWPIPE_ENABLE_OTEL
+      if (span) {
+        span->End();
+      }
+#endif
+      output.queue->close();
+      break;
+    } catch (...) {
+      FP_LOG_ERROR_FMT("source stage '{}' threw unknown exception", stage->name());
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+#if FLOWPIPE_ENABLE_OTEL
+      if (span) {
+        span->End();
+      }
+#endif
+      output.queue->close();
+      break;
+    }
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
@@ -229,7 +256,33 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
     Payload out_payload;
 
     const uint64_t start_ns = now_ns();
-    stage->process(ctx, in_payload, out_payload);
+    try {
+      stage->process(ctx, in_payload, out_payload);
+    } catch (const std::exception& ex) {
+      FP_LOG_ERROR_FMT("transform stage '{}' threw exception: {}", stage->name(), ex.what());
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+#if FLOWPIPE_ENABLE_OTEL
+      if (span) {
+        span->End();
+      }
+#endif
+      output.queue->close();
+      break;
+    } catch (...) {
+      FP_LOG_ERROR_FMT("transform stage '{}' threw unknown exception", stage->name());
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+#if FLOWPIPE_ENABLE_OTEL
+      if (span) {
+        span->End();
+      }
+#endif
+      output.queue->close();
+      break;
+    }
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
@@ -312,7 +365,31 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
 #endif
 
     const uint64_t start_ns = now_ns();
-    stage->consume(ctx, payload);
+    try {
+      stage->consume(ctx, payload);
+    } catch (const std::exception& ex) {
+      FP_LOG_ERROR_FMT("sink stage '{}' threw exception: {}", stage->name(), ex.what());
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+#if FLOWPIPE_ENABLE_OTEL
+      if (span) {
+        span->End();
+      }
+#endif
+      break;
+    } catch (...) {
+      FP_LOG_ERROR_FMT("sink stage '{}' threw unknown exception", stage->name());
+      if (metrics) {
+        metrics->RecordStageError(stage->name().c_str());
+      }
+#if FLOWPIPE_ENABLE_OTEL
+      if (span) {
+        span->End();
+      }
+#endif
+      break;
+    }
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
