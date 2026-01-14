@@ -12,6 +12,7 @@ COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-flow-pipe}"
 K3S_CONTAINER="${COMPOSE_PROJECT_NAME}-k3s-1"
 BIN_DIR="${REPO_ROOT}/.bin"
 HELM_VERSION="${HELM_VERSION:-v3.14.4}"
+NO_CACHE="${NO_CACHE:-}"
 
 info() { echo "[INFO] $*"; }
 append_summary() {
@@ -119,6 +120,11 @@ trap "cleanup_port_forward; cleanup_cluster" EXIT
 require_command kubectl
 require_command helm
 
+BUILDX_FLAGS=(--load)
+if [[ -n "${NO_CACHE}" ]]; then
+  BUILDX_FLAGS+=(--no-cache)
+fi
+
 info "Starting docker compose k3s cluster"
 mkdir -p "${K3S_KUBECONFIG_DIR}"
 K3S_IMAGE="${K3S_IMAGE}" K3S_KUBECONFIG_DIR="${K3S_KUBECONFIG_DIR}" COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
@@ -183,29 +189,29 @@ info "Cluster nodes"
 kubectl get nodes
 
 info "Building runtime image"
-docker buildx build --load \
+docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
   --target runtime \
   -t "${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}" "${REPO_ROOT}"
 
 info "Building base image"
-docker buildx build --load \
+docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
   --target base \
   -t "${IMAGE_NAMESPACE}/flow-pipe-base:${IMAGE_TAG}" "${REPO_ROOT}"
 
 info "Building dev image"
-docker buildx build --load \
+docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
   --target dev \
   -t "${IMAGE_NAMESPACE}/flow-pipe-dev:${IMAGE_TAG}" "${REPO_ROOT}"
 
 info "Building controller and API images"
-docker buildx build --load \
+docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/controller/Dockerfile" \
   -t "${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" "${REPO_ROOT}"
 
-docker buildx build --load \
+docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/api/Dockerfile" \
   -t "${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" "${REPO_ROOT}"
 
@@ -243,7 +249,7 @@ kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app
 kubectl get pods -n "${NAMESPACE}"
 
 info "Building flow-pipe-cli image"
-docker buildx build --load \
+docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/cli/Dockerfile" \
   -t "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" "${REPO_ROOT}"
 
