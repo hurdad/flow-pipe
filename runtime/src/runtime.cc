@@ -59,6 +59,40 @@ std::string FormatCpuList(const std::vector<uint32_t>& cpus) {
   return oss.str();
 }
 
+void ValidateCpuPinning(const std::string& stage_name, const std::vector<uint32_t>& cpus) {
+#ifdef __linux__
+  if (cpus.empty()) {
+    return;
+  }
+
+  long configured_cpus = sysconf(_SC_NPROCESSORS_CONF);
+  uint32_t max_cpu_id = CPU_SETSIZE;
+  if (configured_cpus > 0 && configured_cpus < static_cast<long>(CPU_SETSIZE)) {
+    max_cpu_id = static_cast<uint32_t>(configured_cpus);
+  }
+
+  std::unordered_set<uint32_t> seen;
+  seen.reserve(cpus.size());
+  for (const auto cpu : cpus) {
+    if (cpu >= max_cpu_id) {
+      FP_LOG_ERROR_FMT(
+          "cpu pinning configured for stage '{}' includes invalid CPU id {} (valid range 0-{})",
+          stage_name, cpu, max_cpu_id - 1);
+      throw std::runtime_error("invalid cpu pinning for stage: " + stage_name);
+    }
+
+    if (!seen.insert(cpu).second) {
+      FP_LOG_ERROR_FMT("cpu pinning configured for stage '{}' includes duplicate CPU id {}",
+                       stage_name, cpu);
+      throw std::runtime_error("duplicate cpu pinning for stage: " + stage_name);
+    }
+  }
+#else
+  (void)stage_name;
+  (void)cpus;
+#endif
+}
+
 void ApplyCpuPinning(const std::string& stage_name, uint32_t worker_index,
                      const std::vector<uint32_t>& cpus) {
 #ifdef __linux__
@@ -183,6 +217,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       if (pinning_cpus.empty()) {
         FP_LOG_WARN_FMT("cpu pinning configured for stage '{}' but no CPUs specified", stage_name);
       }
+      ValidateCpuPinning(stage_name, pinning_cpus);
     }
     const bool should_pin = !pinning_cpus.empty();
 
