@@ -131,6 +131,7 @@ func runWithLeaderElection(
 	}
 
 	errCh := make(chan error, 1)
+	stoppedCh := make(chan struct{}, 1)
 
 	leaderConfig := leaderelection.LeaderElectionConfig{
 		Lock:            lock,
@@ -142,11 +143,18 @@ func runWithLeaderElection(
 			OnStartedLeading: func(leaderCtx context.Context) {
 				logger.Info(leaderCtx, "leader election acquired", slog.String("identity", nodeName))
 				if err := ctrl.Run(leaderCtx); err != nil {
-					errCh <- err
+					select {
+					case errCh <- err:
+					default:
+					}
 				}
 			},
 			OnStoppedLeading: func() {
 				logger.Warn(ctx, "leader election lost", slog.String("identity", nodeName))
+				select {
+				case stoppedCh <- struct{}{}:
+				default:
+				}
 			},
 			OnNewLeader: func(identity string) {
 				if identity == nodeName {
@@ -162,12 +170,24 @@ func runWithLeaderElection(
 		return err
 	}
 
-	go leaderElector.Run(ctx)
+	for {
+		runDone := make(chan struct{})
+		go func() {
+			leaderElector.Run(ctx)
+			close(runDone)
+		}()
 
-	select {
-	case <-ctx.Done():
-		return nil
-	case err := <-errCh:
-		return err
+		select {
+		case <-ctx.Done():
+			return nil
+		case err := <-errCh:
+			return err
+		case <-stoppedCh:
+			<-runDone
+			if ctx.Err() != nil {
+				return nil
+			}
+			logger.Info(ctx, "restarting leader election", slog.String("identity", nodeName))
+		}
 	}
 }
