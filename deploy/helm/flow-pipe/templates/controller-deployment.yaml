@@ -1,4 +1,3 @@
-{{- $alloyEndpoint := include "flow-pipe.alloy.otlp.endpoint" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,10 +19,9 @@ spec:
           image: {{ .Values.controller.image }}
           imagePullPolicy: {{ .Values.controller.imagePullPolicy | default "IfNotPresent" }}
           env:
-            {{- if $alloyEndpoint }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: {{ $alloyEndpoint | quote }}
-            {{- end }}
+              value: 'FOOBAR'
+
             - name: ETCD_ENDPOINTS
               value: {{ join "," .Values.etcd.endpoints | quote }}
             - name: POD_NAMESPACE
