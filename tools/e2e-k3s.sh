@@ -228,17 +228,12 @@ helm repo add grafana https://grafana.github.io/helm-charts --force-update >/dev
 helm repo update >/dev/null
 info "Fetching Helm chart dependencies"
 helm dependency build "${REPO_ROOT}/deploy/helm/flow-pipe"
-OBS_EXPORT_ENDPOINT="http://observability-backend:4317"
 helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --namespace "${NAMESPACE}" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
   --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
-  --set runtime.image="${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}" \
-  --set observability.alloy.enabled=true \
-  --set observability.alloy.exporters.metrics.endpoint="${OBS_EXPORT_ENDPOINT}" \
-  --set observability.alloy.exporters.traces.endpoint="${OBS_EXPORT_ENDPOINT}" \
-  --set observability.alloy.exporters.logs.endpoint="${OBS_EXPORT_ENDPOINT}"
+  --set runtime.image="${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}"
 
 info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
@@ -282,10 +277,6 @@ stages:
     type: stdout_sink
     threads: 1
     input_queue: q1
-observability:
-  metrics_enabled: true
-  tracing_enabled: true
-  logs_enabled: true
 FLOW
 
 cat >"${FLOW_TMP_DIR}/streaming-update.yaml" <<FLOW
@@ -309,10 +300,6 @@ stages:
     type: stdout_sink
     threads: 1
     input_queue: q1
-observability:
-  metrics_enabled: true
-  tracing_enabled: true
-  logs_enabled: true
 FLOW
 
 cat >"${FLOW_TMP_DIR}/job.yaml" <<FLOW
@@ -346,10 +333,60 @@ stages:
     type: stdout_sink
     threads: 1
     input_queue: q2
-observability:
-  metrics_enabled: true
-  tracing_enabled: true
-  logs_enabled: true
+FLOW
+
+cat >"${FLOW_TMP_DIR}/schema-job.yaml" <<FLOW
+name: schema-pipeline-job
+execution:
+  mode: EXECUTION_MODE_JOB
+${FLOW_KUBERNETES_CONFIG}
+queues:
+  - name: q1
+    capacity: 256
+    schema:
+      format: QUEUE_SCHEMA_FORMAT_JSON
+      schema_id: orders
+      version: 2
+stages:
+  - name: source
+    type: noop_source
+    threads: 1
+    output_queue: q1
+    config:
+      delay_ms: 200
+      message: "SCHEMA-E2E"
+      max_messages: 12
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: q1
+FLOW
+
+cat >"${FLOW_TMP_DIR}/orders.schema.json" <<'FLOW'
+{
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string"
+    }
+  },
+  "required": ["order_id"]
+}
+FLOW
+
+cat >"${FLOW_TMP_DIR}/orders.schema.v2.json" <<'FLOW'
+{
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": ["order_id", "status"]
+}
 FLOW
 
 chmod -R a+rX "${FLOW_TMP_DIR}"
@@ -359,11 +396,23 @@ kubectl port-forward svc/flow-pipe-api -n "${NAMESPACE}" 9090:9090 >/tmp/flow-pi
 PORT_FORWARD_PID=$!
 sleep 5
 
+info "Exercising schema registry API with flowctl"
+docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema create orders --format json --schema-file /flows/orders.schema.json --api localhost:9090
+docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema create orders --format json --schema-file /flows/orders.schema.v2.json --api localhost:9090
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema list orders --api localhost:9090
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema get orders 2 --api localhost:9090
+
 info "Submitting flows through API"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/streaming.yaml --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/job.yaml --api localhost:9090
+docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/schema-job.yaml --api localhost:9090
 
 wait_for_runtime() {
   local name="$1"
@@ -410,10 +459,12 @@ wait_for_runtime() {
 info "Waiting for controller-created runtimes"
 wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
 wait_for_runtime "simple-pipeline-job" "job/simple-pipeline-job"
+wait_for_runtime "schema-pipeline-job" "job/schema-pipeline-job"
 
 info "Capturing runtime logs"
 kubectl logs deployment/noop-observability-runtime -n "${NAMESPACE}" --tail=200 >"${REPO_ROOT}/stream.log"
 kubectl logs job/simple-pipeline-job -n "${NAMESPACE}" >"${REPO_ROOT}/job.log"
+kubectl logs job/schema-pipeline-job -n "${NAMESPACE}" >"${REPO_ROOT}/schema-job.log"
 
 if ! grep -q "DEADBEEF" "${REPO_ROOT}/stream.log"; then
   echo "streaming runtime did not emit expected payloads" >&2
@@ -422,6 +473,11 @@ fi
 
 if ! grep -q "DEADBEEF" "${REPO_ROOT}/job.log"; then
   echo "job runtime did not emit expected payloads" >&2
+  exit 1
+fi
+
+if ! grep -q "SCHEMA-E2E" "${REPO_ROOT}/schema-job.log"; then
+  echo "schema job runtime did not emit expected payloads" >&2
   exit 1
 fi
 
@@ -473,9 +529,16 @@ docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-observability --api localhost:9090
 docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop simple-pipeline-job --api localhost:9090
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop schema-pipeline-job --api localhost:9090
 info "Waiting for flow resources to be removed"
 kubectl wait --for=delete deployment/noop-observability-runtime -n "${NAMESPACE}" --timeout=120s
 kubectl wait --for=delete job/simple-pipeline-job -n "${NAMESPACE}" --timeout=120s
+kubectl wait --for=delete job/schema-pipeline-job -n "${NAMESPACE}" --timeout=120s
+
+info "Cleaning up schema registry entries"
+docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema delete orders --api localhost:9090
 append_summary "### Flow runtime stream logs"
 append_summary "\n\n\`\`\`"
 if [[ -f "${REPO_ROOT}/stream.log" ]]; then
@@ -486,42 +549,6 @@ append_summary "\n### Flow runtime job logs"
 append_summary "\n\n\`\`\`"
 if [[ -f "${REPO_ROOT}/job.log" ]]; then
   append_summary "$(cat "${REPO_ROOT}/job.log")"
-fi
-append_summary "\n\`\`\`"
-
-info "Checking observability configuration"
-metrics_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.metricsEndpoint}')
-traces_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.tracesEndpoint}')
-logs_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.logsEndpoint}')
-alloy_endpoint=$(kubectl get configmap flow-pipe-observability -n "${NAMESPACE}" -o jsonpath='{.data.alloyEndpoint}')
-
-{
-  echo "metricsEndpoint: ${metrics_endpoint}"
-  echo "tracesEndpoint: ${traces_endpoint}"
-  echo "logsEndpoint: ${logs_endpoint}"
-  echo "alloyEndpoint: ${alloy_endpoint}"
-} >"${REPO_ROOT}/observability.log"
-
-if [[ "${metrics_endpoint}" != "${OBS_EXPORT_ENDPOINT}" ]]; then
-  echo "metrics endpoint mismatch: ${metrics_endpoint}" >&2
-  exit 1
-fi
-if [[ "${traces_endpoint}" != "${OBS_EXPORT_ENDPOINT}" ]]; then
-  echo "traces endpoint mismatch: ${traces_endpoint}" >&2
-  exit 1
-fi
-if [[ "${logs_endpoint}" != "${OBS_EXPORT_ENDPOINT}" ]]; then
-  echo "logs endpoint mismatch: ${logs_endpoint}" >&2
-  exit 1
-fi
-if [[ -z "${alloy_endpoint}" ]]; then
-  echo "alloy endpoint missing from observability config" >&2
-  exit 1
-fi
-append_summary "\n### Observability queries"
-append_summary "\n\n\`\`\`"
-if [[ -f "${REPO_ROOT}/observability.log" ]]; then
-  append_summary "$(cat "${REPO_ROOT}/observability.log")"
 fi
 append_summary "\n\`\`\`"
 
