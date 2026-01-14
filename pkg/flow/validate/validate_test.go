@@ -33,7 +33,7 @@ func TestValidateDuplicateQueue(t *testing.T) {
 		Stages: []*flowpipev1.Stage{{Name: "stage", Type: "noop"}},
 	}
 	err := validate.Validate(spec)
-	assertValidationError(t, err, "queues.name", "duplicate queue \"queue\"")
+	assertValidationError(t, err, "queues.name", "duplicate queue name \"queue\"")
 }
 
 func TestValidateDuplicateStage(t *testing.T) {

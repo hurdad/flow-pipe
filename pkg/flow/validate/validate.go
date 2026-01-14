@@ -42,7 +42,7 @@ func Validate(spec *flowpipev1.FlowSpec) error {
 		if _, exists := queueNames[q.Name]; exists {
 			return &Error{
 				Field:   "queues.name",
-				Message: fmt.Sprintf("duplicate queue %q", q.Name),
+				Message: fmt.Sprintf("duplicate queue name %q", q.Name),
 			}
 		}
 
