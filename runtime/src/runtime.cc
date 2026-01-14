@@ -42,6 +42,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       throw std::runtime_error("queue schema_id is required: " + q.name());
     }
 
+    if (queues.find(q.name()) != queues.end()) {
+      FP_LOG_ERROR_FMT("duplicate queue name '{}'", q.name());
+      throw std::runtime_error("duplicate queue name: " + q.name());
+    }
+
     auto qr = std::make_shared<QueueRuntime>();
     qr->name = q.name();
     qr->capacity = q.capacity();
