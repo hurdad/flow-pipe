@@ -238,8 +238,7 @@ helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --namespace "${NAMESPACE}" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
-  --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
-  --set runtime.image="${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}"
+  --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}"
 
 info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
