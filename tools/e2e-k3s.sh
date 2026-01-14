@@ -245,7 +245,7 @@ info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-controller --timeout=300s
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-api --timeout=300s
-kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app.kubernetes.io/instance=flow-pipe --timeout=600s
+kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --all --timeout=600s
 kubectl get pods -n "${NAMESPACE}"
 
 info "Building flow-pipe-cli image"
