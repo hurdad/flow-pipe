@@ -84,6 +84,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   for (const auto& s : spec.stages()) {
     FP_LOG_INFO_FMT("initializing stage '{}' type={} threads={}", s.name(), s.type(), s.threads());
 
+    if (s.threads() < 1) {
+      FP_LOG_ERROR_FMT("invalid stage '{}': threads must be >= 1", s.name());
+      throw std::runtime_error("stage threads must be >= 1: " + s.name());
+    }
+
     const bool has_input = s.has_input_queue();
     const bool has_output = s.has_output_queue();
 
