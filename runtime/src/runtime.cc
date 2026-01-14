@@ -22,7 +22,6 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
   // Shared stop flag toggled by the signal handler for coordinated shutdown.
   std::atomic<bool> stop_flag{false};
-  SignalHandler::install(stop_flag);
   StopToken stop{&stop_flag};
 
   // ------------------------------------------------------------
@@ -56,6 +55,19 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   }
 
   FP_LOG_INFO_FMT("initialized {} runtime queues", queues.size());
+
+  std::vector<std::shared_ptr<BoundedQueue<Payload>>> runtime_queues;
+  runtime_queues.reserve(queues.size());
+  for (const auto& [name, queue_runtime] : queues) {
+    (void)name;
+    runtime_queues.push_back(queue_runtime->queue);
+  }
+
+  SignalHandler::install(stop_flag, [runtime_queues]() {
+    for (const auto& queue : runtime_queues) {
+      queue->close();
+    }
+  });
 
   // ------------------------------------------------------------
   // Shared context + metrics
