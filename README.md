@@ -218,7 +218,7 @@ CMake defaults to installing the runtime under `/opt/flow-pipe` inside the Docke
 
 The [`tools/`](tools/README.md) directory contains helper scripts for local development:
 
-- `e2e-k3s.sh` provisions a local k3s-based environment via Docker Compose, builds runtime/controller/API/CLI images, installs the Helm chart with observability enabled, and deploys sample flows through the API to validate controller-driven reconciliation.
+- `e2e-k3s.sh` provisions a local k3s-based environment via Docker Compose, builds runtime/controller/API/CLI images, installs the Helm chart with observability disabled by default, and deploys sample flows through the API to validate controller-driven reconciliation.
 - `gen_go_protos.sh` regenerates Go protobufs used by the API, controller, and CLI.
 
 See [`tools/README.md`](tools/README.md) for prerequisites, environment variables, and expected outputs when running the end-to-end helper.
