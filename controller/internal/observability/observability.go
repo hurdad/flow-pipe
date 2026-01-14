@@ -9,12 +9,14 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	metricnoop "go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 
 	"github.com/hurdad/flow-pipe/controller/internal/config"
 )
@@ -44,6 +46,17 @@ func (l Logger) write(ctx context.Context, level slog.Level, msg string, attrs .
 // It returns a shutdown function that should be called on process exit, and a logger that emits messages
 // to stdout.
 func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error, Logger, error) {
+	slogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	lg := Logger{
+		slog: slogger,
+	}
+
+	if !cfg.ObservabilityEnabled {
+		otel.SetTracerProvider(noop.NewTracerProvider())
+		otel.SetMeterProvider(metricnoop.NewMeterProvider())
+		return func(context.Context) error { return nil }, lg, nil
+	}
+
 	res, err := resource.New(
 		ctx,
 		resource.WithFromEnv(),
@@ -86,11 +99,6 @@ func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error,
 		sdkmetric.WithResource(res),
 	)
 	otel.SetMeterProvider(meterProvider)
-
-	slogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	lg := Logger{
-		slog: slogger,
-	}
 
 	shutdown := func(ctx context.Context) error {
 		var shutdownErr error

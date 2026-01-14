@@ -16,4 +16,7 @@ type Config struct {
 
 	// Logical service name used in observability signals
 	ServiceName string
+
+	// Whether observability exporters should be enabled
+	ObservabilityEnabled bool
 }

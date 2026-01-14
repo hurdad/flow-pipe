@@ -37,8 +37,12 @@ spec:
             # -------------------------------------------------
             # OpenTelemetry
             # -------------------------------------------------
+            - name: FLOW_OBSERVABILITY_ENABLED
+              value: {{ .Values.observability.enabled | quote }}
+            {{- if .Values.observability.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: {{ .Values.otel.exporterOtlpEndpoint | quote }}
+            {{- end }}
 
             # -------------------------------------------------
             # Etcd

@@ -5,6 +5,9 @@ namespace:
 # --------------------------------------------------
 # OpenTelemetry
 # --------------------------------------------------
+observability:
+  enabled: false
+
 otel:
   exporterOtlpEndpoint: "localhost:4317"
 

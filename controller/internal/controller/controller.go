@@ -23,7 +23,8 @@ type Controller struct {
 	prefix string
 	kube   kubernetes.Interface
 
-	runtimeNamespace string
+	runtimeNamespace     string
+	observabilityEnabled bool
 
 	logger observability.Logger
 	tracer trace.Tracer
@@ -45,6 +46,7 @@ func New(
 	logger observability.Logger,
 	kube kubernetes.Interface,
 	runtimeNamespace string,
+	observabilityEnabled bool,
 ) *Controller {
 	meter := otelMeter()
 
@@ -62,16 +64,17 @@ func New(
 	)
 
 	return &Controller{
-		store:            store,
-		queue:            queue,
-		prefix:           prefix,
-		kube:             kube,
-		runtimeNamespace: runtimeNamespace,
-		logger:           logger,
-		tracer:           observability.Tracer("github.com/hurdad/flow-pipe/controller"),
-		reconcileSuccess: reconcileSuccess,
-		reconcileFailure: reconcileFailure,
-		watchEvents:      watchEvents,
+		store:                store,
+		queue:                queue,
+		prefix:               prefix,
+		kube:                 kube,
+		runtimeNamespace:     runtimeNamespace,
+		observabilityEnabled: observabilityEnabled,
+		logger:               logger,
+		tracer:               observability.Tracer("github.com/hurdad/flow-pipe/controller"),
+		reconcileSuccess:     reconcileSuccess,
+		reconcileFailure:     reconcileFailure,
+		watchEvents:          watchEvents,
 	}
 }
 
