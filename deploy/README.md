@@ -16,3 +16,5 @@ helm upgrade --install flow-pipe deploy/helm/flow-pipe
 Override values as needed for image tags, etcd endpoints, and Kubernetes namespaces.
 
 The Helm chart only bundles Grafana Alloy for observability. Configure the Alloy OTLP export endpoints for metrics, traces, and logs under `observability.alloy.exporters` to forward telemetry to your backend.
+
+Disable observability exporters for the API/controller (and runtime pods launched by the controller) by setting `observability.enabled=false` in Helm values.

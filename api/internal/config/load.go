@@ -34,15 +34,22 @@ func Load() Config {
 			envOrDefault("OTEL_SERVICE_NAME", "flow-api"),
 			"logical service name for observability signals",
 		)
+
+		observabilityEnabled = flag.Bool(
+			"observability-enabled",
+			envBoolOrDefault("FLOW_OBSERVABILITY_ENABLED", false),
+			"enable OpenTelemetry exporters",
+		)
 	)
 
 	flag.Parse()
 
 	return Config{
-		GRPCAddr:      *grpcAddr,
-		HTTPAddr:      *httpAddr,
-		EtcdEndpoints: splitComma(*etcdURLs),
-		OTLPEndpoint:  *otelEndpoint,
-		ServiceName:   *serviceName,
+		GRPCAddr:             *grpcAddr,
+		HTTPAddr:             *httpAddr,
+		EtcdEndpoints:        splitComma(*etcdURLs),
+		OTLPEndpoint:         *otelEndpoint,
+		ServiceName:          *serviceName,
+		ObservabilityEnabled: *observabilityEnabled,
 	}
 }

@@ -19,8 +19,12 @@ spec:
           image: {{ .Values.controller.image }}
           imagePullPolicy: {{ .Values.controller.imagePullPolicy | default "IfNotPresent" }}
           env:
+            - name: FLOW_OBSERVABILITY_ENABLED
+              value: {{ .Values.observability.enabled | quote }}
+            {{- if .Values.observability.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: {{ .Values.otel.exporterOtlpEndpoint | quote }}
+            {{- end }}
 
             - name: ETCD_ENDPOINTS
               value: {{ join "," .Values.etcd.endpoints | quote }}

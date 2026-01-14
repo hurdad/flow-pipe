@@ -12,6 +12,7 @@ namespace flowpipe::observability {
 // Flow configs can only narrow, never expand this.
 //
 struct GlobalDefaults {
+  bool observability_enabled = false;  // Master observability switch.
   bool metrics_enabled = true;   // Are metrics allowed at all?
   bool tracing_enabled = false;  // Are traces allowed at all?
   bool logs_enabled = false;     // Are logs allowed at all?

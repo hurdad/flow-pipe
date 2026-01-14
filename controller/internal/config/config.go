@@ -13,4 +13,7 @@ type Config struct {
 
 	// Namespace for runtime workloads.
 	RuntimeNamespace string
+
+	// Whether observability exporters should be enabled
+	ObservabilityEnabled bool
 }

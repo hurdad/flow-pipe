@@ -32,6 +32,7 @@ func ensureRuntime(
 	namespace string,
 	spec *flowpipev1.FlowSpec,
 	imagePullPolicy corev1.PullPolicy,
+	observabilityEnabled bool,
 ) (string, error) {
 	if client == nil {
 		return "", fmt.Errorf("kubernetes client is required for runtime reconciliation")
@@ -64,12 +65,12 @@ func ensureRuntime(
 
 	switch mode {
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
-		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum)
+		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
 		fallthrough
 	default:
 		deploymentName := fmt.Sprintf("%s-runtime", spec.Name)
-		return applyDeployment(ctx, client, namespace, spec.Name, deploymentName, configMapName, image, imagePullPolicy, configChecksum)
+		return applyDeployment(ctx, client, namespace, spec.Name, deploymentName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled)
 	}
 }
 
@@ -130,6 +131,7 @@ func applyDeployment(
 	image string,
 	imagePullPolicy corev1.PullPolicy,
 	configChecksum string,
+	observabilityEnabled bool,
 ) (string, error) {
 	desired := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -162,7 +164,7 @@ func applyDeployment(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(),
+							Env:             runtimeEnv(observabilityEnabled),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -211,6 +213,7 @@ func applyJob(
 	image string,
 	imagePullPolicy corev1.PullPolicy,
 	configChecksum string,
+	observabilityEnabled bool,
 ) (string, error) {
 	name := spec.Name
 	desired := &batchv1.Job{
@@ -239,7 +242,7 @@ func applyJob(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(),
+							Env:             runtimeEnv(observabilityEnabled),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -351,12 +354,20 @@ func restartPolicyFromSpec(spec *flowpipev1.FlowSpec) corev1.RestartPolicy {
 	}
 }
 
-func runtimeEnv() []corev1.EnvVar {
-	return []corev1.EnvVar{
-		{Name: "FLOWPIPE_METRICS_ENABLED", Value: "true"},
-		{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
-		{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
-		{
+func runtimeEnv(observabilityEnabled bool) []corev1.EnvVar {
+	env := []corev1.EnvVar{
+		{Name: "FLOWPIPE_OBSERVABILITY_ENABLED", Value: fmt.Sprintf("%t", observabilityEnabled)},
+	}
+
+	if !observabilityEnabled {
+		return env
+	}
+
+	env = append(env,
+		corev1.EnvVar{Name: "FLOWPIPE_METRICS_ENABLED", Value: "true"},
+		corev1.EnvVar{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
+		corev1.EnvVar{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
+		corev1.EnvVar{
 			Name: "OTEL_EXPORTER_OTLP_ENDPOINT",
 			ValueFrom: &corev1.EnvVarSource{
 				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
@@ -366,7 +377,9 @@ func runtimeEnv() []corev1.EnvVar {
 				},
 			},
 		},
-	}
+	)
+
+	return env
 }
 
 func int32Ptr(v int32) *int32 {

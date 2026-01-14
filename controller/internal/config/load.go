@@ -23,6 +23,12 @@ func Load() Config {
 			"logical service name for observability signals",
 		)
 
+		observabilityEnabled = flag.Bool(
+			"observability-enabled",
+			envBoolOrDefault("FLOW_OBSERVABILITY_ENABLED", false),
+			"enable OpenTelemetry exporters",
+		)
+
 		runtimeNamespace = flag.String(
 			"runtime-namespace",
 			envOrDefault(
@@ -36,9 +42,10 @@ func Load() Config {
 	flag.Parse()
 
 	return Config{
-		EtcdEndpoints:    splitComma(*etcdURLs),
-		OTLPEndpoint:     *otelEndpoint,
-		ServiceName:      *serviceName,
-		RuntimeNamespace: *runtimeNamespace,
+		EtcdEndpoints:        splitComma(*etcdURLs),
+		OTLPEndpoint:         *otelEndpoint,
+		ServiceName:          *serviceName,
+		RuntimeNamespace:     *runtimeNamespace,
+		ObservabilityEnabled: *observabilityEnabled,
 	}
 }

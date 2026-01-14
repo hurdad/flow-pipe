@@ -26,11 +26,18 @@ GlobalDefaults LoadFromEnv() {
   GlobalDefaults cfg;
 
   // Master signal enablement
+  cfg.observability_enabled = GetEnvBool("FLOWPIPE_OBSERVABILITY_ENABLED", false);
   cfg.metrics_enabled = GetEnvBool("FLOWPIPE_METRICS_ENABLED", true);
 
   cfg.tracing_enabled = GetEnvBool("FLOWPIPE_TRACING_ENABLED", false);
 
   cfg.logs_enabled = GetEnvBool("FLOWPIPE_LOGS_ENABLED", false);
+
+  if (!cfg.observability_enabled) {
+    cfg.metrics_enabled = false;
+    cfg.tracing_enabled = false;
+    cfg.logs_enabled = false;
+  }
 
   // Default OTLP endpoint
   cfg.otlp_endpoint = GetEnvString("FLOWPIPE_OTEL_ENDPOINT",

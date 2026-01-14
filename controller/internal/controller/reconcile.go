@@ -72,6 +72,7 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 		c.runtimeNamespace,
 		spec,
 		pullPolicyFromSpec(spec),
+		c.observabilityEnabled,
 	)
 	if err != nil {
 		span.RecordError(err)

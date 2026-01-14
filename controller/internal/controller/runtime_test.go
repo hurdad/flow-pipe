@@ -30,6 +30,7 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 		"default",
 		spec,
 		corev1.PullIfNotPresent,
+		true,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
@@ -73,6 +74,7 @@ func TestEnsureRuntimeCreatesJob(t *testing.T) {
 		"default",
 		spec,
 		corev1.PullIfNotPresent,
+		true,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
@@ -164,6 +166,7 @@ func TestEnsureRuntimeUpdatesDeployment(t *testing.T) {
 		"default",
 		spec,
 		corev1.PullIfNotPresent,
+		true,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)

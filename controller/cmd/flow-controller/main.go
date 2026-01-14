@@ -75,6 +75,7 @@ func main() {
 		logger,
 		kubeClient.Clientset,
 		cfg.RuntimeNamespace,
+		cfg.ObservabilityEnabled,
 	)
 
 	// --------------------------------------------------
