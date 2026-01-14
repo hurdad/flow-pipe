@@ -31,6 +31,11 @@ func (l Logger) Info(ctx context.Context, msg string, attrs ...slog.Attr) {
 	l.write(ctx, slog.LevelInfo, msg, attrs...)
 }
 
+// Warn writes a warning log entry.
+func (l Logger) Warn(ctx context.Context, msg string, attrs ...slog.Attr) {
+	l.write(ctx, slog.LevelWarn, msg, attrs...)
+}
+
 // Error writes an error log entry.
 func (l Logger) Error(ctx context.Context, msg string, attrs ...slog.Attr) {
 	l.write(ctx, slog.LevelError, msg, attrs...)
