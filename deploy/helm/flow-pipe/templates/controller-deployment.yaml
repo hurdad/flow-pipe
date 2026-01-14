@@ -28,6 +28,8 @@ spec:
 
             - name: ETCD_ENDPOINTS
               value: {{ join "," .Values.etcd.endpoints | quote }}
+            - name: FLOW_CONTROLLER_WORKER_COUNT
+              value: {{ .Values.controller.workerCount | quote }}
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:

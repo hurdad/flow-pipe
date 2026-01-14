@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -30,6 +31,15 @@ func envBoolOrDefault(key string, def bool) bool {
 func envDurationOrDefault(key string, def time.Duration) time.Duration {
 	if v := os.Getenv(key); v != "" {
 		if parsed, err := time.ParseDuration(v); err == nil {
+			return parsed
+		}
+	}
+	return def
+}
+
+func envIntOrDefault(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil {
 			return parsed
 		}
 	}

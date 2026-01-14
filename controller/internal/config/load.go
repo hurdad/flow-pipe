@@ -32,6 +32,12 @@ func Load() Config {
 			"enable OpenTelemetry exporters",
 		)
 
+		workerCount = flag.Int(
+			"worker-count",
+			envIntOrDefault("FLOW_CONTROLLER_WORKER_COUNT", 1),
+			"number of workers processing the reconciliation queue",
+		)
+
 		runtimeNamespace = flag.String(
 			"runtime-namespace",
 			envOrDefault(
@@ -80,12 +86,18 @@ func Load() Config {
 
 	flag.Parse()
 
+	workers := *workerCount
+	if workers < 1 {
+		workers = 1
+	}
+
 	return Config{
 		EtcdEndpoints:               splitComma(*etcdURLs),
 		OTLPEndpoint:                *otelEndpoint,
 		ServiceName:                 *serviceName,
 		RuntimeNamespace:            *runtimeNamespace,
 		ObservabilityEnabled:        *observabilityEnabled,
+		WorkerCount:                 workers,
 		LeaderElectionEnabled:       *leaderElectionEnabled,
 		LeaderElectionName:          *leaderElectionName,
 		LeaderElectionNamespace:     *leaderElectionNamespace,

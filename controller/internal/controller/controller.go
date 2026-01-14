@@ -25,6 +25,7 @@ type Controller struct {
 
 	runtimeNamespace     string
 	observabilityEnabled bool
+	workerCount          int
 
 	logger observability.Logger
 	tracer trace.Tracer
@@ -49,6 +50,7 @@ func New(
 	kube kubernetes.Interface,
 	runtimeNamespace string,
 	observabilityEnabled bool,
+	workerCount int,
 ) *Controller {
 	meter := otelMeter()
 
@@ -90,6 +92,7 @@ func New(
 		kube:                 kube,
 		runtimeNamespace:     runtimeNamespace,
 		observabilityEnabled: observabilityEnabled,
+		workerCount:          workerCount,
 		logger:               logger,
 		tracer:               observability.Tracer("github.com/hurdad/flow-pipe/controller"),
 		reconcileSuccess:     reconcileSuccess,
@@ -102,9 +105,12 @@ func New(
 
 // Run starts the controller event loop and blocks until context cancellation.
 func (c *Controller) Run(ctx context.Context) error {
-	const workers = 1 // keep minimal for now
+	workers := c.workerCount
+	if workers < 1 {
+		workers = 1
+	}
 
-	c.logger.Info(ctx, "controller starting")
+	c.logger.Info(ctx, "controller starting", slog.Int("workers", workers))
 
 	// ------------------------------------------------------------
 	// Seed existing flows
