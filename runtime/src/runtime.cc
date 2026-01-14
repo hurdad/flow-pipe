@@ -99,6 +99,9 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   // Shared stop flag toggled by the signal handler for coordinated shutdown.
   std::atomic<bool> stop_flag{false};
   StopToken stop{&stop_flag};
+  const bool auto_shutdown =
+      spec.has_execution() && spec.execution().mode() == flowpipe::v1::EXECUTION_MODE_JOB;
+  std::atomic<size_t> active_workers{0};
 
   // ------------------------------------------------------------
   // Create runtime queues (QueueRuntime)
@@ -228,6 +231,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     if (kind == StageKind::kSource) {
       auto out = queues.at(s.output_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
+        active_workers.fetch_add(1);
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* src = dynamic_cast<ISourceStage*>(worker_stage);
         if (!src) {
@@ -244,12 +248,20 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           RunSourceStage(src, ctx, *out, &metrics);
 
           FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", stage_name, i);
+          if (auto_shutdown) {
+            if (active_workers.fetch_sub(1) == 1) {
+              stop_flag.store(true);
+            }
+          } else {
+            active_workers.fetch_sub(1);
+          }
         });
       }
     } else if (kind == StageKind::kTransform) {
       auto in = queues.at(s.input_queue());
       auto out = queues.at(s.output_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
+        active_workers.fetch_add(1);
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
         if (!xf) {
@@ -266,11 +278,19 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           RunTransformStage(xf, ctx, *in, *out, &metrics);
 
           FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", stage_name, i);
+          if (auto_shutdown) {
+            if (active_workers.fetch_sub(1) == 1) {
+              stop_flag.store(true);
+            }
+          } else {
+            active_workers.fetch_sub(1);
+          }
         });
       }
     } else if (kind == StageKind::kSink) {
       auto in = queues.at(s.input_queue());
       for (uint32_t i = 0; i < s.threads(); ++i) {
+        active_workers.fetch_add(1);
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* sink = dynamic_cast<ISinkStage*>(worker_stage);
         if (!sink) {
@@ -287,12 +307,23 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           RunSinkStage(sink, ctx, *in, &metrics);
 
           FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", stage_name, i);
+          if (auto_shutdown) {
+            if (active_workers.fetch_sub(1) == 1) {
+              stop_flag.store(true);
+            }
+          } else {
+            active_workers.fetch_sub(1);
+          }
         });
       }
     }
   }
 
   FP_LOG_INFO_FMT("runtime started {} worker threads", threads.size());
+
+  if (auto_shutdown && active_workers.load() == 0) {
+    stop_flag.store(true);
+  }
 
   // ------------------------------------------------------------
   // Join
