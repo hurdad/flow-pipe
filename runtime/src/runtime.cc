@@ -20,6 +20,7 @@ Runtime::Runtime() = default;
 int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   FP_LOG_INFO_FMT("runtime starting: {} stages, {} queues", spec.stages_size(), spec.queues_size());
 
+  // Shared stop flag toggled by the signal handler for coordinated shutdown.
   std::atomic<bool> stop_flag{false};
   SignalHandler::install(stop_flag);
   StopToken stop{&stop_flag};
@@ -59,8 +60,9 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   // ------------------------------------------------------------
   // Shared context + metrics
   // ------------------------------------------------------------
+  // Runtime-owned context and metrics facade shared by all stage workers.
   StageContext ctx{stop};
-  StageMetrics metrics;  // runtime-owned metrics facade
+  StageMetrics metrics;
 
   std::vector<std::thread> threads;
 
@@ -73,6 +75,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     const bool has_input = s.has_input_queue();
     const bool has_output = s.has_output_queue();
 
+    // Resolve plugin name: explicit plugin wins, otherwise default to type-based naming.
     const std::string plugin_name =
         s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so";
     IStage* stage = registry_.create_stage(plugin_name, &s.config());
