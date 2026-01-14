@@ -13,6 +13,7 @@ K3S_CONTAINER="${COMPOSE_PROJECT_NAME}-k3s-1"
 BIN_DIR="${REPO_ROOT}/.bin"
 HELM_VERSION="${HELM_VERSION:-v3.14.4}"
 NO_CACHE="${NO_CACHE:-}"
+OBSERVABILITY_ENABLED="${OBSERVABILITY_ENABLED:-false}"
 
 info() { echo "[INFO] $*"; }
 append_summary() {
@@ -220,7 +221,7 @@ helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
   --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
-  --set observability.enabled="false"
+  --set observability.enabled="${OBSERVABILITY_ENABLED}"
 
 info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
