@@ -27,6 +27,7 @@ namespace {
 
 std::optional<std::vector<uint32_t>> ResolveCpuPinning(const flowpipe::v1::FlowSpec& spec,
                                                        const std::string& stage_name) {
+  // CPU pinning is only configurable when a Kubernetes execution context is present.
   if (!spec.has_kubernetes()) {
     return std::nullopt;
   }
@@ -61,6 +62,7 @@ std::string FormatCpuList(const std::vector<uint32_t>& cpus) {
 void ApplyCpuPinning(const std::string& stage_name, uint32_t worker_index,
                      const std::vector<uint32_t>& cpus) {
 #ifdef __linux__
+  // Empty pinning lists indicate configuration errors, but the worker can still run.
   if (cpus.empty()) {
     FP_LOG_WARN_FMT("cpu pinning requested for stage '{}' but no CPUs configured", stage_name);
     return;
@@ -109,6 +111,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   std::unordered_map<std::string, std::shared_ptr<QueueRuntime>> queues;
 
   for (const auto& q : spec.queues()) {
+    // Validate queue configuration before allocating runtime structures.
     FP_LOG_DEBUG_FMT("configuring queue '{}' capacity={}", q.name(), q.capacity());
 
     if (q.capacity() == 0) {
@@ -144,6 +147,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   runtime_queues.reserve(queues.size());
   for (const auto& [name, queue_runtime] : queues) {
     (void)name;
+    // Track the concrete queues so we can close them on shutdown.
     runtime_queues.push_back(queue_runtime->queue);
   }
 
