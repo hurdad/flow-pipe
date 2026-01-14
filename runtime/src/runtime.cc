@@ -1,6 +1,7 @@
 #include "flowpipe/runtime.h"
 
 #include <atomic>
+#include <chrono>
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
@@ -63,11 +64,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     runtime_queues.push_back(queue_runtime->queue);
   }
 
-  SignalHandler::install(stop_flag, [runtime_queues]() {
-    for (const auto& queue : runtime_queues) {
-      queue->close();
-    }
-  });
+  SignalHandler::install(stop_flag);
 
   // ------------------------------------------------------------
   // Shared context + metrics
@@ -201,6 +198,14 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   // ------------------------------------------------------------
   // Join
   // ------------------------------------------------------------
+  while (!stop_flag.load()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+
+  for (const auto& queue : runtime_queues) {
+    queue->close();
+  }
+
   for (auto& t : threads) {
     t.join();
   }
