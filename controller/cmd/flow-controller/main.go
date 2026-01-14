@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -41,7 +42,11 @@ func main() {
 	// --------------------------------------------------
 	nodeName := os.Getenv("POD_NAME")
 	if nodeName == "" {
-		nodeName = "flow-controller-local-default"
+		hostname, err := os.Hostname()
+		if err != nil || hostname == "" {
+			hostname = "flow-controller-local"
+		}
+		nodeName = fmt.Sprintf("%s-%d", hostname, os.Getpid())
 	}
 
 	// --------------------------------------------------
