@@ -4,9 +4,3 @@ description: Kubernetes-native pipeline runtime (controller + API)
 type: application
 version: 0.3.3
 appVersion: "0.1.0"
-
-dependencies:
-  - name: alloy
-    version: 1.5.1
-    repository: https://grafana.github.io/helm-charts
-    condition: observability.alloy.enabled
