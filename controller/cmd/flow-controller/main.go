@@ -79,6 +79,7 @@ func main() {
 		kubeClient.Clientset,
 		cfg.RuntimeNamespace,
 		cfg.ObservabilityEnabled,
+		cfg.WorkerCount,
 	)
 
 	// --------------------------------------------------

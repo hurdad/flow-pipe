@@ -19,6 +19,9 @@ type Config struct {
 	// Whether observability exporters should be enabled
 	ObservabilityEnabled bool
 
+	// Number of workers processing the reconciliation queue.
+	WorkerCount int
+
 	// Whether to enable leader election for HA controllers.
 	LeaderElectionEnabled bool
 

@@ -37,6 +37,7 @@ controller:
   image: ghcr.io/hurdad/flow-pipe-controller:main
   imagePullPolicy: IfNotPresent
   replicas: 1
+  workerCount: 1
   port: 8080
   resources:
     requests:
