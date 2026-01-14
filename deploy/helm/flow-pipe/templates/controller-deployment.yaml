@@ -20,7 +20,7 @@ spec:
           imagePullPolicy: {{ .Values.controller.imagePullPolicy | default "IfNotPresent" }}
           env:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: 'FOOBAR'
+              value: {{ .Values.otel.exporterOtlpEndpoint | quote }}
 
             - name: ETCD_ENDPOINTS
               value: {{ join "," .Values.etcd.endpoints | quote }}

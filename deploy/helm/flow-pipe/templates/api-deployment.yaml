@@ -38,7 +38,7 @@ spec:
             # OpenTelemetry
             # -------------------------------------------------
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: 'FOOBAR'
+              value: {{ .Values.otel.exporterOtlpEndpoint | quote }}
 
             # -------------------------------------------------
             # Etcd
