@@ -47,6 +47,7 @@ COPY . .
 # ------------------------------------------------------------
 RUN cmake -S . -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=ON \
       -DFLOWPIPE_ENABLE_OTEL=ON \
       -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe
 
@@ -54,6 +55,11 @@ RUN cmake -S . -B build -G Ninja \
 # Build everything (runtime + in-tree stages)
 # ------------------------------------------------------------
 RUN cmake --build build
+
+# ------------------------------------------------------------
+# Run tests
+# ------------------------------------------------------------
+RUN ctest --test-dir build --output-on-failure
 
 # ------------------------------------------------------------
 # Install runtime, shared libs, headers, plugins
