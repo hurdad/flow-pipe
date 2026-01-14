@@ -123,6 +123,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       for (uint32_t i = 0; i < s.threads(); ++i) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* src = dynamic_cast<ISourceStage*>(worker_stage);
+        if (!src) {
+          FP_LOG_ERROR_FMT("source worker stage '{}' does not implement source interface", s.name());
+          registry_.destroy_stage(worker_stage);
+          throw std::runtime_error("worker stage is not a source: " + s.name());
+        }
         threads.emplace_back([&, src, out, i]() {
           FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", s.name(), i);
 
@@ -137,6 +142,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       for (uint32_t i = 0; i < s.threads(); ++i) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
+        if (!xf) {
+          FP_LOG_ERROR_FMT("transform worker stage '{}' does not implement transform interface", s.name());
+          registry_.destroy_stage(worker_stage);
+          throw std::runtime_error("worker stage is not a transform: " + s.name());
+        }
         threads.emplace_back([&, xf, in, out, i]() {
           FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", s.name(), i);
 
@@ -150,6 +160,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       for (uint32_t i = 0; i < s.threads(); ++i) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* sink = dynamic_cast<ISinkStage*>(worker_stage);
+        if (!sink) {
+          FP_LOG_ERROR_FMT("sink worker stage '{}' does not implement sink interface", s.name());
+          registry_.destroy_stage(worker_stage);
+          throw std::runtime_error("worker stage is not a sink: " + s.name());
+        }
         threads.emplace_back([&, sink, in, i]() {
           FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", s.name(), i);
 
