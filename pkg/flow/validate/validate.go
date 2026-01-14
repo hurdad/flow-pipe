@@ -77,6 +77,13 @@ func Validate(spec *flowpipev1.FlowSpec) error {
 			}
 		}
 
+		if s.Threads < 1 {
+			return &Error{
+				Field:   "stages.threads",
+				Message: fmt.Sprintf("stage %q must declare at least one thread", s.Name),
+			}
+		}
+
 		// input_queue (optional string -> *string)
 		if s.InputQueue != nil {
 			q := *s.InputQueue

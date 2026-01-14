@@ -67,6 +67,7 @@ func TestValidateUnknownInputQueue(t *testing.T) {
 			{
 				Name:       "stage",
 				Type:       "noop",
+				Threads:    1,
 				InputQueue: strPtr("missing"),
 			},
 		},
@@ -83,12 +84,29 @@ func TestValidateUnknownOutputQueue(t *testing.T) {
 			{
 				Name:        "stage",
 				Type:        "noop",
+				Threads:     1,
 				OutputQueue: strPtr("missing"),
 			},
 		},
 	}
 	err := validate.Validate(spec)
 	assertValidationError(t, err, "stages.output_queue", "stage \"stage\" references unknown output queue \"missing\"")
+}
+
+func TestValidateZeroThreads(t *testing.T) {
+	spec := &flowpipev1.FlowSpec{
+		Name:   "flow",
+		Queues: []*flowpipev1.Queue{{Name: "queue"}},
+		Stages: []*flowpipev1.Stage{
+			{
+				Name:    "stage",
+				Type:    "noop",
+				Threads: 0,
+			},
+		},
+	}
+	err := validate.Validate(spec)
+	assertValidationError(t, err, "stages.threads", "stage \"stage\" must declare at least one thread")
 }
 
 func TestValidateSuccess(t *testing.T) {
@@ -102,6 +120,7 @@ func TestValidateSuccess(t *testing.T) {
 			{
 				Name:        "stage",
 				Type:        "noop",
+				Threads:     1,
 				InputQueue:  strPtr("in"),
 				OutputQueue: strPtr("out"),
 			},
