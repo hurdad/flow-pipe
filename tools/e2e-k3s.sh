@@ -194,18 +194,6 @@ docker buildx build "${BUILDX_FLAGS[@]}" \
   --target runtime \
   -t "${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}" "${REPO_ROOT}"
 
-info "Building base image"
-docker buildx build "${BUILDX_FLAGS[@]}" \
-  -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
-  --target base \
-  -t "${IMAGE_NAMESPACE}/flow-pipe-base:${IMAGE_TAG}" "${REPO_ROOT}"
-
-info "Building dev image"
-docker buildx build "${BUILDX_FLAGS[@]}" \
-  -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
-  --target dev \
-  -t "${IMAGE_NAMESPACE}/flow-pipe-dev:${IMAGE_TAG}" "${REPO_ROOT}"
-
 info "Building controller and API images"
 docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/controller/Dockerfile" \
@@ -217,8 +205,6 @@ docker buildx build "${BUILDX_FLAGS[@]}" \
 
 IMAGES=(
   "${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}"
-  "${IMAGE_NAMESPACE}/flow-pipe-base:${IMAGE_TAG}"
-  "${IMAGE_NAMESPACE}/flow-pipe-dev:${IMAGE_TAG}"
   "${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}"
   "${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}"
 )
@@ -229,22 +215,17 @@ for image in "${IMAGES[@]}"; do
 done
 
 info "Installing Helm chart"
-info "Ensuring Helm repositories"
-helm repo add grafana https://grafana.github.io/helm-charts --force-update >/dev/null
-helm repo update >/dev/null
-info "Fetching Helm chart dependencies"
-helm dependency build "${REPO_ROOT}/deploy/helm/flow-pipe"
 helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --namespace "${NAMESPACE}" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
-  --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}"
+  --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
+  --set observability.enabled="false"
 
 info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-controller --timeout=300s
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-api --timeout=300s
-kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --all --timeout=600s
 kubectl get pods -n "${NAMESPACE}"
 
 info "Building flow-pipe-cli image"
