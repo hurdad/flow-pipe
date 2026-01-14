@@ -22,6 +22,7 @@ The script accepts a few environment variables to customize the run:
 - `KEEP_CLUSTER`: If set, skips cluster teardown for inspection after the run
 - `K3S_KUBECONFIG_DIR`: Directory for the compose-based kubeconfig (default: `${REPO_ROOT}/.k3s-kubeconfig`)
 - `COMPOSE_PROJECT_NAME`: Overrides the compose project name (default: `flow-pipe`)
+- `NO_CACHE`: If set, forces Docker buildx to ignore cached layers (`--no-cache`)
 
 Run the end-to-end suite:
 
