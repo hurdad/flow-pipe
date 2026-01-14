@@ -1,5 +1,4 @@
 {{- if .Values.api.enabled }}
-{{- $alloyEndpoint := include "flow-pipe.alloy.otlp.endpoint" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,13 +33,12 @@ spec:
             - name: FLOW_HTTP_ADDR
               value: {{ .Values.api.httpAddr | quote }}
 
-            {{- if $alloyEndpoint }}
+
             # -------------------------------------------------
-            # OpenTelemetry (Alloy)
+            # OpenTelemetry
             # -------------------------------------------------
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: {{ $alloyEndpoint | quote }}
-            {{- end }}
+              value: 'FOOBAR'
 
             # -------------------------------------------------
             # Etcd
