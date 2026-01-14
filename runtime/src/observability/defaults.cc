@@ -39,9 +39,13 @@ GlobalDefaults LoadFromEnv() {
     cfg.logs_enabled = false;
   }
 
-  // Default OTLP endpoint
-  cfg.otlp_endpoint = GetEnvString("FLOWPIPE_OTEL_ENDPOINT",
-                                   GetEnvString("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"));
+  // Default OTLP gRPC endpoint
+  cfg.otlp_endpoint = GetEnvString(
+      "FLOWPIPE_OTEL_GRPC_ENDPOINT",
+      GetEnvString(
+          "FLOWPIPE_OTEL_ENDPOINT",
+          GetEnvString("OTEL_EXPORTER_OTLP_GRPC_ENDPOINT",
+                       GetEnvString("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"))));
 
   // OTLP gRPC SSL/TLS credentials selection
   cfg.otlp_use_ssl_credentials = false;

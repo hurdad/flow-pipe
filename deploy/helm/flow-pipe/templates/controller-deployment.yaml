@@ -23,7 +23,7 @@ spec:
               value: {{ .Values.observability.enabled | quote }}
             {{- if .Values.observability.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: {{ .Values.otel.exporterOtlpEndpoint | quote }}
+              value: {{ .Values.observability.otel.exporterOtlpGrpcEndpoint | quote }}
             {{- end }}
 
             - name: ETCD_ENDPOINTS
