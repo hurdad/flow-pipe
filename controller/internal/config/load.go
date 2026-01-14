@@ -1,6 +1,9 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"time"
+)
 
 // Load parses flags + env vars and returns Config.
 func Load() Config {
@@ -37,15 +40,57 @@ func Load() Config {
 			),
 			"namespace for runtime workloads",
 		)
+
+		leaderElectionEnabled = flag.Bool(
+			"leader-election-enabled",
+			envBoolOrDefault("FLOW_CONTROLLER_LEADER_ELECTION_ENABLED", true),
+			"enable leader election for HA controllers",
+		)
+
+		leaderElectionNamespace = flag.String(
+			"leader-election-namespace",
+			envOrDefault("FLOW_CONTROLLER_LEADER_ELECTION_NAMESPACE", envOrDefault("POD_NAMESPACE", "default")),
+			"namespace for the leader election lease",
+		)
+
+		leaderElectionName = flag.String(
+			"leader-election-name",
+			envOrDefault("FLOW_CONTROLLER_LEADER_ELECTION_NAME", "flow-controller"),
+			"name of the leader election lease",
+		)
+
+		leaderElectionLeaseDuration = flag.Duration(
+			"leader-election-lease-duration",
+			envDurationOrDefault("FLOW_CONTROLLER_LEADER_ELECTION_LEASE_DURATION", 30*time.Second),
+			"leader election lease duration",
+		)
+
+		leaderElectionRenewDeadline = flag.Duration(
+			"leader-election-renew-deadline",
+			envDurationOrDefault("FLOW_CONTROLLER_LEADER_ELECTION_RENEW_DEADLINE", 20*time.Second),
+			"leader election renew deadline",
+		)
+
+		leaderElectionRetryPeriod = flag.Duration(
+			"leader-election-retry-period",
+			envDurationOrDefault("FLOW_CONTROLLER_LEADER_ELECTION_RETRY_PERIOD", 5*time.Second),
+			"leader election retry period",
+		)
 	)
 
 	flag.Parse()
 
 	return Config{
-		EtcdEndpoints:        splitComma(*etcdURLs),
-		OTLPEndpoint:         *otelEndpoint,
-		ServiceName:          *serviceName,
-		RuntimeNamespace:     *runtimeNamespace,
-		ObservabilityEnabled: *observabilityEnabled,
+		EtcdEndpoints:               splitComma(*etcdURLs),
+		OTLPEndpoint:                *otelEndpoint,
+		ServiceName:                 *serviceName,
+		RuntimeNamespace:            *runtimeNamespace,
+		ObservabilityEnabled:        *observabilityEnabled,
+		LeaderElectionEnabled:       *leaderElectionEnabled,
+		LeaderElectionName:          *leaderElectionName,
+		LeaderElectionNamespace:     *leaderElectionNamespace,
+		LeaderElectionLeaseDuration: *leaderElectionLeaseDuration,
+		LeaderElectionRenewDeadline: *leaderElectionRenewDeadline,
+		LeaderElectionRetryPeriod:   *leaderElectionRetryPeriod,
 	}
 }

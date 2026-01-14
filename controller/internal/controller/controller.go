@@ -32,6 +32,8 @@ type Controller struct {
 	reconcileSuccess metric.Int64Counter
 	reconcileFailure metric.Int64Counter
 	watchEvents      metric.Int64Counter
+	queueDepth       metric.Int64ObservableGauge
+	queueLagSeconds  metric.Float64Histogram
 }
 
 // New creates a new controller instance.
@@ -62,6 +64,24 @@ func New(
 		"flow_controller_watch_events_total",
 		metric.WithDescription("number of watch events received"),
 	)
+	queueDepth, _ := meter.Int64ObservableGauge(
+		"flow_controller_queue_depth",
+		metric.WithDescription("number of items waiting in the controller work queue"),
+	)
+	queueLagSeconds, _ := meter.Float64Histogram(
+		"flow_controller_queue_lag_seconds",
+		metric.WithDescription("time spent waiting in the controller work queue in seconds"),
+	)
+
+	if _, err := meter.RegisterCallback(
+		func(ctx context.Context, observer metric.Observer) error {
+			observer.ObserveInt64(queueDepth, int64(queue.Len()))
+			return nil
+		},
+		queueDepth,
+	); err != nil {
+		logger.Error(context.Background(), "failed to register queue depth metric callback", slog.Any("error", err))
+	}
 
 	return &Controller{
 		store:                store,
@@ -75,6 +95,8 @@ func New(
 		reconcileSuccess:     reconcileSuccess,
 		reconcileFailure:     reconcileFailure,
 		watchEvents:          watchEvents,
+		queueDepth:           queueDepth,
+		queueLagSeconds:      queueLagSeconds,
 	}
 }
 

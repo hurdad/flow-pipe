@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strings"
+	"time"
 )
 
 func envOrDefault(key, def string) string {
@@ -21,6 +22,15 @@ func envBoolOrDefault(key string, def bool) bool {
 			return false
 		default:
 			return def
+		}
+	}
+	return def
+}
+
+func envDurationOrDefault(key string, def time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if parsed, err := time.ParseDuration(v); err == nil {
+			return parsed
 		}
 	}
 	return def

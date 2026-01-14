@@ -12,6 +12,9 @@ import (
 	"github.com/hurdad/flow-pipe/controller/internal/kube"
 	"github.com/hurdad/flow-pipe/controller/internal/observability"
 	"github.com/hurdad/flow-pipe/controller/internal/store"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
 func main() {
@@ -93,10 +96,78 @@ func main() {
 	// --------------------------------------------------
 	// Run controller (blocks until shutdown)
 	// --------------------------------------------------
-	if err := ctrl.Run(ctx); err != nil {
-		logger.Error(ctx, "flow-controller exited with error", slog.Any("error", err))
-		os.Exit(1)
+	if cfg.LeaderElectionEnabled {
+		if err := runWithLeaderElection(ctx, cfg, nodeName, kubeClient, logger, ctrl); err != nil {
+			logger.Error(ctx, "flow-controller exited with error", slog.Any("error", err))
+			os.Exit(1)
+		}
+	} else {
+		if err := ctrl.Run(ctx); err != nil {
+			logger.Error(ctx, "flow-controller exited with error", slog.Any("error", err))
+			os.Exit(1)
+		}
 	}
 
 	logger.Info(ctx, "flow-controller stopped")
+}
+
+func runWithLeaderElection(
+	ctx context.Context,
+	cfg config.Config,
+	nodeName string,
+	kubeClient *kube.Client,
+	logger observability.Logger,
+	ctrl *controller.Controller,
+) error {
+	lock := &resourcelock.LeaseLock{
+		LeaseMeta: metav1.ObjectMeta{
+			Name:      cfg.LeaderElectionName,
+			Namespace: cfg.LeaderElectionNamespace,
+		},
+		Client: kubeClient.Clientset.CoordinationV1(),
+		LockConfig: resourcelock.ResourceLockConfig{
+			Identity: nodeName,
+		},
+	}
+
+	errCh := make(chan error, 1)
+
+	leaderConfig := leaderelection.LeaderElectionConfig{
+		Lock:            lock,
+		LeaseDuration:   cfg.LeaderElectionLeaseDuration,
+		RenewDeadline:   cfg.LeaderElectionRenewDeadline,
+		RetryPeriod:     cfg.LeaderElectionRetryPeriod,
+		ReleaseOnCancel: true,
+		Callbacks: leaderelection.LeaderCallbacks{
+			OnStartedLeading: func(leaderCtx context.Context) {
+				logger.Info(leaderCtx, "leader election acquired", slog.String("identity", nodeName))
+				if err := ctrl.Run(leaderCtx); err != nil {
+					errCh <- err
+				}
+			},
+			OnStoppedLeading: func() {
+				logger.Warn(ctx, "leader election lost", slog.String("identity", nodeName))
+			},
+			OnNewLeader: func(identity string) {
+				if identity == nodeName {
+					return
+				}
+				logger.Info(ctx, "leader election new leader observed", slog.String("identity", identity))
+			},
+		},
+	}
+
+	leaderElector, err := leaderelection.NewLeaderElector(leaderConfig)
+	if err != nil {
+		return err
+	}
+
+	go leaderElector.Run(ctx)
+
+	select {
+	case <-ctx.Done():
+		return nil
+	case err := <-errCh:
+		return err
+	}
 }
