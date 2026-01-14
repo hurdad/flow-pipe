@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 // Config defines runtime configuration for the flow-pipe controller.
 type Config struct {
 	// Etcd endpoints (desired state store)
@@ -16,4 +18,22 @@ type Config struct {
 
 	// Whether observability exporters should be enabled
 	ObservabilityEnabled bool
+
+	// Whether to enable leader election for HA controllers.
+	LeaderElectionEnabled bool
+
+	// Leader election resource name.
+	LeaderElectionName string
+
+	// Namespace for leader election lease.
+	LeaderElectionNamespace string
+
+	// Leader election lease duration.
+	LeaderElectionLeaseDuration time.Duration
+
+	// Leader election renew deadline.
+	LeaderElectionRenewDeadline time.Duration
+
+	// Leader election retry period.
+	LeaderElectionRetryPeriod time.Duration
 }

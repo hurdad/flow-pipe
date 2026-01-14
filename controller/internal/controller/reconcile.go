@@ -20,14 +20,28 @@ func (c *Controller) worker(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			name, ok := c.queue.Get()
+			name, lag, ok := c.queue.Get()
 			if !ok {
 				// queue empty → idle
 				time.Sleep(50 * time.Millisecond)
 				continue
 			}
 
-			c.logger.Info(ctx, "reconcile requested", slog.String("flow", name))
+			queueDepth := c.queue.Len()
+			ctx, span := c.tracer.Start(ctx,
+				"controller.dequeue",
+				trace.WithAttributes(
+					attribute.String("flow.name", name),
+					attribute.Float64("queue.lag_ms", float64(lag.Milliseconds())),
+					attribute.Int("queue.depth", queueDepth),
+				),
+			)
+
+			if lag > 0 {
+				c.queueLagSeconds.Record(ctx, lag.Seconds(), metric.WithAttributes(attribute.String("flow.name", name)))
+			}
+
+			c.logger.Info(ctx, "reconcile requested", slog.String("flow", name), slog.Duration("queue_lag", lag), slog.Int("queue_depth", queueDepth))
 			if err := c.reconcile(ctx, name); err != nil {
 				c.logger.Error(ctx, "reconcile failed", slog.String("flow", name), slog.Any("error", err))
 				c.reconcileFailure.Add(ctx, 1, metric.WithAttributes(attribute.String("flow.name", name)))
@@ -36,6 +50,7 @@ func (c *Controller) worker(ctx context.Context) {
 				c.reconcileSuccess.Add(ctx, 1, metric.WithAttributes(attribute.String("flow.name", name)))
 				c.queue.Forget(name)
 			}
+			span.End()
 		}
 	}
 }
