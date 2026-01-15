@@ -67,10 +67,15 @@ func ensureRuntime(
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
 		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
-		fallthrough
+		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
+		options := spec.GetKubernetesOptions()
+		if options != nil && options.StreamingWorkloadKind == flowpipev1.StreamingWorkloadKind_STREAMING_WORKLOAD_KIND_DAEMONSET {
+			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, options)
+		}
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, options)
 	default:
-		deploymentName := fmt.Sprintf("%s-runtime", spec.Name)
-		return applyDeployment(ctx, client, namespace, spec.Name, deploymentName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled)
+		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, spec.GetKubernetesOptions())
 	}
 }
 
@@ -132,6 +137,7 @@ func applyDeployment(
 	imagePullPolicy corev1.PullPolicy,
 	configChecksum string,
 	observabilityEnabled bool,
+	options *flowpipev1.KubernetesOptions,
 ) (string, error) {
 	desired := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -187,7 +193,7 @@ func applyDeployment(
 			},
 		},
 	}
-	applyKubernetesOptions(&desired.Spec.Template, spec.GetKubernetesOptions())
+	applyKubernetesOptions(&desired.Spec.Template, options)
 
 	deployments := client.AppsV1().Deployments(namespace)
 	current, err := deployments.Get(ctx, name, metav1.GetOptions{})
@@ -202,6 +208,90 @@ func applyDeployment(
 	current.Spec = desired.Spec
 	current.Labels = desired.Labels
 	_, err = deployments.Update(ctx, current, metav1.UpdateOptions{})
+	return name, err
+}
+
+func applyDaemonSet(
+	ctx context.Context,
+	client kubernetes.Interface,
+	namespace string,
+	flowName string,
+	name string,
+	configMapName string,
+	image string,
+	imagePullPolicy corev1.PullPolicy,
+	configChecksum string,
+	observabilityEnabled bool,
+	options *flowpipev1.KubernetesOptions,
+) (string, error) {
+	desired := &appsv1.DaemonSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels: map[string]string{
+				flowLabelKey: flowName,
+			},
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					flowLabelKey: flowName,
+				},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						flowLabelKey: flowName,
+					},
+					Annotations: map[string]string{
+						runtimeConfigHashKey: configChecksum,
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:            "runtime",
+							Image:           image,
+							ImagePullPolicy: imagePullPolicy,
+							Args:            []string{runtimeConfigPath},
+							Env:             runtimeEnv(observabilityEnabled),
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "flow-config",
+									MountPath: runtimeConfigMountDir,
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "flow-config",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{Name: configMapName},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	applyKubernetesOptions(&desired.Spec.Template, options)
+
+	daemonSets := client.AppsV1().DaemonSets(namespace)
+	current, err := daemonSets.Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			_, err = daemonSets.Create(ctx, desired, metav1.CreateOptions{})
+			return name, err
+		}
+		return name, err
+	}
+
+	current.Spec = desired.Spec
+	current.Labels = desired.Labels
+	_, err = daemonSets.Update(ctx, current, metav1.UpdateOptions{})
 	return name, err
 }
 
@@ -297,6 +387,10 @@ func deleteRuntimeResources(
 	deploymentName := fmt.Sprintf("%s-runtime", flowName)
 	if err := client.AppsV1().Deployments(namespace).Delete(ctx, deploymentName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		errs = append(errs, fmt.Errorf("delete deployment %q: %w", deploymentName, err))
+	}
+
+	if err := client.AppsV1().DaemonSets(namespace).Delete(ctx, deploymentName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		errs = append(errs, fmt.Errorf("delete daemonset %q: %w", deploymentName, err))
 	}
 
 	if err := client.BatchV1().Jobs(namespace).Delete(ctx, flowName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {

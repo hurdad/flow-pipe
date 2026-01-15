@@ -55,6 +55,50 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 	}
 }
 
+func TestEnsureRuntimeCreatesDaemonSet(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	image := "runtime:latest"
+	spec := &flowpipev1.FlowSpec{
+		Name: "noop-daemon",
+		Kubernetes: &flowpipev1.KubernetesSettings{
+			Image: &image,
+		},
+		KubernetesOptions: &flowpipev1.KubernetesOptions{
+			StreamingWorkloadKind: flowpipev1.StreamingWorkloadKind_STREAMING_WORKLOAD_KIND_DAEMONSET,
+		},
+		Execution: &flowpipev1.Execution{
+			Mode: flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING,
+		},
+	}
+
+	workload, err := ensureRuntime(
+		context.Background(),
+		client,
+		"default",
+		spec,
+		corev1.PullIfNotPresent,
+		true,
+	)
+	if err != nil {
+		t.Fatalf("ensureRuntime error: %v", err)
+	}
+	if workload != "noop-daemon-runtime" {
+		t.Fatalf("expected daemonset workload name, got %q", workload)
+	}
+
+	if _, err := client.CoreV1().ConfigMaps("default").Get(context.Background(), "noop-daemon-config", metav1.GetOptions{}); err != nil {
+		t.Fatalf("expected configmap: %v", err)
+	}
+
+	daemonSet, err := client.AppsV1().DaemonSets("default").Get(context.Background(), "noop-daemon-runtime", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("expected daemonset: %v", err)
+	}
+	if got := daemonSet.Spec.Template.Spec.Containers[0].Image; got != image {
+		t.Fatalf("expected runtime image, got %q", got)
+	}
+}
+
 func TestEnsureRuntimeCreatesJob(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "custom:tag"

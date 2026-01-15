@@ -50,7 +50,8 @@ If the runtime is not on your `PATH`, call it directly instead:
 ## Running on Kubernetes
 
 Kubernetes deployments use the Go API + controller to manage flows, with runtimes
-created as Deployments (streaming) or Jobs (run-to-completion).
+created as Deployments or DaemonSets for streaming flows and Jobs for run-to-completion
+flows.
 
 ### 1) Create a cluster
 
@@ -87,6 +88,21 @@ kubectl port-forward svc/flow-pipe-api 9090:9090 -n flow-pipe
 
 The controller will create the runtime Deployment/Job and mount the rendered
 configuration via ConfigMap.
+
+### Streaming as a DaemonSet
+
+Streaming flows default to Deployments. To run one instance per node, set
+`kubernetes_options.streaming_workload_kind` to `STREAMING_WORKLOAD_KIND_DAEMONSET`:
+
+```yaml
+name: edge-streaming
+execution:
+  mode: EXECUTION_MODE_STREAMING
+kubernetes:
+  image: ghcr.io/hurdad/flow-pipe-runtime:latest
+kubernetes_options:
+  streaming_workload_kind: STREAMING_WORKLOAD_KIND_DAEMONSET
+```
 
 ### Etcd service exposure
 
