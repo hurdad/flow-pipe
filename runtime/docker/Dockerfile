@@ -13,6 +13,7 @@
 FROM ubuntu:24.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
+ARG FLOWPIPE_ENABLE_OTEL=ON
 
 # ------------------------------------------------------------
 # Build dependencies
@@ -48,7 +49,7 @@ COPY . .
 RUN cmake -S . -B build -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=ON \
-      -DFLOWPIPE_ENABLE_OTEL=ON \
+      -DFLOWPIPE_ENABLE_OTEL=${FLOWPIPE_ENABLE_OTEL} \
       -DCMAKE_INSTALL_PREFIX=/opt/flow-pipe
 
 # ------------------------------------------------------------
