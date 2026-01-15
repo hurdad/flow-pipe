@@ -42,7 +42,7 @@ flow-pipe supports two execution modes:
 
 | Mode | Kubernetes Resource | Behavior |
 |----|----------------------|---------|
-| Streaming | Deployment | Long-running, continuously processing |
+| Streaming | Deployment (default) or DaemonSet | Long-running, continuously processing |
 | Job | Job | Run once, drain, and exit |
 
 The pipeline definition is identical in both cases; only the lifecycle differs.

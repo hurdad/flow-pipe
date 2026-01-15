@@ -555,7 +555,7 @@
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
-      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "rpcStatus": {
       "type": "object",
@@ -766,6 +766,10 @@
         "runtimeClassName": {
           "type": "string",
           "description": "Runtime class name for runtime pods."
+        },
+        "streamingWorkloadKind": {
+          "$ref": "#/definitions/v1StreamingWorkloadKind",
+          "description": "Streaming runtime workload kind (Deployment or DaemonSet)."
         }
       },
       "description": "Kubernetes runtime options for flow workloads."
@@ -1010,6 +1014,16 @@
           "description": "Optional real-time scheduling priority for worker threads (Linux only)."
         }
       }
+    },
+    "v1StreamingWorkloadKind": {
+      "type": "string",
+      "enum": [
+        "STREAMING_WORKLOAD_KIND_UNSPECIFIED",
+        "STREAMING_WORKLOAD_KIND_DEPLOYMENT",
+        "STREAMING_WORKLOAD_KIND_DAEMONSET"
+      ],
+      "default": "STREAMING_WORKLOAD_KIND_UNSPECIFIED",
+      "description": "Kubernetes workload kind for streaming runtimes.\n\n - STREAMING_WORKLOAD_KIND_UNSPECIFIED: Workload kind not specified (controller default).\n - STREAMING_WORKLOAD_KIND_DEPLOYMENT: Use a Deployment for streaming runtimes.\n - STREAMING_WORKLOAD_KIND_DAEMONSET: Use a DaemonSet for streaming runtimes."
     }
   }
 }

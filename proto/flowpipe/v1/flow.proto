@@ -93,6 +93,21 @@ message KubernetesOptions {
 
   // Runtime class name for runtime pods.
   optional string runtime_class_name = 5;
+
+  // Streaming runtime workload kind (Deployment or DaemonSet).
+  StreamingWorkloadKind streaming_workload_kind = 6;
+}
+
+// Kubernetes workload kind for streaming runtimes.
+enum StreamingWorkloadKind {
+  // Workload kind not specified (controller default).
+  STREAMING_WORKLOAD_KIND_UNSPECIFIED = 0;
+
+  // Use a Deployment for streaming runtimes.
+  STREAMING_WORKLOAD_KIND_DEPLOYMENT = 1;
+
+  // Use a DaemonSet for streaming runtimes.
+  STREAMING_WORKLOAD_KIND_DAEMONSET = 2;
 }
 
 // Kubernetes image pull policy.
