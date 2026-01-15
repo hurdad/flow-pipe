@@ -268,6 +268,31 @@ stages:
     input_queue: q1
 FLOW
 
+cat >"${FLOW_TMP_DIR}/streaming-daemon.yaml" <<FLOW
+name: noop-daemon
+execution:
+  mode: EXECUTION_MODE_STREAMING
+${FLOW_KUBERNETES_CONFIG}
+kubernetes_options:
+  streaming_workload_kind: STREAMING_WORKLOAD_KIND_DAEMONSET
+queues:
+  - name: q1
+    capacity: 128
+stages:
+  - name: src
+    type: noop_source
+    threads: 1
+    output_queue: q1
+    config:
+      delay_ms: 200
+      message: "DAEMON-E2E"
+      max_messages: 0
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: q1
+FLOW
+
 cat >"${FLOW_TMP_DIR}/streaming-update.yaml" <<FLOW
 name: noop-streaming
 execution:
@@ -399,6 +424,8 @@ info "Submitting flows through API"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/streaming.yaml --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/streaming-daemon.yaml --api localhost:9090
+docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/job.yaml --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/schema-job.yaml --api localhost:9090
@@ -416,6 +443,9 @@ wait_for_runtime() {
         deployment/*)
           kubectl rollout status "${kind}" -n "${NAMESPACE}" --timeout=120s && return 0
           ;;
+        daemonset/*)
+          kubectl rollout status "${kind}" -n "${NAMESPACE}" --timeout=120s && return 0
+          ;;
         job/*)
           kubectl wait --for=condition=complete "${kind}" -n "${NAMESPACE}" --timeout=120s && return 0
           ;;
@@ -429,6 +459,9 @@ wait_for_runtime() {
       case "${kind%%/*}" in
         deployment)
           kubectl rollout status "deployment/${found}" -n "${NAMESPACE}" --timeout=120s && return 0
+          ;;
+        daemonset)
+          kubectl rollout status "daemonset/${found}" -n "${NAMESPACE}" --timeout=120s && return 0
           ;;
         job)
           kubectl wait --for=condition=complete "job/${found}" -n "${NAMESPACE}" --timeout=120s && return 0
@@ -447,16 +480,24 @@ wait_for_runtime() {
 
 info "Waiting for controller-created runtimes"
 wait_for_runtime "noop-streaming" "deployment/noop-streaming-runtime"
+wait_for_runtime "noop-daemon" "daemonset/noop-daemon-runtime"
 wait_for_runtime "simple-pipeline-job" "job/simple-pipeline-job"
 wait_for_runtime "schema-pipeline-job" "job/schema-pipeline-job"
 
 info "Capturing runtime logs"
 kubectl logs deployment/noop-streaming-runtime -n "${NAMESPACE}" --tail=200 >"${REPO_ROOT}/stream.log"
+daemon_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-daemon" -o jsonpath='{.items[0].metadata.name}')
+kubectl logs "${daemon_pod}" -n "${NAMESPACE}" --tail=200 >"${REPO_ROOT}/daemon-stream.log"
 kubectl logs job/simple-pipeline-job -n "${NAMESPACE}" >"${REPO_ROOT}/job.log"
 kubectl logs job/schema-pipeline-job -n "${NAMESPACE}" >"${REPO_ROOT}/schema-job.log"
 
 if ! grep -q "DEADBEEF" "${REPO_ROOT}/stream.log"; then
   echo "streaming runtime did not emit expected payloads" >&2
+  exit 1
+fi
+
+if ! grep -q "DAEMON-E2E" "${REPO_ROOT}/daemon-stream.log"; then
+  echo "daemonset streaming runtime did not emit expected payloads" >&2
   exit 1
 fi
 
@@ -517,11 +558,14 @@ info "Stopping flows with flowctl"
 docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-streaming --api localhost:9090
 docker run --rm --network host \
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-daemon --api localhost:9090
+docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop simple-pipeline-job --api localhost:9090
 docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop schema-pipeline-job --api localhost:9090
 info "Waiting for flow resources to be removed"
 kubectl wait --for=delete deployment/noop-streaming-runtime -n "${NAMESPACE}" --timeout=120s
+kubectl wait --for=delete daemonset/noop-daemon-runtime -n "${NAMESPACE}" --timeout=120s
 kubectl wait --for=delete job/simple-pipeline-job -n "${NAMESPACE}" --timeout=120s
 kubectl wait --for=delete job/schema-pipeline-job -n "${NAMESPACE}" --timeout=120s
 
