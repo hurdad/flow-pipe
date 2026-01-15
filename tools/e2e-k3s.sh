@@ -14,6 +14,7 @@ BIN_DIR="${REPO_ROOT}/.bin"
 HELM_VERSION="${HELM_VERSION:-v3.14.4}"
 NO_CACHE="${NO_CACHE:-}"
 OBSERVABILITY_ENABLED="${OBSERVABILITY_ENABLED:-false}"
+FLOWPIPE_ENABLE_OTEL="${OBSERVABILITY_ENABLED}"
 
 info() { echo "[INFO] $*"; }
 append_summary() {
@@ -192,6 +193,7 @@ kubectl get nodes
 info "Building runtime image"
 docker buildx build "${BUILDX_FLAGS[@]}" \
   -f "${REPO_ROOT}/runtime/docker/Dockerfile" \
+  --build-arg FLOWPIPE_ENABLE_OTEL="${FLOWPIPE_ENABLE_OTEL}" \
   --target runtime \
   -t "${IMAGE_NAMESPACE}/flow-pipe-runtime:${IMAGE_TAG}" "${REPO_ROOT}"
 
