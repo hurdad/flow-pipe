@@ -246,7 +246,7 @@ FLOW
 )
 
 cat >"${FLOW_TMP_DIR}/streaming.yaml" <<FLOW
-name: noop-observability
+name: noop-streaming
 execution:
   mode: EXECUTION_MODE_STREAMING
 ${FLOW_KUBERNETES_CONFIG}
@@ -269,7 +269,7 @@ stages:
 FLOW
 
 cat >"${FLOW_TMP_DIR}/streaming-update.yaml" <<FLOW
-name: noop-observability
+name: noop-streaming
 execution:
   mode: EXECUTION_MODE_STREAMING
 ${FLOW_KUBERNETES_CONFIG}
@@ -446,12 +446,12 @@ wait_for_runtime() {
 }
 
 info "Waiting for controller-created runtimes"
-wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
+wait_for_runtime "noop-streaming" "deployment/noop-streaming-runtime"
 wait_for_runtime "simple-pipeline-job" "job/simple-pipeline-job"
 wait_for_runtime "schema-pipeline-job" "job/schema-pipeline-job"
 
 info "Capturing runtime logs"
-kubectl logs deployment/noop-observability-runtime -n "${NAMESPACE}" --tail=200 >"${REPO_ROOT}/stream.log"
+kubectl logs deployment/noop-streaming-runtime -n "${NAMESPACE}" --tail=200 >"${REPO_ROOT}/stream.log"
 kubectl logs job/simple-pipeline-job -n "${NAMESPACE}" >"${REPO_ROOT}/job.log"
 kubectl logs job/schema-pipeline-job -n "${NAMESPACE}" >"${REPO_ROOT}/schema-job.log"
 
@@ -471,18 +471,18 @@ if ! grep -q "SCHEMA-E2E" "${REPO_ROOT}/schema-job.log"; then
 fi
 
 info "Capturing current runtime pod and config state"
-initial_configmap_version=$(kubectl get configmap noop-observability-config -n "${NAMESPACE}" -o jsonpath='{.metadata.resourceVersion}')
-initial_runtime_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-observability" -o jsonpath='{.items[0].metadata.name}')
+initial_configmap_version=$(kubectl get configmap noop-streaming-config -n "${NAMESPACE}" -o jsonpath='{.metadata.resourceVersion}')
+initial_runtime_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-streaming" -o jsonpath='{.items[0].metadata.name}')
 initial_runtime_pod_uid=$(kubectl get pod "${initial_runtime_pod}" -n "${NAMESPACE}" -o jsonpath='{.metadata.uid}')
 
 info "Updating flow with flowctl"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" update /flows/streaming-update.yaml --api localhost:9090
-wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
+wait_for_runtime "noop-streaming" "deployment/noop-streaming-runtime"
 
 info "Waiting for config map reconciliation to trigger a new runtime pod"
 for _ in {1..60}; do
-  updated_configmap_version=$(kubectl get configmap noop-observability-config -n "${NAMESPACE}" -o jsonpath='{.metadata.resourceVersion}')
+  updated_configmap_version=$(kubectl get configmap noop-streaming-config -n "${NAMESPACE}" -o jsonpath='{.metadata.resourceVersion}')
   if [[ "${updated_configmap_version}" != "${initial_configmap_version}" ]]; then
     break
   fi
@@ -495,7 +495,7 @@ if [[ "${updated_configmap_version}" == "${initial_configmap_version}" ]]; then
 fi
 
 for _ in {1..60}; do
-  updated_runtime_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-observability" -o jsonpath='{.items[0].metadata.name}')
+  updated_runtime_pod=$(kubectl get pods -n "${NAMESPACE}" -l "flowpipe.io/flow-name=noop-streaming" -o jsonpath='{.items[0].metadata.name}')
   updated_runtime_pod_uid=$(kubectl get pod "${updated_runtime_pod}" -n "${NAMESPACE}" -o jsonpath='{.metadata.uid}')
   if [[ "${updated_runtime_pod_uid}" != "${initial_runtime_pod_uid}" ]]; then
     kubectl wait --for=condition=Ready "pod/${updated_runtime_pod}" -n "${NAMESPACE}" --timeout=120s && break
@@ -510,18 +510,18 @@ fi
 
 info "Rolling back flow with flowctl"
 docker run --rm --network host \
-  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" rollback noop-observability --version 1 --api localhost:9090
-wait_for_runtime "noop-observability" "deployment/noop-observability-runtime"
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" rollback noop-streaming --version 1 --api localhost:9090
+wait_for_runtime "noop-streaming" "deployment/noop-streaming-runtime"
 
 info "Stopping flows with flowctl"
 docker run --rm --network host \
-  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-observability --api localhost:9090
+  "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-streaming --api localhost:9090
 docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop simple-pipeline-job --api localhost:9090
 docker run --rm --network host \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop schema-pipeline-job --api localhost:9090
 info "Waiting for flow resources to be removed"
-kubectl wait --for=delete deployment/noop-observability-runtime -n "${NAMESPACE}" --timeout=120s
+kubectl wait --for=delete deployment/noop-streaming-runtime -n "${NAMESPACE}" --timeout=120s
 kubectl wait --for=delete job/simple-pipeline-job -n "${NAMESPACE}" --timeout=120s
 kubectl wait --for=delete job/schema-pipeline-job -n "${NAMESPACE}" --timeout=120s
 
