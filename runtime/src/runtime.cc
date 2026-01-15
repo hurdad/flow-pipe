@@ -59,6 +59,58 @@ std::string FormatCpuList(const std::vector<uint32_t>& cpus) {
   return oss.str();
 }
 
+std::optional<int> ResolveRealtimePriority(const flowpipe::v1::StageSpec& stage) {
+  if (!stage.has_realtime_priority()) {
+    return std::nullopt;
+  }
+
+  return static_cast<int>(stage.realtime_priority());
+}
+
+void ValidateRealtimePriority(const std::string& stage_name, int priority) {
+#ifdef __linux__
+  const int policy = SCHED_FIFO;
+  const int min_priority = sched_get_priority_min(policy);
+  const int max_priority = sched_get_priority_max(policy);
+  if (min_priority == -1 || max_priority == -1) {
+    FP_LOG_WARN_FMT("unable to resolve real-time priority range for stage '{}'", stage_name);
+    return;
+  }
+
+  if (priority < min_priority || priority > max_priority) {
+    FP_LOG_ERROR_FMT(
+        "real-time priority configured for stage '{}' is {} but valid range is {}-{}",
+        stage_name, priority, min_priority, max_priority);
+    throw std::runtime_error("invalid real-time priority for stage: " + stage_name);
+  }
+#else
+  (void)stage_name;
+  (void)priority;
+#endif
+}
+
+void ApplyRealtimePriority(const std::string& stage_name, uint32_t worker_index, int priority) {
+#ifdef __linux__
+  const int policy = SCHED_FIFO;
+  sched_param params{};
+  params.sched_priority = priority;
+  const int result = pthread_setschedparam(pthread_self(), policy, &params);
+  if (result != 0) {
+    FP_LOG_WARN_FMT("stage '{}' worker {} failed to set real-time priority {}: {}", stage_name,
+                    worker_index, priority, std::strerror(result));
+    return;
+  }
+
+  FP_LOG_INFO_FMT("stage '{}' worker {} set real-time priority {} (policy=FIFO)", stage_name,
+                  worker_index, priority);
+#else
+  (void)stage_name;
+  (void)worker_index;
+  (void)priority;
+  FP_LOG_WARN_FMT("real-time priority requested but not supported on this platform");
+#endif
+}
+
 void ValidateCpuPinning(const std::string& stage_name, const std::vector<uint32_t>& cpus) {
 #ifdef __linux__
   if (cpus.empty()) {
@@ -220,6 +272,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       ValidateCpuPinning(stage_name, pinning_cpus);
     }
     const bool should_pin = !pinning_cpus.empty();
+    const auto realtime_priority = ResolveRealtimePriority(s);
+    if (realtime_priority.has_value()) {
+      ValidateRealtimePriority(stage_name, realtime_priority.value());
+    }
+    const bool should_set_realtime = realtime_priority.has_value();
 
     // Resolve plugin name: explicit plugin wins, otherwise default to type-based naming.
     const std::string plugin_name =
@@ -278,9 +335,14 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           registry_.destroy_stage(worker_stage);
           throw std::runtime_error("worker stage is not a source: " + stage_name);
         }
-        threads.emplace_back([&, src, out, i, stage_name, should_pin, pinning_cpus]() {
+        threads.emplace_back(
+            [&, src, out, i, stage_name, should_pin, pinning_cpus, should_set_realtime,
+             realtime_priority]() {
           if (should_pin) {
             ApplyCpuPinning(stage_name, i, pinning_cpus);
+          }
+          if (should_set_realtime) {
+            ApplyRealtimePriority(stage_name, i, realtime_priority.value());
           }
           FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", stage_name, i);
 
@@ -308,9 +370,14 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           registry_.destroy_stage(worker_stage);
           throw std::runtime_error("worker stage is not a transform: " + stage_name);
         }
-        threads.emplace_back([&, xf, in, out, i, stage_name, should_pin, pinning_cpus]() {
+        threads.emplace_back(
+            [&, xf, in, out, i, stage_name, should_pin, pinning_cpus, should_set_realtime,
+             realtime_priority]() {
           if (should_pin) {
             ApplyCpuPinning(stage_name, i, pinning_cpus);
+          }
+          if (should_set_realtime) {
+            ApplyRealtimePriority(stage_name, i, realtime_priority.value());
           }
           FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", stage_name, i);
 
@@ -337,9 +404,13 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           registry_.destroy_stage(worker_stage);
           throw std::runtime_error("worker stage is not a sink: " + stage_name);
         }
-        threads.emplace_back([&, sink, in, i, stage_name, should_pin, pinning_cpus]() {
+        threads.emplace_back([&, sink, in, i, stage_name, should_pin, pinning_cpus,
+                              should_set_realtime, realtime_priority]() {
           if (should_pin) {
             ApplyCpuPinning(stage_name, i, pinning_cpus);
+          }
+          if (should_set_realtime) {
+            ApplyRealtimePriority(stage_name, i, realtime_priority.value());
           }
           FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", stage_name, i);
 

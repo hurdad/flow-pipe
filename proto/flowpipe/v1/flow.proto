@@ -149,6 +149,9 @@ message StageSpec {
 
   // Optional plugin implementation override.
   optional string plugin = 7;
+
+  // Optional real-time scheduling priority for worker threads (Linux only).
+  optional uint32 realtime_priority = 8;
 }
 
 // ============================================================
