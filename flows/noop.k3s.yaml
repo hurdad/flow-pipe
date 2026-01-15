@@ -1,0 +1,23 @@
+name: noop-k3s
+execution:
+  mode: EXECUTION_MODE_STREAMING
+kubernetes:
+  image: ghcr.io/hurdad/flow-pipe-runtime:main-ubuntu24.04
+  image_pull_policy: IMAGE_PULL_POLICY_ALWAYS
+  restart_policy: RESTART_POLICY_ALWAYS
+queues:
+  - name: q1
+    capacity: 128
+stages:
+  - name: src
+    type: noop_source
+    threads: 1
+    output_queue: q1
+    config:
+      delay_ms: 200
+      message: "FOOBAR"
+      max_messages: 0
+  - name: sink
+    type: stdout_sink
+    threads: 1
+    input_queue: q1
