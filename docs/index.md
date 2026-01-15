@@ -5,6 +5,7 @@ core concepts, deployment details, and the project scope.
 
 ## Documentation
 
+- [Quick Start](quickstart.md)
 - [Core Concepts](concepts.md)
 - [Schema Registry (Core Concepts)](concepts.md#schema-registry)
 - [Deployment](deployment.md)
@@ -12,6 +13,7 @@ core concepts, deployment details, and the project scope.
 
 ## Getting Started
 
+- [Quick Start Guide](quickstart.md)
 - [Run locally](deployment.md#running-locally)
 - [Run on Kubernetes](deployment.md#running-on-kubernetes)
 
