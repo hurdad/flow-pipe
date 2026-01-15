@@ -187,6 +187,7 @@ func applyDeployment(
 			},
 		},
 	}
+	applyKubernetesOptions(&desired.Spec.Template, spec.GetKubernetesOptions())
 
 	deployments := client.AppsV1().Deployments(namespace)
 	current, err := deployments.Get(ctx, name, metav1.GetOptions{})
@@ -265,6 +266,7 @@ func applyJob(
 			},
 		},
 	}
+	applyKubernetesOptions(&desired.Spec.Template, spec.GetKubernetesOptions())
 
 	jobs := client.BatchV1().Jobs(namespace)
 	_, err := jobs.Get(ctx, name, metav1.GetOptions{})
@@ -380,6 +382,55 @@ func runtimeEnv(observabilityEnabled bool) []corev1.EnvVar {
 	)
 
 	return env
+}
+
+func applyKubernetesOptions(template *corev1.PodTemplateSpec, options *flowpipev1.KubernetesOptions) {
+	if template == nil || options == nil {
+		return
+	}
+
+	if len(options.PodLabels) > 0 {
+		if template.Labels == nil {
+			template.Labels = map[string]string{}
+		}
+		for key, value := range options.PodLabels {
+			if key == flowLabelKey {
+				continue
+			}
+			template.Labels[key] = value
+		}
+	}
+
+	if len(options.PodAnnotations) > 0 {
+		if template.Annotations == nil {
+			template.Annotations = map[string]string{}
+		}
+		for key, value := range options.PodAnnotations {
+			if key == runtimeConfigHashKey {
+				continue
+			}
+			template.Annotations[key] = value
+		}
+	}
+
+	if options.ServiceAccountName != nil {
+		template.Spec.ServiceAccountName = *options.ServiceAccountName
+	}
+
+	if len(options.ImagePullSecrets) > 0 {
+		secrets := make([]corev1.LocalObjectReference, 0, len(options.ImagePullSecrets))
+		for _, name := range options.ImagePullSecrets {
+			if name == "" {
+				continue
+			}
+			secrets = append(secrets, corev1.LocalObjectReference{Name: name})
+		}
+		template.Spec.ImagePullSecrets = secrets
+	}
+
+	if options.RuntimeClassName != nil {
+		template.Spec.RuntimeClassName = options.RuntimeClassName
+	}
 }
 
 func int32Ptr(v int32) *int32 {

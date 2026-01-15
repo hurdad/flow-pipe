@@ -99,6 +99,72 @@ func TestEnsureRuntimeCreatesJob(t *testing.T) {
 	}
 }
 
+func TestEnsureRuntimeAppliesKubernetesOptions(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	image := "runtime:latest"
+	serviceAccount := "flow-runner"
+	runtimeClass := "kata"
+	spec := &flowpipev1.FlowSpec{
+		Name: "noop-options",
+		Kubernetes: &flowpipev1.KubernetesSettings{
+			Image: &image,
+		},
+		KubernetesOptions: &flowpipev1.KubernetesOptions{
+			PodLabels: map[string]string{
+				"team": "edge",
+			},
+			PodAnnotations: map[string]string{
+				"example.com/trace": "true",
+			},
+			ServiceAccountName: &serviceAccount,
+			ImagePullSecrets:   []string{"regcred"},
+			RuntimeClassName:   &runtimeClass,
+		},
+		Execution: &flowpipev1.Execution{
+			Mode: flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING,
+		},
+	}
+
+	_, err := ensureRuntime(
+		context.Background(),
+		client,
+		"default",
+		spec,
+		corev1.PullIfNotPresent,
+		false,
+	)
+	if err != nil {
+		t.Fatalf("ensureRuntime error: %v", err)
+	}
+
+	deploy, err := client.AppsV1().Deployments("default").Get(context.Background(), "noop-options-runtime", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("expected deployment: %v", err)
+	}
+
+	if got := deploy.Spec.Template.Labels["team"]; got != "edge" {
+		t.Fatalf("expected pod label to be applied, got %q", got)
+	}
+	if got := deploy.Spec.Template.Annotations["example.com/trace"]; got != "true" {
+		t.Fatalf("expected pod annotation to be applied, got %q", got)
+	}
+	if got := deploy.Spec.Template.Spec.ServiceAccountName; got != serviceAccount {
+		t.Fatalf("expected service account %q, got %q", serviceAccount, got)
+	}
+	if len(deploy.Spec.Template.Spec.ImagePullSecrets) != 1 || deploy.Spec.Template.Spec.ImagePullSecrets[0].Name != "regcred" {
+		t.Fatalf("expected image pull secret to be applied, got %v", deploy.Spec.Template.Spec.ImagePullSecrets)
+	}
+	if deploy.Spec.Template.Spec.RuntimeClassName == nil || *deploy.Spec.Template.Spec.RuntimeClassName != runtimeClass {
+		t.Fatalf("expected runtime class %q, got %v", runtimeClass, deploy.Spec.Template.Spec.RuntimeClassName)
+	}
+	if got := deploy.Spec.Template.Labels[flowLabelKey]; got != "noop-options" {
+		t.Fatalf("expected flow label to be preserved, got %q", got)
+	}
+	if got := deploy.Spec.Template.Annotations[runtimeConfigHashKey]; got == "" {
+		t.Fatalf("expected config hash annotation to be preserved")
+	}
+}
+
 func TestEnsureRuntimeUpdatesDeployment(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "updated:latest"

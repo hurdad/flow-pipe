@@ -54,6 +54,9 @@ message FlowSpec {
 
   // Kubernetes runtime settings.
   optional KubernetesSettings kubernetes = 12;
+
+  // Kubernetes runtime options.
+  optional KubernetesOptions kubernetes_options = 13;
 }
 
 // Kubernetes runtime settings for flow workloads.
@@ -72,6 +75,24 @@ message KubernetesSettings {
 
   // Aggregate resource intent.
   optional Resources resources = 5;
+}
+
+// Kubernetes runtime options for flow workloads.
+message KubernetesOptions {
+  // Additional labels to apply to runtime pods.
+  map<string, string> pod_labels = 1;
+
+  // Additional annotations to apply to runtime pods.
+  map<string, string> pod_annotations = 2;
+
+  // Service account name for runtime pods.
+  optional string service_account_name = 3;
+
+  // Image pull secrets for runtime pods.
+  repeated string image_pull_secrets = 4;
+
+  // Runtime class name for runtime pods.
+  optional string runtime_class_name = 5;
 }
 
 // Kubernetes image pull policy.
