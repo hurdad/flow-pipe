@@ -555,7 +555,7 @@
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
-      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "rpcStatus": {
       "type": "object",
@@ -676,6 +676,10 @@
         "kubernetes": {
           "$ref": "#/definitions/v1KubernetesSettings",
           "description": "Kubernetes runtime settings."
+        },
+        "kubernetesOptions": {
+          "$ref": "#/definitions/v1KubernetesOptions",
+          "description": "Kubernetes runtime options."
         }
       }
     },
@@ -730,6 +734,41 @@
       ],
       "default": "IMAGE_PULL_POLICY_UNSPECIFIED",
       "description": "Kubernetes image pull policy.\n\n - IMAGE_PULL_POLICY_UNSPECIFIED: Pull policy not specified (controller default).\n - IMAGE_PULL_POLICY_ALWAYS: Always pull the image.\n - IMAGE_PULL_POLICY_IF_NOT_PRESENT: Pull if not present on node.\n - IMAGE_PULL_POLICY_NEVER: Never pull the image."
+    },
+    "v1KubernetesOptions": {
+      "type": "object",
+      "properties": {
+        "podLabels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional labels to apply to runtime pods."
+        },
+        "podAnnotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional annotations to apply to runtime pods."
+        },
+        "serviceAccountName": {
+          "type": "string",
+          "description": "Service account name for runtime pods."
+        },
+        "imagePullSecrets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Image pull secrets for runtime pods."
+        },
+        "runtimeClassName": {
+          "type": "string",
+          "description": "Runtime class name for runtime pods."
+        }
+      },
+      "description": "Kubernetes runtime options for flow workloads."
     },
     "v1KubernetesSettings": {
       "type": "object",
