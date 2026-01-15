@@ -643,9 +643,11 @@ type StageSpec struct {
 	// Opaque, plugin-owned config
 	Config *structpb.Struct `protobuf:"bytes,6,opt,name=config,proto3" json:"config,omitempty"`
 	// Optional plugin implementation override.
-	Plugin        *string `protobuf:"bytes,7,opt,name=plugin,proto3,oneof" json:"plugin,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Plugin *string `protobuf:"bytes,7,opt,name=plugin,proto3,oneof" json:"plugin,omitempty"`
+	// Optional real-time scheduling priority for worker threads (Linux only).
+	RealtimePriority *uint32 `protobuf:"varint,8,opt,name=realtime_priority,json=realtimePriority,proto3,oneof" json:"realtime_priority,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *StageSpec) Reset() {
@@ -725,6 +727,13 @@ func (x *StageSpec) GetPlugin() string {
 		return *x.Plugin
 	}
 	return ""
+}
+
+func (x *StageSpec) GetRealtimePriority() uint32 {
+	if x != nil && x.RealtimePriority != nil {
+		return *x.RealtimePriority
+	}
+	return 0
 }
 
 type QueueSpec struct {
@@ -1094,7 +1103,7 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\n" +
 	"_resources\";\n" +
 	"\tExecution\x12.\n" +
-	"\x04mode\x18\x01 \x01(\x0e2\x1a.flowpipe.v1.ExecutionModeR\x04mode\"\x95\x02\n" +
+	"\x04mode\x18\x01 \x01(\x0e2\x1a.flowpipe.v1.ExecutionModeR\x04mode\"\xdd\x02\n" +
 	"\tStageSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +
@@ -1103,10 +1112,12 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"inputQueue\x88\x01\x01\x12&\n" +
 	"\foutput_queue\x18\x05 \x01(\tH\x01R\voutputQueue\x88\x01\x01\x12/\n" +
 	"\x06config\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x1b\n" +
-	"\x06plugin\x18\a \x01(\tH\x02R\x06plugin\x88\x01\x01B\x0e\n" +
+	"\x06plugin\x18\a \x01(\tH\x02R\x06plugin\x88\x01\x01\x120\n" +
+	"\x11realtime_priority\x18\b \x01(\rH\x03R\x10realtimePriority\x88\x01\x01B\x0e\n" +
 	"\f_input_queueB\x0f\n" +
 	"\r_output_queueB\t\n" +
-	"\a_plugin\"}\n" +
+	"\a_pluginB\x14\n" +
+	"\x12_realtime_priority\"}\n" +
 	"\tQueueSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bcapacity\x18\x02 \x01(\rR\bcapacity\x125\n" +

@@ -964,6 +964,11 @@
         "plugin": {
           "type": "string",
           "description": "Optional plugin implementation override."
+        },
+        "realtimePriority": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Optional real-time scheduling priority for worker threads (Linux only)."
         }
       }
     }
