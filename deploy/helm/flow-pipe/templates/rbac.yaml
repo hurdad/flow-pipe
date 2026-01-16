@@ -11,7 +11,7 @@ metadata:
   namespace: {{ include "flowpipe.namespace" . }}
 rules:
   - apiGroups: ["", "apps", "batch"]
-    resources: ["pods", "services", "configmaps", "deployments", "jobs"]
+    resources: ["pods", "services", "configmaps", "deployments", "daemonsets", "jobs"]
     verbs: ["get", "list", "watch", "create", "update", "delete"]
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
