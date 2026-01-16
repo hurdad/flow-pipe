@@ -13,7 +13,7 @@ To install with plain Helm from the repository root:
 helm upgrade --install flow-pipe deploy/helm/flow-pipe
 ```
 
-Override values as needed for image tags, etcd endpoints, and Kubernetes namespaces.
+Override values as needed for image tags, etcd endpoints, and Kubernetes namespaces. To run etcd in HA mode, set `etcd.ha.enabled=true` and increase `etcd.replicas` (recommended odd number like 3). The chart will switch to a StatefulSet with a headless service for peer discovery while keeping the client service name (`flow-pipe-etcd`). 
 
 The Helm chart only bundles Grafana Alloy for observability. Configure the Alloy OTLP export endpoints for metrics, traces, and logs under `observability.alloy.exporters` to forward telemetry to your backend.
 

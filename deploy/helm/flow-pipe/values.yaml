@@ -34,6 +34,8 @@ etcd:
   imagePullPolicy: IfNotPresent
   replicas: 1
   port: 2379
+  ha:
+    enabled: false
   service:
     # Options: ClusterIP (default), LoadBalancer
     type: ClusterIP
