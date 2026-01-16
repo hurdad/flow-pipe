@@ -88,6 +88,7 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 		spec,
 		pullPolicyFromSpec(spec),
 		c.observabilityEnabled,
+		c.otelEndpoint,
 	)
 	if err != nil {
 		span.RecordError(err)

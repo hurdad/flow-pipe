@@ -33,6 +33,7 @@ func ensureRuntime(
 	spec *flowpipev1.FlowSpec,
 	imagePullPolicy corev1.PullPolicy,
 	observabilityEnabled bool,
+	otelEndpoint string,
 ) (string, error) {
 	if client == nil {
 		return "", fmt.Errorf("kubernetes client is required for runtime reconciliation")
@@ -65,17 +66,17 @@ func ensureRuntime(
 
 	switch mode {
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
-		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled)
+		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
 		options := spec.GetKubernetesOptions()
 		if options != nil && options.StreamingWorkloadKind == flowpipev1.StreamingWorkloadKind_STREAMING_WORKLOAD_KIND_DAEMONSET {
-			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, options)
+			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, options)
 		}
-		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, options)
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, options)
 	default:
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
-		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, spec.GetKubernetesOptions())
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, spec.GetKubernetesOptions())
 	}
 }
 
@@ -137,6 +138,7 @@ func applyDeployment(
 	imagePullPolicy corev1.PullPolicy,
 	configChecksum string,
 	observabilityEnabled bool,
+	otelEndpoint string,
 	options *flowpipev1.KubernetesOptions,
 ) (string, error) {
 	desired := &appsv1.Deployment{
@@ -170,7 +172,7 @@ func applyDeployment(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(observabilityEnabled),
+							Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -222,6 +224,7 @@ func applyDaemonSet(
 	imagePullPolicy corev1.PullPolicy,
 	configChecksum string,
 	observabilityEnabled bool,
+	otelEndpoint string,
 	options *flowpipev1.KubernetesOptions,
 ) (string, error) {
 	desired := &appsv1.DaemonSet{
@@ -254,7 +257,7 @@ func applyDaemonSet(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(observabilityEnabled),
+							Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -305,6 +308,7 @@ func applyJob(
 	imagePullPolicy corev1.PullPolicy,
 	configChecksum string,
 	observabilityEnabled bool,
+	otelEndpoint string,
 ) (string, error) {
 	name := spec.Name
 	desired := &batchv1.Job{
@@ -333,7 +337,7 @@ func applyJob(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(observabilityEnabled),
+							Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -450,7 +454,7 @@ func restartPolicyFromSpec(spec *flowpipev1.FlowSpec) corev1.RestartPolicy {
 	}
 }
 
-func runtimeEnv(observabilityEnabled bool) []corev1.EnvVar {
+func runtimeEnv(observabilityEnabled bool, otelEndpoint string) []corev1.EnvVar {
 	env := []corev1.EnvVar{
 		{Name: "FLOWPIPE_OBSERVABILITY_ENABLED", Value: fmt.Sprintf("%t", observabilityEnabled)},
 	}
@@ -464,14 +468,8 @@ func runtimeEnv(observabilityEnabled bool) []corev1.EnvVar {
 		corev1.EnvVar{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
 		corev1.EnvVar{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
 		corev1.EnvVar{
-			Name: "OTEL_EXPORTER_OTLP_ENDPOINT",
-			ValueFrom: &corev1.EnvVarSource{
-				ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{Name: "flow-pipe-observability"},
-					Key:                  "alloyEndpoint",
-					Optional:             boolPtr(true),
-				},
-			},
+			Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
+			Value: otelEndpoint,
 		},
 	)
 

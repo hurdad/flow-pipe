@@ -14,6 +14,7 @@ import (
 func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "runtime:latest"
+	otelEndpoint := "collector:4317"
 	spec := &flowpipev1.FlowSpec{
 		Name: "noop-observability",
 		Kubernetes: &flowpipev1.KubernetesSettings{
@@ -31,6 +32,7 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 		spec,
 		corev1.PullIfNotPresent,
 		true,
+		otelEndpoint,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
@@ -58,6 +60,7 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 func TestEnsureRuntimeCreatesDaemonSet(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "runtime:latest"
+	otelEndpoint := "collector:4317"
 	spec := &flowpipev1.FlowSpec{
 		Name: "noop-daemon",
 		Kubernetes: &flowpipev1.KubernetesSettings{
@@ -78,6 +81,7 @@ func TestEnsureRuntimeCreatesDaemonSet(t *testing.T) {
 		spec,
 		corev1.PullIfNotPresent,
 		true,
+		otelEndpoint,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
@@ -102,6 +106,7 @@ func TestEnsureRuntimeCreatesDaemonSet(t *testing.T) {
 func TestEnsureRuntimeCreatesJob(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "custom:tag"
+	otelEndpoint := "collector:4317"
 	spec := &flowpipev1.FlowSpec{
 		Name: "simple-pipeline-job",
 		Kubernetes: &flowpipev1.KubernetesSettings{
@@ -119,6 +124,7 @@ func TestEnsureRuntimeCreatesJob(t *testing.T) {
 		spec,
 		corev1.PullIfNotPresent,
 		true,
+		otelEndpoint,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
@@ -148,6 +154,7 @@ func TestEnsureRuntimeAppliesKubernetesOptions(t *testing.T) {
 	image := "runtime:latest"
 	serviceAccount := "flow-runner"
 	runtimeClass := "kata"
+	otelEndpoint := "collector:4317"
 	spec := &flowpipev1.FlowSpec{
 		Name: "noop-options",
 		Kubernetes: &flowpipev1.KubernetesSettings{
@@ -176,6 +183,7 @@ func TestEnsureRuntimeAppliesKubernetesOptions(t *testing.T) {
 		spec,
 		corev1.PullIfNotPresent,
 		false,
+		otelEndpoint,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
@@ -212,6 +220,7 @@ func TestEnsureRuntimeAppliesKubernetesOptions(t *testing.T) {
 func TestEnsureRuntimeUpdatesDeployment(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "updated:latest"
+	otelEndpoint := "collector:4317"
 	spec := &flowpipev1.FlowSpec{
 		Name: "update-runtime",
 		Kubernetes: &flowpipev1.KubernetesSettings{
@@ -277,6 +286,7 @@ func TestEnsureRuntimeUpdatesDeployment(t *testing.T) {
 		spec,
 		corev1.PullIfNotPresent,
 		true,
+		otelEndpoint,
 	)
 	if err != nil {
 		t.Fatalf("ensureRuntime error: %v", err)
