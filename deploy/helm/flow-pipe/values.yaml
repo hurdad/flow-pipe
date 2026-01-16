@@ -37,6 +37,7 @@ controller:
   replicas: 1
   workerCount: 1
   port: 8080
+  serviceName: flow-controller
   resources:
     requests:
       cpu: 100m
@@ -54,6 +55,7 @@ api:
   imagePullPolicy: IfNotPresent
   replicas: 1
   port: 8080
+  serviceName: flow-api
 
   httpService:
     # Options: ClusterIP (default), LoadBalancer
