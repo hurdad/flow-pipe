@@ -1,0 +1,98 @@
+{{- if .Values.alerting.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flow-pipe-alerts
+  namespace: {{ include "flowpipe.namespace" . }}
+  labels:
+    app.kubernetes.io/name: flow-pipe
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  groups:
+    - name: flow-pipe-api
+      rules:
+        - alert: FlowPipeApiHighErrorRate
+          expr: |
+            (
+              sum(increase(flow_api_http_requests_total{service_name="{{ .Values.api.serviceName }}", http_status_code=~"5.."}[10m]))
+              /
+              sum(increase(flow_api_http_requests_total{service_name="{{ .Values.api.serviceName }}"}[10m]))
+            ) > {{ .Values.alerting.api.errorRateThreshold }}
+            and
+            sum(increase(flow_api_http_requests_total{service_name="{{ .Values.api.serviceName }}"}[10m])) >= {{ .Values.alerting.api.minRequestCount }}
+          for: 10m
+          labels:
+            severity: warning
+            component: api
+          annotations:
+            summary: "Flow API 5xx error rate above {{ .Values.alerting.api.errorRateThreshold | quote }}"
+            description: "The Flow API is returning elevated 5xx responses over the last 10m."
+        - alert: FlowPipeApiHighLatency
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (
+                rate(flow_api_http_latency_ms_bucket{service_name="{{ .Values.api.serviceName }}"}[5m])
+              )
+            ) > {{ .Values.alerting.api.latencyP95Ms }}
+          for: 10m
+          labels:
+            severity: warning
+            component: api
+          annotations:
+            summary: "Flow API p95 latency above {{ .Values.alerting.api.latencyP95Ms }}ms"
+            description: "The Flow API 95th percentile latency is higher than expected."
+    - name: flow-pipe-controller
+      rules:
+        - alert: FlowPipeControllerReconcileFailures
+          expr: |
+            sum(increase(flow_controller_reconcile_failure_total{service_name="{{ .Values.controller.serviceName }}"}[10m]))
+            >= {{ .Values.alerting.controller.failureCount }}
+          for: 10m
+          labels:
+            severity: warning
+            component: controller
+          annotations:
+            summary: "Flow controller reconcile failures detected"
+            description: "Flow controller reconcile failures were observed in the last 10m."
+        - alert: FlowPipeControllerQueueDepthHigh
+          expr: |
+            max_over_time(flow_controller_queue_depth{service_name="{{ .Values.controller.serviceName }}"}[10m])
+            > {{ .Values.alerting.controller.maxQueueDepth }}
+          for: 10m
+          labels:
+            severity: warning
+            component: controller
+          annotations:
+            summary: "Flow controller queue depth above {{ .Values.alerting.controller.maxQueueDepth }}"
+            description: "The controller work queue depth is elevated."
+    - name: flow-pipe-runtime
+      rules:
+        - alert: FlowPipeRuntimeQueueDwellHigh
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (
+                rate(flowpipe_queue_dwell_ns_bucket{service_name="{{ .Values.runtime.serviceName }}"}[5m])
+              )
+            ) / 1000000
+            > {{ .Values.alerting.runtime.queueDwellP95Ms }}
+          for: 10m
+          labels:
+            severity: warning
+            component: runtime
+          annotations:
+            summary: "Runtime queue dwell p95 above {{ .Values.alerting.runtime.queueDwellP95Ms }}ms"
+            description: "Runtime queues are taking longer than expected to process items."
+        - alert: FlowPipeRuntimeStageErrors
+          expr: |
+            sum(increase(flowpipe_stage_errors_total{service_name="{{ .Values.runtime.serviceName }}"}[10m]))
+            >= {{ .Values.alerting.runtime.stageErrorCount }}
+          for: 10m
+          labels:
+            severity: warning
+            component: runtime
+          annotations:
+            summary: "Runtime stage errors detected"
+            description: "Stage errors were detected in the last 10m."
+{{- end }}
