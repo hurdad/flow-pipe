@@ -50,18 +50,16 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
           command:
-            - /bin/sh
-            - -c
-            - |
-              exec etcd \
-                --data-dir=/var/lib/etcd \
-                --name=${POD_NAME} \
-                --listen-peer-urls=http://0.0.0.0:2380 \
-                --listen-client-urls=http://0.0.0.0:{{ .Values.etcd.port }} \
-                --advertise-client-urls=http://${POD_NAME}.{{ include "flowpipe.etcdHeadlessName" . }}:{{ .Values.etcd.port }} \
-                --initial-advertise-peer-urls=http://${POD_NAME}.{{ include "flowpipe.etcdHeadlessName" . }}:2380 \
-                --initial-cluster={{ include "flowpipe.etcdInitialCluster" . }} \
-                --initial-cluster-state=new
+            - etcd
+          args:
+            - --data-dir=/var/lib/etcd
+            - --name=$(POD_NAME)
+            - --listen-peer-urls=http://0.0.0.0:2380
+            - --listen-client-urls=http://0.0.0.0:{{ .Values.etcd.port }}
+            - --advertise-client-urls=http://$(POD_NAME).{{ include "flowpipe.etcdHeadlessName" . }}:{{ .Values.etcd.port }}
+            - --initial-advertise-peer-urls=http://$(POD_NAME).{{ include "flowpipe.etcdHeadlessName" . }}:2380
+            - --initial-cluster={{ include "flowpipe.etcdInitialCluster" . }}
+            - --initial-cluster-state=new
           ports:
             - name: client
               containerPort: {{ .Values.etcd.port }}
