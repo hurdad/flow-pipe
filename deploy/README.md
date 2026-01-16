@@ -22,3 +22,5 @@ Disable observability exporters for the API/controller (and runtime pods launche
 ## Grafana Dashboard
 
 Import `deploy/grafana/flowpipe-api-dashboard.json` into Grafana to get a starter dashboard for the Flow-Pipe API with metrics, logs, and traces panels. The dashboard expects Prometheus, Loki, and Tempo data sources plus a `service_name` label of `flow-api` (the default `OTEL_SERVICE_NAME`).
+
+Import `deploy/grafana/flowpipe-controller-dashboard.json` into Grafana to get a starter dashboard for the Flow-Pipe controller, including reconcile/queue metrics, logs, and traces. It expects Prometheus, Loki, and Tempo data sources plus a `service_name` label of `flow-controller` (the controller default `OTEL_SERVICE_NAME`).
