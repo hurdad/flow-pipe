@@ -18,3 +18,7 @@ Override values as needed for image tags, etcd endpoints, and Kubernetes namespa
 The Helm chart only bundles Grafana Alloy for observability. Configure the Alloy OTLP export endpoints for metrics, traces, and logs under `observability.alloy.exporters` to forward telemetry to your backend.
 
 Disable observability exporters for the API/controller (and runtime pods launched by the controller) by setting `observability.enabled=false` in Helm values.
+
+## Grafana Dashboard
+
+Import `deploy/grafana/flowpipe-api-dashboard.json` into Grafana to get a starter dashboard for the Flow-Pipe API with metrics, logs, and traces panels. The dashboard expects Prometheus, Loki, and Tempo data sources plus a `service_name` label of `flow-api` (the default `OTEL_SERVICE_NAME`).
