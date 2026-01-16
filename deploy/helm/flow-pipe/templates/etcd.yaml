@@ -1,5 +1,107 @@
 {{- if .Values.etcd.enabled }}
 
+{{- if .Values.etcd.ha.enabled }}
+# -------------------------------
+# Etcd Headless Service (HA peer discovery)
+# -------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flowpipe.etcdHeadlessName" . }}
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  clusterIP: None
+  selector:
+    app: flow-pipe-etcd
+  ports:
+    - name: peer
+      port: 2380
+      targetPort: 2380
+    - name: client
+      port: {{ .Values.etcd.port }}
+      targetPort: {{ .Values.etcd.port }}
+
+---
+# -------------------------------
+# Etcd StatefulSet (HA)
+# -------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: flow-pipe-etcd
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  replicas: {{ .Values.etcd.replicas }}
+  serviceName: {{ include "flowpipe.etcdHeadlessName" . }}
+  selector:
+    matchLabels:
+      app: flow-pipe-etcd
+  template:
+    metadata:
+      labels:
+        app: flow-pipe-etcd
+    spec:
+      containers:
+        - name: etcd
+          image: {{ .Values.etcd.image }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          command:
+            - /bin/sh
+            - -c
+            - |
+              exec etcd \
+                --data-dir=/var/lib/etcd \
+                --name=${POD_NAME} \
+                --listen-peer-urls=http://0.0.0.0:2380 \
+                --listen-client-urls=http://0.0.0.0:{{ .Values.etcd.port }} \
+                --advertise-client-urls=http://${POD_NAME}.{{ include "flowpipe.etcdHeadlessName" . }}:{{ .Values.etcd.port }} \
+                --initial-advertise-peer-urls=http://${POD_NAME}.{{ include "flowpipe.etcdHeadlessName" . }}:2380 \
+                --initial-cluster={{ include "flowpipe.etcdInitialCluster" . }} \
+                --initial-cluster-state=new
+          ports:
+            - name: client
+              containerPort: {{ .Values.etcd.port }}
+            - name: peer
+              containerPort: 2380
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/etcd
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.etcd.storage.size }}
+        {{- if .Values.etcd.storage.storageClassName }}
+        storageClassName: {{ .Values.etcd.storage.storageClassName }}
+        {{- end }}
+
+---
+# -------------------------------
+# Etcd Client Service
+# -------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-pipe-etcd
+  namespace: {{ include "flowpipe.namespace" . }}
+spec:
+  type: {{ .Values.etcd.service.type | default "ClusterIP" }}
+  selector:
+    app: flow-pipe-etcd
+  ports:
+    - name: client
+      port: {{ .Values.etcd.port }}
+      targetPort: {{ .Values.etcd.port }}
+
+{{- else }}
 # -------------------------------
 # Persistent Volume Claim
 # -------------------------------
@@ -73,5 +175,6 @@ spec:
     - name: client
       port: {{ .Values.etcd.port }}
       targetPort: {{ .Values.etcd.port }}
+{{- end }}
 
 {{- end }}
