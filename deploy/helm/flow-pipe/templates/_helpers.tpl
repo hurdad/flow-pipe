@@ -5,6 +5,8 @@
 {{ .Values.namespace.name }}
 {{- else -}}
 {{ .Release.Namespace }}
+{{- end }}
+{{- end }}
 
 {{- define "flowpipe.etcdHeadlessName" -}}flow-pipe-etcd-headless{{- end }}
 
