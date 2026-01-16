@@ -9,6 +9,8 @@ kind: Service
 metadata:
   name: {{ include "flowpipe.etcdHeadlessName" . }}
   namespace: {{ include "flowpipe.namespace" . }}
+  annotations:
+    k8s.grafana.com/scrape: "true"
 spec:
   clusterIP: None
   selector:
