@@ -8,8 +8,7 @@ namespace:
 observability:
   enabled: false
 
-  otel:
-    exporterOtlpGrpcEndpoint: "localhost:4317"
+  exporterOtlpGrpcEndpoint: "localhost:4317"
 
 # --------------------------------------------------
 # Etcd (used by API + controller)
