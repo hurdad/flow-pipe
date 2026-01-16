@@ -41,7 +41,7 @@ spec:
               value: {{ .Values.observability.enabled | quote }}
             {{- if .Values.observability.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: {{ .Values.observability.otel.exporterOtlpGrpcEndpoint | quote }}
+              value: {{ .Values.observability.exporterOtlpGrpcEndpoint | quote }}
             {{- end }}
 
             # -------------------------------------------------
