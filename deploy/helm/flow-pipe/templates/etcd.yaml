@@ -9,8 +9,6 @@ kind: Service
 metadata:
   name: {{ include "flowpipe.etcdHeadlessName" . }}
   namespace: {{ include "flowpipe.namespace" . }}
-  annotations:
-    k8s.grafana.com/scrape: "true"
 spec:
   clusterIP: None
   selector:
@@ -92,8 +90,6 @@ kind: Service
 metadata:
   name: flow-pipe-etcd
   namespace: {{ include "flowpipe.namespace" . }}
-  annotations:
-    k8s.grafana.com/scrape: "true"
 spec:
   type: {{ .Values.etcd.service.type | default "ClusterIP" }}
   selector:
@@ -169,8 +165,6 @@ kind: Service
 metadata:
   name: flow-pipe-etcd
   namespace: {{ include "flowpipe.namespace" . }}
-  annotations:
-    k8s.grafana.com/scrape: "true"
 spec:
   type: {{ .Values.etcd.service.type | default "ClusterIP" }}
   selector:
