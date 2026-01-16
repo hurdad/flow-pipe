@@ -39,6 +39,8 @@ spec:
             # -------------------------------------------------
             - name: FLOW_OBSERVABILITY_ENABLED
               value: {{ .Values.observability.enabled | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.api.serviceName | quote }}
             {{- if .Values.observability.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: {{ .Values.observability.exporterOtlpGrpcEndpoint | quote }}
