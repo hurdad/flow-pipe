@@ -10,6 +10,22 @@ observability:
   exporterOtlpGrpcEndpoint: "localhost:4317"
 
 # --------------------------------------------------
+# Alerting (PrometheusRule)
+# --------------------------------------------------
+alerting:
+  enabled: false
+  api:
+    errorRateThreshold: 0.05
+    minRequestCount: 20
+    latencyP95Ms: 500
+  controller:
+    maxQueueDepth: 100
+    failureCount: 1
+  runtime:
+    queueDwellP95Ms: 5000
+    stageErrorCount: 1
+
+# --------------------------------------------------
 # Etcd (used by API + controller)
 # --------------------------------------------------
 etcd:
@@ -86,3 +102,9 @@ api:
     tls:
       enabled: false
       secretName: ""
+
+# --------------------------------------------------
+# Runtime
+# --------------------------------------------------
+runtime:
+  serviceName: flow-runtime

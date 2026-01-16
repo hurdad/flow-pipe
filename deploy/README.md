@@ -19,6 +19,10 @@ The Helm chart only bundles Grafana Alloy for observability. Configure the Alloy
 
 Disable observability exporters for the API/controller (and runtime pods launched by the controller) by setting `observability.enabled=false` in Helm values.
 
+### Alerting rules
+
+The Helm chart can optionally create Prometheus alerting rules for the API, controller, and runtime components. Enable them by setting `alerting.enabled=true` in `deploy/helm/flow-pipe/values.yaml`, and tune thresholds under `alerting.api`, `alerting.controller`, and `alerting.runtime` as needed.
+
 ## Grafana Dashboard
 
 Import `deploy/grafana/flowpipe-overview-dashboard.json` for a top-level summary of the API, runtime, and controller metrics. It expects a Prometheus data source and `service_name` labels of `flow-api`, `flow-runtime`, and `flow-controller` (matching each component's `OTEL_SERVICE_NAME`).
