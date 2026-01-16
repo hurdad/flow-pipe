@@ -7,7 +7,6 @@ namespace:
 # --------------------------------------------------
 observability:
   enabled: false
-
   exporterOtlpGrpcEndpoint: "localhost:4317"
 
 # --------------------------------------------------
