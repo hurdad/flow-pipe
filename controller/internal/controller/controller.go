@@ -25,6 +25,7 @@ type Controller struct {
 
 	runtimeNamespace     string
 	observabilityEnabled bool
+	otelEndpoint         string
 	workerCount          int
 
 	logger observability.Logger
@@ -50,6 +51,7 @@ func New(
 	kube kubernetes.Interface,
 	runtimeNamespace string,
 	observabilityEnabled bool,
+	otelEndpoint string,
 	workerCount int,
 ) *Controller {
 	meter := otelMeter()
@@ -92,6 +94,7 @@ func New(
 		kube:                 kube,
 		runtimeNamespace:     runtimeNamespace,
 		observabilityEnabled: observabilityEnabled,
+		otelEndpoint:         otelEndpoint,
 		workerCount:          workerCount,
 		logger:               logger,
 		tracer:               observability.Tracer("github.com/hurdad/flow-pipe/controller"),
