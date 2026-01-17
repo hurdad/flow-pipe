@@ -15,7 +15,7 @@ spec:
     spec:
       serviceAccountName: flow-pipe-controller
       containers:
-        - name: controller
+        - name: flow-controller
           image: {{ .Values.controller.image }}
           imagePullPolicy: {{ .Values.controller.imagePullPolicy | default "IfNotPresent" }}
           env:

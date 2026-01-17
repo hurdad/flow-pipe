@@ -5,6 +5,8 @@ kubernetes:
   image: ghcr.io/hurdad/flow-pipe-runtime:main-ubuntu24.04
   image_pull_policy: IMAGE_PULL_POLICY_ALWAYS
   restart_policy: RESTART_POLICY_ALWAYS
+kubernetes_options:
+  streaming_workload_kind: STREAMING_WORKLOAD_KIND_DEPLOYMENT
 queues:
   - name: q1
     capacity: 128
@@ -14,7 +16,7 @@ stages:
     threads: 1
     output_queue: q1
     config:
-      delay_ms: 200
+      delay_ms: 1000
       message: "FOOBAR"
       max_messages: 0
   - name: sink
@@ -24,4 +26,4 @@ stages:
 observability:
   metrics_enabled: true
   tracing_enabled: true
-  logs_enabled: true
+  logs_enabled: false
