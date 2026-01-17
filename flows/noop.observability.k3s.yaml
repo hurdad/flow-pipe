@@ -25,5 +25,11 @@ stages:
     input_queue: q1
 observability:
   metrics_enabled: true
+  metrics:
+    stage_metrics_enabled: true
+    queue_metrics_enabled: true
+    flow_metrics_enabled: true
+    latency_histograms_enabled: true
   tracing_enabled: true
   logs_enabled: false
+  debug: true

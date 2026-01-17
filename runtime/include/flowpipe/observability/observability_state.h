@@ -7,8 +7,6 @@
 
 #include <opentelemetry/logs/logger_provider.h>
 #include <opentelemetry/metrics/meter_provider.h>
-#include <opentelemetry/metrics/observable_instrument.h>
-#include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/sdk/logs/logger_provider.h>
 #include <opentelemetry/sdk/metrics/meter_provider.h>
 #include <opentelemetry/sdk/trace/tracer_provider.h>
