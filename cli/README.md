@@ -150,6 +150,7 @@ Behavior:
 
 Flags:
 - `--api` – API address (defaults to `localhost:9090`)
+- `--api-key` – API key for authenticated APIs (or set `FLOW_API_KEY`)
 - `--timeout` – gRPC request timeout (default 5s)
 
 ---

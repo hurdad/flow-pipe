@@ -9,6 +9,7 @@ import (
 
 var (
 	apiAddr   string
+	apiKey    string
 	namespace string
 	verbose   bool
 )
@@ -32,6 +33,12 @@ func init() {
 		"api",
 		"",
 		"Flow-pipe API address (e.g. https://flow-pipe.local)",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&apiKey,
+		"api-key",
+		os.Getenv("FLOW_API_KEY"),
+		"Flow-pipe API key (or set FLOW_API_KEY)",
 	)
 
 	rootCmd.PersistentFlags().StringVar(
