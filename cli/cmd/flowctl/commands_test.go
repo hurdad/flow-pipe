@@ -25,7 +25,14 @@ func (s *testFlowService) GetFlow(ctx context.Context, req *flowpipev1.GetFlowRe
 
 func (s *testFlowService) ListFlows(ctx context.Context, req *flowpipev1.ListFlowsRequest) (*flowpipev1.ListFlowsResponse, error) {
 	s.listCalled = true
-	return &flowpipev1.ListFlowsResponse{Flows: []*flowpipev1.Flow{{Name: "flow-a", Version: 1}}}, nil
+	return &flowpipev1.ListFlowsResponse{
+		Flows: []*flowpipev1.FlowSummary{
+			{
+				Name:   "flow-a",
+				Status: &flowpipev1.FlowStatus{State: flowpipev1.FlowState_FLOW_STATE_RUNNING},
+			},
+		},
+	}, nil
 }
 
 func (s *testFlowService) GetFlowStatus(ctx context.Context, req *flowpipev1.GetFlowStatusRequest) (*flowpipev1.FlowStatus, error) {

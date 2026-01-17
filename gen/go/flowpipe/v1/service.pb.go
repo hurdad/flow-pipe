@@ -243,16 +243,68 @@ func (*ListFlowsRequest) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{4}
 }
 
+type FlowSummary struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Status        *FlowStatus            `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FlowSummary) Reset() {
+	*x = FlowSummary{}
+	mi := &file_flowpipe_v1_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FlowSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FlowSummary) ProtoMessage() {}
+
+func (x *FlowSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FlowSummary.ProtoReflect.Descriptor instead.
+func (*FlowSummary) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *FlowSummary) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *FlowSummary) GetStatus() *FlowStatus {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
 type ListFlowsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Flows         []*Flow                `protobuf:"bytes,1,rep,name=flows,proto3" json:"flows,omitempty"`
+	Flows         []*FlowSummary         `protobuf:"bytes,1,rep,name=flows,proto3" json:"flows,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListFlowsResponse) Reset() {
 	*x = ListFlowsResponse{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -264,7 +316,7 @@ func (x *ListFlowsResponse) String() string {
 func (*ListFlowsResponse) ProtoMessage() {}
 
 func (x *ListFlowsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -277,10 +329,10 @@ func (x *ListFlowsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFlowsResponse.ProtoReflect.Descriptor instead.
 func (*ListFlowsResponse) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{5}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListFlowsResponse) GetFlows() []*Flow {
+func (x *ListFlowsResponse) GetFlows() []*FlowSummary {
 	if x != nil {
 		return x.Flows
 	}
@@ -296,7 +348,7 @@ type GetFlowStatusRequest struct {
 
 func (x *GetFlowStatusRequest) Reset() {
 	*x = GetFlowStatusRequest{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -308,7 +360,7 @@ func (x *GetFlowStatusRequest) String() string {
 func (*GetFlowStatusRequest) ProtoMessage() {}
 
 func (x *GetFlowStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -321,7 +373,7 @@ func (x *GetFlowStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFlowStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetFlowStatusRequest) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{6}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetFlowStatusRequest) GetName() string {
@@ -341,7 +393,7 @@ type RollbackFlowRequest struct {
 
 func (x *RollbackFlowRequest) Reset() {
 	*x = RollbackFlowRequest{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -353,7 +405,7 @@ func (x *RollbackFlowRequest) String() string {
 func (*RollbackFlowRequest) ProtoMessage() {}
 
 func (x *RollbackFlowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -366,7 +418,7 @@ func (x *RollbackFlowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RollbackFlowRequest.ProtoReflect.Descriptor instead.
 func (*RollbackFlowRequest) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{7}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RollbackFlowRequest) GetName() string {
@@ -399,7 +451,7 @@ type SchemaDefinition struct {
 
 func (x *SchemaDefinition) Reset() {
 	*x = SchemaDefinition{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -411,7 +463,7 @@ func (x *SchemaDefinition) String() string {
 func (*SchemaDefinition) ProtoMessage() {}
 
 func (x *SchemaDefinition) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -424,7 +476,7 @@ func (x *SchemaDefinition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SchemaDefinition.ProtoReflect.Descriptor instead.
 func (*SchemaDefinition) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{8}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SchemaDefinition) GetSchemaId() string {
@@ -464,7 +516,7 @@ type CreateSchemaRequest struct {
 
 func (x *CreateSchemaRequest) Reset() {
 	*x = CreateSchemaRequest{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -476,7 +528,7 @@ func (x *CreateSchemaRequest) String() string {
 func (*CreateSchemaRequest) ProtoMessage() {}
 
 func (x *CreateSchemaRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -489,7 +541,7 @@ func (x *CreateSchemaRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSchemaRequest.ProtoReflect.Descriptor instead.
 func (*CreateSchemaRequest) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{9}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateSchemaRequest) GetSchema() *SchemaDefinition {
@@ -509,7 +561,7 @@ type GetSchemaRequest struct {
 
 func (x *GetSchemaRequest) Reset() {
 	*x = GetSchemaRequest{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -521,7 +573,7 @@ func (x *GetSchemaRequest) String() string {
 func (*GetSchemaRequest) ProtoMessage() {}
 
 func (x *GetSchemaRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -534,7 +586,7 @@ func (x *GetSchemaRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSchemaRequest.ProtoReflect.Descriptor instead.
 func (*GetSchemaRequest) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{10}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetSchemaRequest) GetSchemaId() string {
@@ -560,7 +612,7 @@ type ListSchemaVersionsRequest struct {
 
 func (x *ListSchemaVersionsRequest) Reset() {
 	*x = ListSchemaVersionsRequest{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[11]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -572,7 +624,7 @@ func (x *ListSchemaVersionsRequest) String() string {
 func (*ListSchemaVersionsRequest) ProtoMessage() {}
 
 func (x *ListSchemaVersionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[11]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -585,7 +637,7 @@ func (x *ListSchemaVersionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSchemaVersionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSchemaVersionsRequest) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{11}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListSchemaVersionsRequest) GetSchemaId() string {
@@ -604,7 +656,7 @@ type ListSchemaVersionsResponse struct {
 
 func (x *ListSchemaVersionsResponse) Reset() {
 	*x = ListSchemaVersionsResponse{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[12]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -616,7 +668,7 @@ func (x *ListSchemaVersionsResponse) String() string {
 func (*ListSchemaVersionsResponse) ProtoMessage() {}
 
 func (x *ListSchemaVersionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[12]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -629,7 +681,7 @@ func (x *ListSchemaVersionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSchemaVersionsResponse.ProtoReflect.Descriptor instead.
 func (*ListSchemaVersionsResponse) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{12}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListSchemaVersionsResponse) GetSchemas() []*SchemaDefinition {
@@ -648,7 +700,7 @@ type DeleteSchemaRequest struct {
 
 func (x *DeleteSchemaRequest) Reset() {
 	*x = DeleteSchemaRequest{}
-	mi := &file_flowpipe_v1_service_proto_msgTypes[13]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -660,7 +712,7 @@ func (x *DeleteSchemaRequest) String() string {
 func (*DeleteSchemaRequest) ProtoMessage() {}
 
 func (x *DeleteSchemaRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_service_proto_msgTypes[13]
+	mi := &file_flowpipe_v1_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -673,7 +725,7 @@ func (x *DeleteSchemaRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSchemaRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSchemaRequest) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{13}
+	return file_flowpipe_v1_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeleteSchemaRequest) GetSchemaId() string {
@@ -697,9 +749,12 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"$\n" +
 	"\x0eGetFlowRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\x12\n" +
-	"\x10ListFlowsRequest\"<\n" +
-	"\x11ListFlowsResponse\x12'\n" +
-	"\x05flows\x18\x01 \x03(\v2\x11.flowpipe.v1.FlowR\x05flows\"*\n" +
+	"\x10ListFlowsRequest\"R\n" +
+	"\vFlowSummary\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
+	"\x06status\x18\x02 \x01(\v2\x17.flowpipe.v1.FlowStatusR\x06status\"C\n" +
+	"\x11ListFlowsResponse\x12.\n" +
+	"\x05flows\x18\x01 \x03(\v2\x18.flowpipe.v1.FlowSummaryR\x05flows\"*\n" +
 	"\x14GetFlowStatusRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"C\n" +
 	"\x13RollbackFlowRequest\x12\x12\n" +
@@ -751,62 +806,64 @@ func file_flowpipe_v1_service_proto_rawDescGZIP() []byte {
 	return file_flowpipe_v1_service_proto_rawDescData
 }
 
-var file_flowpipe_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_flowpipe_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_flowpipe_v1_service_proto_goTypes = []any{
 	(*CreateFlowRequest)(nil),          // 0: flowpipe.v1.CreateFlowRequest
 	(*UpdateFlowRequest)(nil),          // 1: flowpipe.v1.UpdateFlowRequest
 	(*DeleteFlowRequest)(nil),          // 2: flowpipe.v1.DeleteFlowRequest
 	(*GetFlowRequest)(nil),             // 3: flowpipe.v1.GetFlowRequest
 	(*ListFlowsRequest)(nil),           // 4: flowpipe.v1.ListFlowsRequest
-	(*ListFlowsResponse)(nil),          // 5: flowpipe.v1.ListFlowsResponse
-	(*GetFlowStatusRequest)(nil),       // 6: flowpipe.v1.GetFlowStatusRequest
-	(*RollbackFlowRequest)(nil),        // 7: flowpipe.v1.RollbackFlowRequest
-	(*SchemaDefinition)(nil),           // 8: flowpipe.v1.SchemaDefinition
-	(*CreateSchemaRequest)(nil),        // 9: flowpipe.v1.CreateSchemaRequest
-	(*GetSchemaRequest)(nil),           // 10: flowpipe.v1.GetSchemaRequest
-	(*ListSchemaVersionsRequest)(nil),  // 11: flowpipe.v1.ListSchemaVersionsRequest
-	(*ListSchemaVersionsResponse)(nil), // 12: flowpipe.v1.ListSchemaVersionsResponse
-	(*DeleteSchemaRequest)(nil),        // 13: flowpipe.v1.DeleteSchemaRequest
-	(*FlowSpec)(nil),                   // 14: flowpipe.v1.FlowSpec
-	(*Flow)(nil),                       // 15: flowpipe.v1.Flow
-	(QueueSchemaFormat)(0),             // 16: flowpipe.v1.QueueSchemaFormat
-	(*emptypb.Empty)(nil),              // 17: google.protobuf.Empty
-	(*FlowStatus)(nil),                 // 18: flowpipe.v1.FlowStatus
+	(*FlowSummary)(nil),                // 5: flowpipe.v1.FlowSummary
+	(*ListFlowsResponse)(nil),          // 6: flowpipe.v1.ListFlowsResponse
+	(*GetFlowStatusRequest)(nil),       // 7: flowpipe.v1.GetFlowStatusRequest
+	(*RollbackFlowRequest)(nil),        // 8: flowpipe.v1.RollbackFlowRequest
+	(*SchemaDefinition)(nil),           // 9: flowpipe.v1.SchemaDefinition
+	(*CreateSchemaRequest)(nil),        // 10: flowpipe.v1.CreateSchemaRequest
+	(*GetSchemaRequest)(nil),           // 11: flowpipe.v1.GetSchemaRequest
+	(*ListSchemaVersionsRequest)(nil),  // 12: flowpipe.v1.ListSchemaVersionsRequest
+	(*ListSchemaVersionsResponse)(nil), // 13: flowpipe.v1.ListSchemaVersionsResponse
+	(*DeleteSchemaRequest)(nil),        // 14: flowpipe.v1.DeleteSchemaRequest
+	(*FlowSpec)(nil),                   // 15: flowpipe.v1.FlowSpec
+	(*FlowStatus)(nil),                 // 16: flowpipe.v1.FlowStatus
+	(QueueSchemaFormat)(0),             // 17: flowpipe.v1.QueueSchemaFormat
+	(*Flow)(nil),                       // 18: flowpipe.v1.Flow
+	(*emptypb.Empty)(nil),              // 19: google.protobuf.Empty
 }
 var file_flowpipe_v1_service_proto_depIdxs = []int32{
-	14, // 0: flowpipe.v1.CreateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
-	14, // 1: flowpipe.v1.UpdateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
-	15, // 2: flowpipe.v1.ListFlowsResponse.flows:type_name -> flowpipe.v1.Flow
-	16, // 3: flowpipe.v1.SchemaDefinition.format:type_name -> flowpipe.v1.QueueSchemaFormat
-	8,  // 4: flowpipe.v1.CreateSchemaRequest.schema:type_name -> flowpipe.v1.SchemaDefinition
-	8,  // 5: flowpipe.v1.ListSchemaVersionsResponse.schemas:type_name -> flowpipe.v1.SchemaDefinition
-	0,  // 6: flowpipe.v1.FlowService.CreateFlow:input_type -> flowpipe.v1.CreateFlowRequest
-	1,  // 7: flowpipe.v1.FlowService.UpdateFlow:input_type -> flowpipe.v1.UpdateFlowRequest
-	2,  // 8: flowpipe.v1.FlowService.DeleteFlow:input_type -> flowpipe.v1.DeleteFlowRequest
-	3,  // 9: flowpipe.v1.FlowService.GetFlow:input_type -> flowpipe.v1.GetFlowRequest
-	4,  // 10: flowpipe.v1.FlowService.ListFlows:input_type -> flowpipe.v1.ListFlowsRequest
-	6,  // 11: flowpipe.v1.FlowService.GetFlowStatus:input_type -> flowpipe.v1.GetFlowStatusRequest
-	7,  // 12: flowpipe.v1.FlowService.RollbackFlow:input_type -> flowpipe.v1.RollbackFlowRequest
-	9,  // 13: flowpipe.v1.SchemaRegistryService.CreateSchema:input_type -> flowpipe.v1.CreateSchemaRequest
-	10, // 14: flowpipe.v1.SchemaRegistryService.GetSchema:input_type -> flowpipe.v1.GetSchemaRequest
-	11, // 15: flowpipe.v1.SchemaRegistryService.ListSchemaVersions:input_type -> flowpipe.v1.ListSchemaVersionsRequest
-	13, // 16: flowpipe.v1.SchemaRegistryService.DeleteSchema:input_type -> flowpipe.v1.DeleteSchemaRequest
-	15, // 17: flowpipe.v1.FlowService.CreateFlow:output_type -> flowpipe.v1.Flow
-	15, // 18: flowpipe.v1.FlowService.UpdateFlow:output_type -> flowpipe.v1.Flow
-	17, // 19: flowpipe.v1.FlowService.DeleteFlow:output_type -> google.protobuf.Empty
-	15, // 20: flowpipe.v1.FlowService.GetFlow:output_type -> flowpipe.v1.Flow
-	5,  // 21: flowpipe.v1.FlowService.ListFlows:output_type -> flowpipe.v1.ListFlowsResponse
-	18, // 22: flowpipe.v1.FlowService.GetFlowStatus:output_type -> flowpipe.v1.FlowStatus
-	15, // 23: flowpipe.v1.FlowService.RollbackFlow:output_type -> flowpipe.v1.Flow
-	8,  // 24: flowpipe.v1.SchemaRegistryService.CreateSchema:output_type -> flowpipe.v1.SchemaDefinition
-	8,  // 25: flowpipe.v1.SchemaRegistryService.GetSchema:output_type -> flowpipe.v1.SchemaDefinition
-	12, // 26: flowpipe.v1.SchemaRegistryService.ListSchemaVersions:output_type -> flowpipe.v1.ListSchemaVersionsResponse
-	17, // 27: flowpipe.v1.SchemaRegistryService.DeleteSchema:output_type -> google.protobuf.Empty
-	17, // [17:28] is the sub-list for method output_type
-	6,  // [6:17] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	15, // 0: flowpipe.v1.CreateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
+	15, // 1: flowpipe.v1.UpdateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
+	16, // 2: flowpipe.v1.FlowSummary.status:type_name -> flowpipe.v1.FlowStatus
+	5,  // 3: flowpipe.v1.ListFlowsResponse.flows:type_name -> flowpipe.v1.FlowSummary
+	17, // 4: flowpipe.v1.SchemaDefinition.format:type_name -> flowpipe.v1.QueueSchemaFormat
+	9,  // 5: flowpipe.v1.CreateSchemaRequest.schema:type_name -> flowpipe.v1.SchemaDefinition
+	9,  // 6: flowpipe.v1.ListSchemaVersionsResponse.schemas:type_name -> flowpipe.v1.SchemaDefinition
+	0,  // 7: flowpipe.v1.FlowService.CreateFlow:input_type -> flowpipe.v1.CreateFlowRequest
+	1,  // 8: flowpipe.v1.FlowService.UpdateFlow:input_type -> flowpipe.v1.UpdateFlowRequest
+	2,  // 9: flowpipe.v1.FlowService.DeleteFlow:input_type -> flowpipe.v1.DeleteFlowRequest
+	3,  // 10: flowpipe.v1.FlowService.GetFlow:input_type -> flowpipe.v1.GetFlowRequest
+	4,  // 11: flowpipe.v1.FlowService.ListFlows:input_type -> flowpipe.v1.ListFlowsRequest
+	7,  // 12: flowpipe.v1.FlowService.GetFlowStatus:input_type -> flowpipe.v1.GetFlowStatusRequest
+	8,  // 13: flowpipe.v1.FlowService.RollbackFlow:input_type -> flowpipe.v1.RollbackFlowRequest
+	10, // 14: flowpipe.v1.SchemaRegistryService.CreateSchema:input_type -> flowpipe.v1.CreateSchemaRequest
+	11, // 15: flowpipe.v1.SchemaRegistryService.GetSchema:input_type -> flowpipe.v1.GetSchemaRequest
+	12, // 16: flowpipe.v1.SchemaRegistryService.ListSchemaVersions:input_type -> flowpipe.v1.ListSchemaVersionsRequest
+	14, // 17: flowpipe.v1.SchemaRegistryService.DeleteSchema:input_type -> flowpipe.v1.DeleteSchemaRequest
+	18, // 18: flowpipe.v1.FlowService.CreateFlow:output_type -> flowpipe.v1.Flow
+	18, // 19: flowpipe.v1.FlowService.UpdateFlow:output_type -> flowpipe.v1.Flow
+	19, // 20: flowpipe.v1.FlowService.DeleteFlow:output_type -> google.protobuf.Empty
+	18, // 21: flowpipe.v1.FlowService.GetFlow:output_type -> flowpipe.v1.Flow
+	6,  // 22: flowpipe.v1.FlowService.ListFlows:output_type -> flowpipe.v1.ListFlowsResponse
+	16, // 23: flowpipe.v1.FlowService.GetFlowStatus:output_type -> flowpipe.v1.FlowStatus
+	18, // 24: flowpipe.v1.FlowService.RollbackFlow:output_type -> flowpipe.v1.Flow
+	9,  // 25: flowpipe.v1.SchemaRegistryService.CreateSchema:output_type -> flowpipe.v1.SchemaDefinition
+	9,  // 26: flowpipe.v1.SchemaRegistryService.GetSchema:output_type -> flowpipe.v1.SchemaDefinition
+	13, // 27: flowpipe.v1.SchemaRegistryService.ListSchemaVersions:output_type -> flowpipe.v1.ListSchemaVersionsResponse
+	19, // 28: flowpipe.v1.SchemaRegistryService.DeleteSchema:output_type -> google.protobuf.Empty
+	18, // [18:29] is the sub-list for method output_type
+	7,  // [7:18] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_service_proto_init() }
@@ -821,7 +878,7 @@ func file_flowpipe_v1_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_service_proto_rawDesc), len(file_flowpipe_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

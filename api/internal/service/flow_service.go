@@ -49,7 +49,17 @@ func (s *FlowServer) ListFlows(ctx context.Context, _ *flowpipev1.ListFlowsReque
 	if err != nil {
 		return nil, err
 	}
-	return &flowpipev1.ListFlowsResponse{Flows: flows}, nil
+	summaries := make([]*flowpipev1.FlowSummary, 0, len(flows))
+	for _, flow := range flows {
+		if flow == nil {
+			continue
+		}
+		summaries = append(summaries, &flowpipev1.FlowSummary{
+			Name:   flow.GetName(),
+			Status: flow.GetStatus(),
+		})
+	}
+	return &flowpipev1.ListFlowsResponse{Flows: summaries}, nil
 }
 
 func (s *FlowServer) DeleteFlow(ctx context.Context, r *flowpipev1.DeleteFlowRequest) (*emptypb.Empty, error) {
