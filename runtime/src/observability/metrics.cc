@@ -91,8 +91,9 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   state.stage_metrics_enabled = !metrics_cfg.stage_metrics_disabled();
   state.queue_metrics_enabled = !metrics_cfg.queue_metrics_disabled();
   state.flow_metrics_enabled = !metrics_cfg.flow_metrics_disabled();
-  state.latency_histograms = !metrics_cfg.latency_histograms_disabled();
   state.metrics_counters_only = metrics_cfg.counters_only();
+  state.latency_histograms =
+      !metrics_cfg.latency_histograms_disabled() && !state.metrics_counters_only;
 
   if (!state.stage_metrics_enabled && !state.queue_metrics_enabled && !state.flow_metrics_enabled) {
     return;
@@ -155,7 +156,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   // ----------------------------------------------------------
   // jemalloc observable metrics
   // ----------------------------------------------------------
-  {
+  if (!state.metrics_counters_only) {
     auto meter = api_provider->GetMeter("flowpipe.jemalloc");
 
     auto allocated = meter->CreateInt64ObservableGauge("flowpipe.jemalloc.allocated.bytes",

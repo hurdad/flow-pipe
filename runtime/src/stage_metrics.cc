@@ -38,9 +38,6 @@ void StageMetrics::RecordQueueDequeue(const QueueRuntime& queue, const Payload& 
   static auto dequeue_counter = meter->CreateUInt64Counter("flowpipe.queue.dequeue.count",
                                                            "Number of records dequeued from queue");
 
-  static auto dwell_histogram =
-      meter->CreateUInt64Histogram("flowpipe.queue.dwell_ns", "Time records spent in queue (ns)");
-
   const uint64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
                               std::chrono::steady_clock::now().time_since_epoch())
                               .count();
@@ -57,6 +54,8 @@ void StageMetrics::RecordQueueDequeue(const QueueRuntime& queue, const Payload& 
   dequeue_counter->Add(1, labels, ctx);
 
   if (state.latency_histograms && dwell_ns > 0) {
+    static auto dwell_histogram =
+        meter->CreateUInt64Histogram("flowpipe.queue.dwell_ns", "Time records spent in queue (ns)");
     dwell_histogram->Record(dwell_ns, labels, ctx);
   }
 
@@ -105,9 +104,6 @@ void StageMetrics::RecordStageLatency(const char* stage_name, uint64_t latency_n
   static auto process_counter =
       meter->CreateUInt64Counter("flowpipe.stage.process.count", "Number of stage invocations");
 
-  static auto latency_histogram =
-      meter->CreateUInt64Histogram("flowpipe.stage.latency_ns", "Stage processing latency (ns)");
-
   auto labels = std::initializer_list<
       std::pair<opentelemetry::nostd::string_view, opentelemetry::common::AttributeValue>>{
       {"stage", stage_name}};
@@ -117,6 +113,8 @@ void StageMetrics::RecordStageLatency(const char* stage_name, uint64_t latency_n
   process_counter->Add(1, labels, ctx);
 
   if (state.latency_histograms) {
+    static auto latency_histogram =
+        meter->CreateUInt64Histogram("flowpipe.stage.latency_ns", "Stage processing latency (ns)");
     latency_histogram->Record(latency_ns, labels, ctx);
   }
 
