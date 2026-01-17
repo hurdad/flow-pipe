@@ -3,7 +3,6 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -15,9 +14,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 3385566421303296,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": "$prometheus_datasource",
@@ -26,13 +24,47 @@
           "color": {
             "mode": "palette-classic"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -55,12 +87,16 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum by (flow_name) (rate(flow_controller_reconcile_success_total{service_name=\"$service\"}[$__rate_interval]))",
@@ -78,13 +114,47 @@
           "color": {
             "mode": "palette-classic"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -107,12 +177,16 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum by (flow_name) (rate(flow_controller_reconcile_failure_total{service_name=\"$service\"}[$__rate_interval]))",
@@ -130,13 +204,47 @@
           "color": {
             "mode": "palette-classic"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -159,12 +267,16 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum by (event_type) (rate(flow_controller_watch_events_total{service_name=\"$service\"}[$__rate_interval]))",
@@ -182,13 +294,47 @@
           "color": {
             "mode": "continuous-GrYlRd"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -198,7 +344,32 @@
           },
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "queue depth"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -211,12 +382,16 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "flow_controller_queue_depth{service_name=\"$service\"}",
@@ -234,13 +409,47 @@
           "color": {
             "mode": "palette-classic"
           },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -263,12 +472,16 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "histogram_quantile(0.95, sum by (le, flow_name) (rate(flow_controller_queue_lag_seconds_bucket{service_name=\"$service\"}[$__rate_interval])))",
@@ -281,6 +494,10 @@
     },
     {
       "datasource": "$loki_datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -290,17 +507,24 @@
       "id": 6,
       "options": {
         "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
         "enableLogDetails": true,
         "prettifyLogMessage": true,
         "showCommonLabels": false,
+        "showControls": false,
         "showLabels": true,
         "showTime": true,
         "sortOrder": "Descending",
+        "syntaxHighlighting": false,
         "wrapLogMessage": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
+          "direction": "backward",
+          "editorMode": "code",
           "expr": "{service_name=\"$service\"}",
+          "queryType": "range",
           "refId": "A"
         }
       ],
@@ -309,6 +533,10 @@
     },
     {
       "datasource": "$tempo_datasource",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -318,36 +546,67 @@
       "id": 7,
       "options": {
         "spanFields": [],
+        "spanFilters": {
+          "adhocFilters": [],
+          "criticalPathOnly": false,
+          "matchesOnly": false
+        },
         "table": {
           "showTable": true
         }
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
-          "queryType": "traceql",
           "expr": "{ service.name = \"$service\" }",
-          "refId": "A"
+          "filters": [
+            {
+              "id": "aa0ea65f",
+              "operator": "=",
+              "scope": "span"
+            },
+            {
+              "id": "service-name",
+              "isCustomValue": false,
+              "operator": "=",
+              "scope": "resource",
+              "tag": "service.name",
+              "value": [
+                "flow-controller"
+              ],
+              "valueType": "string"
+            }
+          ],
+          "limit": 20,
+          "metricsQueryType": "range",
+          "query": "{resource.service.name=\"flow-controller\"}",
+          "queryType": "traceql",
+          "refId": "A",
+          "serviceMapUseNativeHistograms": false,
+          "tableType": "traces"
         }
       ],
       "title": "Recent traces",
       "type": "traces"
     }
   ],
+  "preload": false,
   "refresh": "10s",
-  "schemaVersion": 38,
-  "style": "dark",
-  "tags": ["flow-pipe", "controller", "observability"],
+  "schemaVersion": 42,
+  "tags": [
+    "flow-pipe",
+    "controller",
+    "observability"
+  ],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "Prometheus",
-          "value": "Prometheus"
+          "text": "grafanacloud-hurdad-prom",
+          "value": "grafanacloud-prom"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Prometheus",
-        "multi": false,
         "name": "prometheus_datasource",
         "options": [],
         "query": "prometheus",
@@ -356,13 +615,11 @@
       },
       {
         "current": {
-          "text": "Loki",
-          "value": "Loki"
+          "text": "grafanacloud-hurdad-alert-state-history",
+          "value": "grafanacloud-alert-state-history"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Loki",
-        "multi": false,
         "name": "loki_datasource",
         "options": [],
         "query": "loki",
@@ -371,13 +628,11 @@
       },
       {
         "current": {
-          "text": "Tempo",
-          "value": "Tempo"
+          "text": "grafanacloud-hurdad-traces",
+          "value": "grafanacloud-traces"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Tempo",
-        "multi": false,
         "name": "tempo_datasource",
         "options": [],
         "query": "tempo",
@@ -389,18 +644,12 @@
           "text": "flow-controller",
           "value": "flow-controller"
         },
-        "hide": 0,
         "label": "Service",
         "name": "service",
-        "options": [
-          {
-            "selected": true,
-            "text": "flow-controller",
-            "value": "flow-controller"
-          }
-        ],
+        "options": [],
         "query": "flow-controller",
-        "type": "custom"
+        "type": "custom",
+        "valuesFormat": "csv"
       }
     ]
   },
@@ -412,6 +661,6 @@
   "timezone": "browser",
   "title": "Flow-Pipe Controller Observability",
   "uid": "flowpipe-controller-observability",
-  "version": 1,
+  "version": 5,
   "weekStart": ""
 }

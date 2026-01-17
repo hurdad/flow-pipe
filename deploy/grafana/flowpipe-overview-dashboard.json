@@ -3,7 +3,6 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -15,9 +14,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 3394199808884736,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -45,7 +43,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -69,6 +67,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -76,8 +75,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flow_api_http_requests_total{service_name=\"$api_service\"}[$__rate_interval]))",
@@ -100,7 +102,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -124,6 +126,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -131,8 +134,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flow_api_http_requests_total{service_name=\"$api_service\", http_status_code=~\"5..\"}[$__rate_interval]))",
@@ -155,7 +161,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -179,6 +185,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -186,11 +193,16 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(flow_api_http_latency_ms_bucket{service_name=\"$api_service\"}[$__rate_interval])))",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(flow_api_http_latency_ms_milliseconds_bucket{service_name=\"$api_service\"}[$__rate_interval])))",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -223,7 +235,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -247,6 +259,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -254,8 +267,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flowpipe_queue_enqueue_count_total{service_name=\"$runtime_service\"}[$__rate_interval]))",
@@ -278,7 +294,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -302,6 +318,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -309,8 +326,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flowpipe_queue_dequeue_count_total{service_name=\"$runtime_service\"}[$__rate_interval]))",
@@ -333,7 +353,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -357,6 +377,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -364,8 +385,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flowpipe_stage_errors_total{service_name=\"$runtime_service\"}[$__rate_interval]))",
@@ -401,7 +425,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -425,6 +449,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -432,8 +457,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flow_controller_reconcile_success_total{service_name=\"$controller_service\"}[$__rate_interval]))",
@@ -456,7 +484,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -480,6 +508,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -487,8 +516,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "sum(rate(flow_controller_reconcile_failure_total{service_name=\"$controller_service\"}[$__rate_interval]))",
@@ -511,7 +543,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -534,6 +566,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -541,8 +574,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
+      "pluginVersion": "12.4.0-20781422371.patch2",
       "targets": [
         {
           "expr": "max(flow_controller_queue_depth{service_name=\"$controller_service\"})",
@@ -553,21 +589,23 @@
       "type": "stat"
     }
   ],
+  "preload": false,
   "refresh": "10s",
-  "schemaVersion": 38,
-  "style": "dark",
-  "tags": ["flow-pipe", "overview", "observability"],
+  "schemaVersion": 42,
+  "tags": [
+    "flow-pipe",
+    "overview",
+    "observability"
+  ],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "Prometheus",
-          "value": "Prometheus"
+          "text": "grafanacloud-hurdad-prom",
+          "value": "grafanacloud-prom"
         },
-        "hide": 0,
         "includeAll": false,
         "label": "Prometheus",
-        "multi": false,
         "name": "prometheus_datasource",
         "options": [],
         "query": "prometheus",
@@ -579,54 +617,36 @@
           "text": "flow-api",
           "value": "flow-api"
         },
-        "hide": 0,
         "label": "API service",
         "name": "api_service",
-        "options": [
-          {
-            "selected": true,
-            "text": "flow-api",
-            "value": "flow-api"
-          }
-        ],
+        "options": [],
         "query": "flow-api",
-        "type": "custom"
+        "type": "custom",
+        "valuesFormat": "csv"
       },
       {
         "current": {
           "text": "flow-runtime",
           "value": "flow-runtime"
         },
-        "hide": 0,
         "label": "Runtime service",
         "name": "runtime_service",
-        "options": [
-          {
-            "selected": true,
-            "text": "flow-runtime",
-            "value": "flow-runtime"
-          }
-        ],
+        "options": [],
         "query": "flow-runtime",
-        "type": "custom"
+        "type": "custom",
+        "valuesFormat": "csv"
       },
       {
         "current": {
           "text": "flow-controller",
           "value": "flow-controller"
         },
-        "hide": 0,
         "label": "Controller service",
         "name": "controller_service",
-        "options": [
-          {
-            "selected": true,
-            "text": "flow-controller",
-            "value": "flow-controller"
-          }
-        ],
+        "options": [],
         "query": "flow-controller",
-        "type": "custom"
+        "type": "custom",
+        "valuesFormat": "csv"
       }
     ]
   },
@@ -638,6 +658,6 @@
   "timezone": "browser",
   "title": "Flow-Pipe Overview",
   "uid": "flowpipe-overview",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
