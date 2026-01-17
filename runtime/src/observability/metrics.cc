@@ -88,10 +88,10 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   // ----------------------------------------------------------
   // Cache runtime flags
   // ----------------------------------------------------------
-  state.stage_metrics_enabled = metrics_cfg.stage_metrics_enabled();
-  state.queue_metrics_enabled = metrics_cfg.queue_metrics_enabled();
-  state.flow_metrics_enabled = metrics_cfg.flow_metrics_enabled();
-  state.latency_histograms = metrics_cfg.latency_histograms_enabled();
+  state.stage_metrics_enabled = !metrics_cfg.stage_metrics_disabled();
+  state.queue_metrics_enabled = !metrics_cfg.queue_metrics_disabled();
+  state.flow_metrics_enabled = !metrics_cfg.flow_metrics_disabled();
+  state.latency_histograms = !metrics_cfg.latency_histograms_disabled();
   state.metrics_counters_only = metrics_cfg.counters_only();
 
   if (!state.stage_metrics_enabled && !state.queue_metrics_enabled && !state.flow_metrics_enabled) {

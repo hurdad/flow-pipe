@@ -26,10 +26,10 @@ stages:
 observability:
   metrics_enabled: true
   metrics:
-    stage_metrics_enabled: true
-    queue_metrics_enabled: true
-    flow_metrics_enabled: true
-    latency_histograms_enabled: true
+    stage_metrics_disabled: false
+    queue_metrics_disabled: false
+    flow_metrics_disabled: false
+    latency_histograms_disabled: false
   tracing_enabled: true
   logs_enabled: false
   debug: true
