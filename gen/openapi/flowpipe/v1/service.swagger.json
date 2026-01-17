@@ -1067,6 +1067,10 @@
           "type": "object",
           "title": "Opaque, plugin-owned config"
         },
+        "plugin": {
+          "type": "string",
+          "description": "Optional plugin implementation override."
+        },
         "realtimePriority": {
           "type": "integer",
           "format": "int64",
