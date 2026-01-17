@@ -130,8 +130,13 @@ message GetFlowRequest {
 
 message ListFlowsRequest {}
 
+message FlowSummary {
+  string name = 1;
+  FlowStatus status = 2;
+}
+
 message ListFlowsResponse {
-  repeated Flow flows = 1;
+  repeated FlowSummary flows = 1;
 }
 
 message GetFlowStatusRequest {
