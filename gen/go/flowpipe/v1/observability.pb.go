@@ -504,12 +504,12 @@ func (x *ObservabilityConfig_TracingConfig) GetLatencyBudgetMs() uint32 {
 type ObservabilityConfig_MetricsConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Granularity controls
-	StageMetricsEnabled bool `protobuf:"varint,1,opt,name=stage_metrics_enabled,json=stageMetricsEnabled,proto3" json:"stage_metrics_enabled,omitempty"`
-	QueueMetricsEnabled bool `protobuf:"varint,2,opt,name=queue_metrics_enabled,json=queueMetricsEnabled,proto3" json:"queue_metrics_enabled,omitempty"`
-	FlowMetricsEnabled  bool `protobuf:"varint,3,opt,name=flow_metrics_enabled,json=flowMetricsEnabled,proto3" json:"flow_metrics_enabled,omitempty"`
+	StageMetricsDisabled bool `protobuf:"varint,1,opt,name=stage_metrics_disabled,json=stageMetricsDisabled,proto3" json:"stage_metrics_disabled,omitempty"`
+	QueueMetricsDisabled bool `protobuf:"varint,2,opt,name=queue_metrics_disabled,json=queueMetricsDisabled,proto3" json:"queue_metrics_disabled,omitempty"`
+	FlowMetricsDisabled  bool `protobuf:"varint,3,opt,name=flow_metrics_disabled,json=flowMetricsDisabled,proto3" json:"flow_metrics_disabled,omitempty"`
 	// Cost / cardinality controls
-	LatencyHistogramsEnabled bool `protobuf:"varint,4,opt,name=latency_histograms_enabled,json=latencyHistogramsEnabled,proto3" json:"latency_histograms_enabled,omitempty"`
-	CountersOnly             bool `protobuf:"varint,5,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
+	LatencyHistogramsDisabled bool `protobuf:"varint,4,opt,name=latency_histograms_disabled,json=latencyHistogramsDisabled,proto3" json:"latency_histograms_disabled,omitempty"`
+	CountersOnly              bool `protobuf:"varint,5,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
 	// Collection interval hints
 	MinCollectionIntervalMs uint32 `protobuf:"varint,6,opt,name=min_collection_interval_ms,json=minCollectionIntervalMs,proto3" json:"min_collection_interval_ms,omitempty"`
 	CollectionIntervalMs    uint32 `protobuf:"varint,7,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
@@ -548,30 +548,30 @@ func (*ObservabilityConfig_MetricsConfig) Descriptor() ([]byte, []int) {
 	return file_flowpipe_v1_observability_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *ObservabilityConfig_MetricsConfig) GetStageMetricsEnabled() bool {
+func (x *ObservabilityConfig_MetricsConfig) GetStageMetricsDisabled() bool {
 	if x != nil {
-		return x.StageMetricsEnabled
+		return x.StageMetricsDisabled
 	}
 	return false
 }
 
-func (x *ObservabilityConfig_MetricsConfig) GetQueueMetricsEnabled() bool {
+func (x *ObservabilityConfig_MetricsConfig) GetQueueMetricsDisabled() bool {
 	if x != nil {
-		return x.QueueMetricsEnabled
+		return x.QueueMetricsDisabled
 	}
 	return false
 }
 
-func (x *ObservabilityConfig_MetricsConfig) GetFlowMetricsEnabled() bool {
+func (x *ObservabilityConfig_MetricsConfig) GetFlowMetricsDisabled() bool {
 	if x != nil {
-		return x.FlowMetricsEnabled
+		return x.FlowMetricsDisabled
 	}
 	return false
 }
 
-func (x *ObservabilityConfig_MetricsConfig) GetLatencyHistogramsEnabled() bool {
+func (x *ObservabilityConfig_MetricsConfig) GetLatencyHistogramsDisabled() bool {
 	if x != nil {
-		return x.LatencyHistogramsEnabled
+		return x.LatencyHistogramsDisabled
 	}
 	return false
 }
@@ -843,10 +843,10 @@ const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\x13ATTRIBUTES_STANDARD\x10\x02\x12\x16\n" +
 	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\xab\x03\n" +
 	"\rMetricsConfig\x122\n" +
-	"\x15stage_metrics_enabled\x18\x01 \x01(\bR\x13stageMetricsEnabled\x122\n" +
-	"\x15queue_metrics_enabled\x18\x02 \x01(\bR\x13queueMetricsEnabled\x120\n" +
-	"\x14flow_metrics_enabled\x18\x03 \x01(\bR\x12flowMetricsEnabled\x12<\n" +
-	"\x1alatency_histograms_enabled\x18\x04 \x01(\bR\x18latencyHistogramsEnabled\x12#\n" +
+	"\x16stage_metrics_disabled\x18\x01 \x01(\bR\x14stageMetricsDisabled\x124\n" +
+	"\x16queue_metrics_disabled\x18\x02 \x01(\bR\x14queueMetricsDisabled\x122\n" +
+	"\x15flow_metrics_disabled\x18\x03 \x01(\bR\x13flowMetricsDisabled\x12>\n" +
+	"\x1blatency_histograms_disabled\x18\x04 \x01(\bR\x19latencyHistogramsDisabled\x12#\n" +
 	"\rcounters_only\x18\x05 \x01(\bR\fcountersOnly\x12;\n" +
 	"\x1amin_collection_interval_ms\x18\x06 \x01(\rR\x17minCollectionIntervalMs\x124\n" +
 	"\x16collection_interval_ms\x18\a \x01(\rR\x14collectionIntervalMs\x12*\n" +

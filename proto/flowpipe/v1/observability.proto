@@ -109,13 +109,13 @@ message ObservabilityConfig {
   // ==========================================================
   message MetricsConfig {
 
-    // Granularity controls
-    bool stage_metrics_enabled = 1;
-    bool queue_metrics_enabled = 2;
-    bool flow_metrics_enabled = 3;
+    // Granularity controls (disable defaults to false)
+    bool stage_metrics_disabled = 1;
+    bool queue_metrics_disabled = 2;
+    bool flow_metrics_disabled = 3;
 
     // Cost / cardinality controls
-    bool latency_histograms_enabled = 4;
+    bool latency_histograms_disabled = 4;
     bool counters_only = 5;
 
     // Collection interval hints

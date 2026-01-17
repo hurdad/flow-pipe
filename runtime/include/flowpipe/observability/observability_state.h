@@ -34,11 +34,11 @@ struct OtelState {
   // ----------------------------------------------------------
   // Metrics runtime flags (cached from MetricsConfig)
   // ----------------------------------------------------------
-  bool stage_metrics_enabled = false;
-  bool queue_metrics_enabled = false;
-  bool flow_metrics_enabled = false;
+  bool stage_metrics_enabled = true;
+  bool queue_metrics_enabled = true;
+  bool flow_metrics_enabled = true;
 
-  bool latency_histograms = false;
+  bool latency_histograms = true;
   bool metrics_counters_only = false;
 
   // ----------------------------------------------------------
