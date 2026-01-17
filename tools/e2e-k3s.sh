@@ -15,6 +15,7 @@ HELM_VERSION="${HELM_VERSION:-v3.14.4}"
 NO_CACHE="${NO_CACHE:-}"
 OBSERVABILITY_ENABLED="${OBSERVABILITY_ENABLED:-false}"
 FLOWPIPE_ENABLE_OTEL="${OBSERVABILITY_ENABLED}"
+API_AUTH_KEY="${API_AUTH_KEY:-flow-pipe-e2e-key}"
 
 info() { echo "[INFO] $*"; }
 append_summary() {
@@ -223,7 +224,10 @@ helm upgrade --install flow-pipe "${REPO_ROOT}/deploy/helm/flow-pipe" \
   --create-namespace \
   --set controller.image="${IMAGE_NAMESPACE}/flow-pipe-controller:${IMAGE_TAG}" \
   --set api.image="${IMAGE_NAMESPACE}/flow-pipe-api:${IMAGE_TAG}" \
-  --set observability.enabled="${OBSERVABILITY_ENABLED}"
+  --set observability.enabled="${OBSERVABILITY_ENABLED}" \
+  --set api.auth.enabled=true \
+  --set api.auth.createSecret=true \
+  --set-string api.auth.apiKey="${API_AUTH_KEY}"
 
 info "Waiting for control plane pods"
 kubectl wait --namespace "${NAMESPACE}" --for=condition=Ready pod --selector=app=flow-pipe-etcd --timeout=300s
@@ -412,22 +416,30 @@ sleep 5
 
 info "Exercising schema registry API with flowctl"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema create orders --format json --schema-file /flows/orders.schema.json --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema create orders --format json --schema-file /flows/orders.schema.v2.json --api localhost:9090
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema list orders --api localhost:9090
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema get orders 2 --api localhost:9090
 
 info "Submitting flows through API"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/streaming.yaml --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/streaming-daemon.yaml --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/job.yaml --api localhost:9090
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" submit /flows/schema-job.yaml --api localhost:9090
 
 wait_for_runtime() {
@@ -518,6 +530,7 @@ initial_runtime_pod_uid=$(kubectl get pod "${initial_runtime_pod}" -n "${NAMESPA
 
 info "Updating flow with flowctl"
 docker run --rm --network host -v "${FLOW_TMP_DIR}:/flows:ro" \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" update /flows/streaming-update.yaml --api localhost:9090
 wait_for_runtime "noop-streaming" "deployment/noop-streaming-runtime"
 
@@ -551,17 +564,22 @@ fi
 
 info "Rolling back flow with flowctl"
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" rollback noop-streaming --version 1 --api localhost:9090
 wait_for_runtime "noop-streaming" "deployment/noop-streaming-runtime"
 
 info "Stopping flows with flowctl"
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-streaming --api localhost:9090
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop noop-daemon --api localhost:9090
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop simple-pipeline-job --api localhost:9090
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" stop schema-pipeline-job --api localhost:9090
 info "Waiting for flow resources to be removed"
 kubectl wait --for=delete deployment/noop-streaming-runtime -n "${NAMESPACE}" --timeout=120s
@@ -571,6 +589,7 @@ kubectl wait --for=delete job/schema-pipeline-job -n "${NAMESPACE}" --timeout=12
 
 info "Cleaning up schema registry entries"
 docker run --rm --network host \
+  -e FLOW_API_KEY="${API_AUTH_KEY}" \
   "${IMAGE_NAMESPACE}/flow-pipe-cli:${IMAGE_TAG}" schema delete orders --api localhost:9090
 append_summary "### Flow runtime stream logs"
 append_summary "\n\n\`\`\`"
