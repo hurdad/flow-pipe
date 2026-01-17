@@ -4,6 +4,6 @@ Controller:
   kubectl port-forward svc/flow-pipe-controller {{ .Values.controller.port }}
 
 API:
-  kubectl port-forward svc/flow-pipe-api {{ .Values.api.port }}
+  kubectl port-forward svc/flow-pipe-api {{ .Values.api.grpcPort }}
 
 Runtime pods are created dynamically by the controller.
