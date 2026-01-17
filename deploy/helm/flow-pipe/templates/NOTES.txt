@@ -1,9 +1,12 @@
 flow-pipe installed.
 
 Controller:
-  kubectl port-forward svc/flow-pipe-controller {{ .Values.controller.port }}
+  No ports are exposed for the controller.
 
 API:
-  kubectl port-forward svc/flow-pipe-api {{ .Values.api.grpcPort }}
+  HTTP:
+    kubectl port-forward svc/flow-pipe-api {{ .Values.api.httpPort }}
+  gRPC:
+    kubectl port-forward svc/flow-pipe-api {{ .Values.api.grpcPort }}
 
 Runtime pods are created dynamically by the controller.
