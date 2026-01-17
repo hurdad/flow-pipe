@@ -175,6 +175,8 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
     auto ndalloc = meter->CreateInt64ObservableGauge(
         "flowpipe.jemalloc.ndalloc", "Total number of jemalloc deallocations", "deallocations");
 
+    state.jemalloc_instruments = {allocated, active, resident, mapped, nmalloc, ndalloc};
+
     allocated->AddCallback(
         [](opentelemetry::metrics::ObserverResult observer, void*) {
           auto observer_long = opentelemetry::nostd::get<
