@@ -40,6 +40,7 @@ struct OtelState {
 
   bool latency_histograms = true;
   bool metrics_counters_only = false;
+  bool jemalloc_metrics_enabled = true;
 
   // ----------------------------------------------------------
   // Tracing runtime flags (for symmetry / future use)

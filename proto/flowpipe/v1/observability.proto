@@ -117,6 +117,8 @@ message ObservabilityConfig {
     // Cost / cardinality controls
     bool latency_histograms_disabled = 4;
     bool counters_only = 5;
+    // Disable jemalloc runtime metrics (if supported by runtime)
+    bool jemalloc_metrics_disabled = 9;
 
     // Collection interval hints
     uint32 min_collection_interval_ms = 6;
