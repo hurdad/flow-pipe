@@ -370,6 +370,65 @@ func TestEnsureRuntimeUpdatesDeployment(t *testing.T) {
 	}
 }
 
+func TestEnsureRuntimeAppliesResourceIntent(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	image := "runtime:latest"
+	profile := "balanced"
+	otelEndpoint := "collector:4317"
+	spec := &flowpipev1.FlowSpec{
+		Name: "resource-intent",
+		Kubernetes: &flowpipev1.KubernetesSettings{
+			Image: &image,
+			Resources: &flowpipev1.Resources{
+				CpuCores: func() *uint32 {
+					value := uint32(2)
+					return &value
+				}(),
+				MemoryMb: func() *uint32 {
+					value := uint32(256)
+					return &value
+				}(),
+				Profile: &profile,
+			},
+		},
+		Execution: &flowpipev1.Execution{
+			Mode: flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING,
+		},
+	}
+
+	_, err := ensureRuntime(
+		context.Background(),
+		client,
+		"default",
+		spec,
+		corev1.PullIfNotPresent,
+		false,
+		otelEndpoint,
+	)
+	if err != nil {
+		t.Fatalf("ensureRuntime error: %v", err)
+	}
+
+	deploy, err := client.AppsV1().Deployments("default").Get(context.Background(), "resource-intent-runtime", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("expected deployment: %v", err)
+	}
+
+	requests := deploy.Spec.Template.Spec.Containers[0].Resources.Requests
+	if requests == nil {
+		t.Fatalf("expected resource requests to be set")
+	}
+	if got := requests.Cpu().String(); got != "2" {
+		t.Fatalf("expected cpu request 2, got %q", got)
+	}
+	if got := requests.Memory().String(); got != "256M" {
+		t.Fatalf("expected memory request 256M, got %q", got)
+	}
+	if got := deploy.Spec.Template.Annotations["flowpipe.io/resource-profile"]; got != profile {
+		t.Fatalf("expected resource profile annotation %q, got %q", profile, got)
+	}
+}
+
 func TestPullPolicyFromSpec(t *testing.T) {
 	cases := []struct {
 		name     string
