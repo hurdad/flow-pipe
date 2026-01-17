@@ -33,6 +33,38 @@ spec:
             - name: FLOW_HTTP_ADDR
               value: {{ .Values.api.httpAddr | quote }}
 
+            # -------------------------------------------------
+            # API auth
+            # -------------------------------------------------
+            - name: FLOW_AUTH_ENABLED
+              value: {{ .Values.api.auth.enabled | quote }}
+            {{- if .Values.api.auth.enabled }}
+            - name: FLOW_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.auth.secretName | quote }}
+                  key: {{ .Values.api.auth.secretKey | quote }}
+            {{- end }}
+
+            # -------------------------------------------------
+            # HTTP TLS
+            # -------------------------------------------------
+            - name: FLOW_HTTP_TLS_ENABLED
+              value: {{ .Values.api.tls.enabled | quote }}
+            {{- if .Values.api.tls.enabled }}
+            - name: FLOW_HTTP_TLS_CERT
+              value: {{ printf "%s/%s" .Values.api.tls.mountPath .Values.api.tls.certKey | quote }}
+            - name: FLOW_HTTP_TLS_KEY
+              value: {{ printf "%s/%s" .Values.api.tls.mountPath .Values.api.tls.keyKey | quote }}
+            - name: FLOW_GRPC_TLS_ENABLED
+              value: {{ .Values.api.tls.enabled | quote }}
+            - name: FLOW_GRPC_TLS_CERT
+              value: {{ printf "%s/%s" .Values.api.tls.mountPath .Values.api.tls.certKey | quote }}
+            - name: FLOW_GRPC_TLS_KEY
+              value: {{ printf "%s/%s" .Values.api.tls.mountPath .Values.api.tls.keyKey | quote }}
+            - name: FLOW_GRPC_TLS_SERVER_NAME
+              value: {{ .Values.api.tls.serverName | quote }}
+            {{- end }}
 
             # -------------------------------------------------
             # OpenTelemetry
@@ -53,4 +85,16 @@ spec:
             # -------------------------------------------------
             - name: ETCD_ENDPOINTS
               value: {{ join "," .Values.etcd.endpoints | quote }}
+          {{- if .Values.api.tls.enabled }}
+          volumeMounts:
+            - name: api-tls
+              mountPath: {{ .Values.api.tls.mountPath | quote }}
+              readOnly: true
+          {{- end }}
+      {{- if .Values.api.tls.enabled }}
+      volumes:
+        - name: api-tls
+          secret:
+            secretName: {{ .Values.api.tls.secretName | quote }}
+      {{- end }}
 {{- end }}
