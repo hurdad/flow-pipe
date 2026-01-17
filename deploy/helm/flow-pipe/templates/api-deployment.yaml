@@ -39,6 +39,8 @@ spec:
             # -------------------------------------------------
             - name: FLOW_OBSERVABILITY_ENABLED
               value: {{ .Values.observability.enabled | quote }}
+            - name: FLOW_LOG_LEVEL
+              value: {{ .Values.api.logLevel | quote }}
             - name: OTEL_SERVICE_NAME
               value: {{ .Values.api.serviceName | quote }}
             {{- if .Values.observability.enabled }}

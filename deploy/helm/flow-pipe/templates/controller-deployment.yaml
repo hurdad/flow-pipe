@@ -21,6 +21,8 @@ spec:
           env:
             - name: FLOW_OBSERVABILITY_ENABLED
               value: {{ .Values.observability.enabled | quote }}
+            - name: FLOW_LOG_LEVEL
+              value: {{ .Values.controller.logLevel | quote }}
             - name: OTEL_SERVICE_NAME
               value: {{ .Values.controller.serviceName | quote }}
             {{- if .Values.observability.enabled }}

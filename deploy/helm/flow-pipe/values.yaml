@@ -56,6 +56,7 @@ controller:
   workerCount: 1
   port: 8080
   serviceName: flow-controller
+  logLevel: info
   resources:
     requests:
       cpu: 100m
@@ -74,6 +75,7 @@ api:
   replicas: 1
   port: 8080
   serviceName: flow-api
+  logLevel: info
 
   httpService:
     # Options: ClusterIP (default), LoadBalancer
