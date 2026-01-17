@@ -96,6 +96,48 @@ message KubernetesOptions {
 
   // Streaming runtime workload kind (Deployment or DaemonSet).
   StreamingWorkloadKind streaming_workload_kind = 6;
+
+  // CronJob options for run-to-completion job workloads.
+  optional KubernetesCronOptions cron = 7;
+}
+
+// CronJob options for scheduled flow runs.
+message KubernetesCronOptions {
+  // Cron schedule in standard format.
+  string schedule = 1;
+
+  // Optional time zone name for the schedule.
+  optional string time_zone = 2;
+
+  // Optional suspend flag for the CronJob.
+  optional bool suspend = 3;
+
+  // Optional deadline in seconds for starting missed jobs.
+  optional int64 starting_deadline_seconds = 4;
+
+  // Concurrency policy for overlapping job runs.
+  CronConcurrencyPolicy concurrency_policy = 5;
+
+  // Optional number of successful jobs to retain.
+  optional int32 successful_jobs_history_limit = 6;
+
+  // Optional number of failed jobs to retain.
+  optional int32 failed_jobs_history_limit = 7;
+}
+
+// CronJob concurrency policy options.
+enum CronConcurrencyPolicy {
+  // Concurrency policy not specified (controller default).
+  CRON_CONCURRENCY_POLICY_UNSPECIFIED = 0;
+
+  // Allow concurrent jobs.
+  CRON_CONCURRENCY_POLICY_ALLOW = 1;
+
+  // Forbid concurrent jobs.
+  CRON_CONCURRENCY_POLICY_FORBID = 2;
+
+  // Replace concurrent jobs.
+  CRON_CONCURRENCY_POLICY_REPLACE = 3;
 }
 
 // Kubernetes workload kind for streaming runtimes.

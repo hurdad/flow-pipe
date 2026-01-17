@@ -89,6 +89,23 @@ kubectl port-forward svc/flow-pipe-api 9090:9090 -n flow-pipe
 The controller will create the runtime Deployment/Job and mount the rendered
 configuration via ConfigMap.
 
+### Scheduled CronJobs
+
+To run a job flow on a schedule, add `kubernetes_options.cron` with a cron
+schedule. When `execution.mode` is `EXECUTION_MODE_JOB`, the controller will
+create a Kubernetes CronJob instead of a one-off Job.
+
+```yaml
+name: nightly-batch
+execution:
+  mode: EXECUTION_MODE_JOB
+kubernetes:
+  image: ghcr.io/hurdad/flow-pipe-runtime:latest
+kubernetes_options:
+  cron:
+    schedule: "0 2 * * *"
+```
+
 ### Streaming as a DaemonSet
 
 Streaming flows default to Deployments. To run one instance per node, set

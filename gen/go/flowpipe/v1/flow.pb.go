@@ -23,6 +23,63 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// CronJob concurrency policy options.
+type CronConcurrencyPolicy int32
+
+const (
+	// Concurrency policy not specified (controller default).
+	CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_UNSPECIFIED CronConcurrencyPolicy = 0
+	// Allow concurrent jobs.
+	CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_ALLOW CronConcurrencyPolicy = 1
+	// Forbid concurrent jobs.
+	CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_FORBID CronConcurrencyPolicy = 2
+	// Replace concurrent jobs.
+	CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_REPLACE CronConcurrencyPolicy = 3
+)
+
+// Enum value maps for CronConcurrencyPolicy.
+var (
+	CronConcurrencyPolicy_name = map[int32]string{
+		0: "CRON_CONCURRENCY_POLICY_UNSPECIFIED",
+		1: "CRON_CONCURRENCY_POLICY_ALLOW",
+		2: "CRON_CONCURRENCY_POLICY_FORBID",
+		3: "CRON_CONCURRENCY_POLICY_REPLACE",
+	}
+	CronConcurrencyPolicy_value = map[string]int32{
+		"CRON_CONCURRENCY_POLICY_UNSPECIFIED": 0,
+		"CRON_CONCURRENCY_POLICY_ALLOW":       1,
+		"CRON_CONCURRENCY_POLICY_FORBID":      2,
+		"CRON_CONCURRENCY_POLICY_REPLACE":     3,
+	}
+)
+
+func (x CronConcurrencyPolicy) Enum() *CronConcurrencyPolicy {
+	p := new(CronConcurrencyPolicy)
+	*p = x
+	return p
+}
+
+func (x CronConcurrencyPolicy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CronConcurrencyPolicy) Descriptor() protoreflect.EnumDescriptor {
+	return file_flowpipe_v1_flow_proto_enumTypes[0].Descriptor()
+}
+
+func (CronConcurrencyPolicy) Type() protoreflect.EnumType {
+	return &file_flowpipe_v1_flow_proto_enumTypes[0]
+}
+
+func (x CronConcurrencyPolicy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CronConcurrencyPolicy.Descriptor instead.
+func (CronConcurrencyPolicy) EnumDescriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
+}
+
 // Kubernetes workload kind for streaming runtimes.
 type StreamingWorkloadKind int32
 
@@ -60,11 +117,11 @@ func (x StreamingWorkloadKind) String() string {
 }
 
 func (StreamingWorkloadKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[0].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
 }
 
 func (StreamingWorkloadKind) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[0]
+	return &file_flowpipe_v1_flow_proto_enumTypes[1]
 }
 
 func (x StreamingWorkloadKind) Number() protoreflect.EnumNumber {
@@ -73,7 +130,7 @@ func (x StreamingWorkloadKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use StreamingWorkloadKind.Descriptor instead.
 func (StreamingWorkloadKind) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{0}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
 }
 
 // Kubernetes image pull policy.
@@ -117,11 +174,11 @@ func (x ImagePullPolicy) String() string {
 }
 
 func (ImagePullPolicy) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[1].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
 }
 
 func (ImagePullPolicy) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[1]
+	return &file_flowpipe_v1_flow_proto_enumTypes[2]
 }
 
 func (x ImagePullPolicy) Number() protoreflect.EnumNumber {
@@ -130,7 +187,7 @@ func (x ImagePullPolicy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ImagePullPolicy.Descriptor instead.
 func (ImagePullPolicy) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{1}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
 }
 
 // Kubernetes restart policy for runtime pods.
@@ -174,11 +231,11 @@ func (x RestartPolicy) String() string {
 }
 
 func (RestartPolicy) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[2].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[3].Descriptor()
 }
 
 func (RestartPolicy) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[2]
+	return &file_flowpipe_v1_flow_proto_enumTypes[3]
 }
 
 func (x RestartPolicy) Number() protoreflect.EnumNumber {
@@ -187,7 +244,7 @@ func (x RestartPolicy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RestartPolicy.Descriptor instead.
 func (RestartPolicy) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{2}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
 }
 
 type ExecutionMode int32
@@ -226,11 +283,11 @@ func (x ExecutionMode) String() string {
 }
 
 func (ExecutionMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[3].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[4].Descriptor()
 }
 
 func (ExecutionMode) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[3]
+	return &file_flowpipe_v1_flow_proto_enumTypes[4]
 }
 
 func (x ExecutionMode) Number() protoreflect.EnumNumber {
@@ -239,7 +296,7 @@ func (x ExecutionMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionMode.Descriptor instead.
 func (ExecutionMode) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{3}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
 }
 
 type QueueSchemaFormat int32
@@ -290,11 +347,11 @@ func (x QueueSchemaFormat) String() string {
 }
 
 func (QueueSchemaFormat) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[4].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[5].Descriptor()
 }
 
 func (QueueSchemaFormat) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[4]
+	return &file_flowpipe_v1_flow_proto_enumTypes[5]
 }
 
 func (x QueueSchemaFormat) Number() protoreflect.EnumNumber {
@@ -303,7 +360,7 @@ func (x QueueSchemaFormat) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use QueueSchemaFormat.Descriptor instead.
 func (QueueSchemaFormat) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
 }
 
 type FlowState int32
@@ -358,11 +415,11 @@ func (x FlowState) String() string {
 }
 
 func (FlowState) Descriptor() protoreflect.EnumDescriptor {
-	return file_flowpipe_v1_flow_proto_enumTypes[5].Descriptor()
+	return file_flowpipe_v1_flow_proto_enumTypes[6].Descriptor()
 }
 
 func (FlowState) Type() protoreflect.EnumType {
-	return &file_flowpipe_v1_flow_proto_enumTypes[5]
+	return &file_flowpipe_v1_flow_proto_enumTypes[6]
 }
 
 func (x FlowState) Number() protoreflect.EnumNumber {
@@ -371,7 +428,7 @@ func (x FlowState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FlowState.Descriptor instead.
 func (FlowState) EnumDescriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
 }
 
 type Flow struct {
@@ -660,8 +717,10 @@ type KubernetesOptions struct {
 	RuntimeClassName *string `protobuf:"bytes,5,opt,name=runtime_class_name,json=runtimeClassName,proto3,oneof" json:"runtime_class_name,omitempty"`
 	// Streaming runtime workload kind (Deployment or DaemonSet).
 	StreamingWorkloadKind StreamingWorkloadKind `protobuf:"varint,6,opt,name=streaming_workload_kind,json=streamingWorkloadKind,proto3,enum=flowpipe.v1.StreamingWorkloadKind" json:"streaming_workload_kind,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// CronJob options for run-to-completion job workloads.
+	Cron          *KubernetesCronOptions `protobuf:"bytes,7,opt,name=cron,proto3,oneof" json:"cron,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *KubernetesOptions) Reset() {
@@ -736,6 +795,113 @@ func (x *KubernetesOptions) GetStreamingWorkloadKind() StreamingWorkloadKind {
 	return StreamingWorkloadKind_STREAMING_WORKLOAD_KIND_UNSPECIFIED
 }
 
+func (x *KubernetesOptions) GetCron() *KubernetesCronOptions {
+	if x != nil {
+		return x.Cron
+	}
+	return nil
+}
+
+// CronJob options for scheduled flow runs.
+type KubernetesCronOptions struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Cron schedule in standard format.
+	Schedule string `protobuf:"bytes,1,opt,name=schedule,proto3" json:"schedule,omitempty"`
+	// Optional time zone name for the schedule.
+	TimeZone *string `protobuf:"bytes,2,opt,name=time_zone,json=timeZone,proto3,oneof" json:"time_zone,omitempty"`
+	// Optional suspend flag for the CronJob.
+	Suspend *bool `protobuf:"varint,3,opt,name=suspend,proto3,oneof" json:"suspend,omitempty"`
+	// Optional deadline in seconds for starting missed jobs.
+	StartingDeadlineSeconds *int64 `protobuf:"varint,4,opt,name=starting_deadline_seconds,json=startingDeadlineSeconds,proto3,oneof" json:"starting_deadline_seconds,omitempty"`
+	// Concurrency policy for overlapping job runs.
+	ConcurrencyPolicy CronConcurrencyPolicy `protobuf:"varint,5,opt,name=concurrency_policy,json=concurrencyPolicy,proto3,enum=flowpipe.v1.CronConcurrencyPolicy" json:"concurrency_policy,omitempty"`
+	// Optional number of successful jobs to retain.
+	SuccessfulJobsHistoryLimit *int32 `protobuf:"varint,6,opt,name=successful_jobs_history_limit,json=successfulJobsHistoryLimit,proto3,oneof" json:"successful_jobs_history_limit,omitempty"`
+	// Optional number of failed jobs to retain.
+	FailedJobsHistoryLimit *int32 `protobuf:"varint,7,opt,name=failed_jobs_history_limit,json=failedJobsHistoryLimit,proto3,oneof" json:"failed_jobs_history_limit,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *KubernetesCronOptions) Reset() {
+	*x = KubernetesCronOptions{}
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KubernetesCronOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KubernetesCronOptions) ProtoMessage() {}
+
+func (x *KubernetesCronOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KubernetesCronOptions.ProtoReflect.Descriptor instead.
+func (*KubernetesCronOptions) Descriptor() ([]byte, []int) {
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *KubernetesCronOptions) GetSchedule() string {
+	if x != nil {
+		return x.Schedule
+	}
+	return ""
+}
+
+func (x *KubernetesCronOptions) GetTimeZone() string {
+	if x != nil && x.TimeZone != nil {
+		return *x.TimeZone
+	}
+	return ""
+}
+
+func (x *KubernetesCronOptions) GetSuspend() bool {
+	if x != nil && x.Suspend != nil {
+		return *x.Suspend
+	}
+	return false
+}
+
+func (x *KubernetesCronOptions) GetStartingDeadlineSeconds() int64 {
+	if x != nil && x.StartingDeadlineSeconds != nil {
+		return *x.StartingDeadlineSeconds
+	}
+	return 0
+}
+
+func (x *KubernetesCronOptions) GetConcurrencyPolicy() CronConcurrencyPolicy {
+	if x != nil {
+		return x.ConcurrencyPolicy
+	}
+	return CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_UNSPECIFIED
+}
+
+func (x *KubernetesCronOptions) GetSuccessfulJobsHistoryLimit() int32 {
+	if x != nil && x.SuccessfulJobsHistoryLimit != nil {
+		return *x.SuccessfulJobsHistoryLimit
+	}
+	return 0
+}
+
+func (x *KubernetesCronOptions) GetFailedJobsHistoryLimit() int32 {
+	if x != nil && x.FailedJobsHistoryLimit != nil {
+		return *x.FailedJobsHistoryLimit
+	}
+	return 0
+}
+
 type Execution struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Selected execution mode.
@@ -746,7 +912,7 @@ type Execution struct {
 
 func (x *Execution) Reset() {
 	*x = Execution{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -758,7 +924,7 @@ func (x *Execution) String() string {
 func (*Execution) ProtoMessage() {}
 
 func (x *Execution) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[4]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -771,7 +937,7 @@ func (x *Execution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Execution.ProtoReflect.Descriptor instead.
 func (*Execution) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{4}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Execution) GetMode() ExecutionMode {
@@ -805,7 +971,7 @@ type StageSpec struct {
 
 func (x *StageSpec) Reset() {
 	*x = StageSpec{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -817,7 +983,7 @@ func (x *StageSpec) String() string {
 func (*StageSpec) ProtoMessage() {}
 
 func (x *StageSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[5]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -830,7 +996,7 @@ func (x *StageSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StageSpec.ProtoReflect.Descriptor instead.
 func (*StageSpec) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{5}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *StageSpec) GetName() string {
@@ -903,7 +1069,7 @@ type QueueSpec struct {
 
 func (x *QueueSpec) Reset() {
 	*x = QueueSpec{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +1081,7 @@ func (x *QueueSpec) String() string {
 func (*QueueSpec) ProtoMessage() {}
 
 func (x *QueueSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[6]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +1094,7 @@ func (x *QueueSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueueSpec.ProtoReflect.Descriptor instead.
 func (*QueueSpec) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{6}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *QueueSpec) GetName() string {
@@ -968,7 +1134,7 @@ type QueueSchema struct {
 
 func (x *QueueSchema) Reset() {
 	*x = QueueSchema{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -980,7 +1146,7 @@ func (x *QueueSchema) String() string {
 func (*QueueSchema) ProtoMessage() {}
 
 func (x *QueueSchema) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[7]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -993,7 +1159,7 @@ func (x *QueueSchema) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueueSchema.ProtoReflect.Descriptor instead.
 func (*QueueSchema) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{7}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *QueueSchema) GetFormat() QueueSchemaFormat {
@@ -1038,7 +1204,7 @@ type Resources struct {
 
 func (x *Resources) Reset() {
 	*x = Resources{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1050,7 +1216,7 @@ func (x *Resources) String() string {
 func (*Resources) ProtoMessage() {}
 
 func (x *Resources) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[8]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1063,7 +1229,7 @@ func (x *Resources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resources.ProtoReflect.Descriptor instead.
 func (*Resources) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{8}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Resources) GetCpuCores() uint32 {
@@ -1097,7 +1263,7 @@ type CpuSet struct {
 
 func (x *CpuSet) Reset() {
 	*x = CpuSet{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1109,7 +1275,7 @@ func (x *CpuSet) String() string {
 func (*CpuSet) ProtoMessage() {}
 
 func (x *CpuSet) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[9]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1122,7 +1288,7 @@ func (x *CpuSet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CpuSet.ProtoReflect.Descriptor instead.
 func (*CpuSet) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{9}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CpuSet) GetCpu() []uint32 {
@@ -1150,7 +1316,7 @@ type FlowStatus struct {
 
 func (x *FlowStatus) Reset() {
 	*x = FlowStatus{}
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1162,7 +1328,7 @@ func (x *FlowStatus) String() string {
 func (*FlowStatus) ProtoMessage() {}
 
 func (x *FlowStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_flowpipe_v1_flow_proto_msgTypes[10]
+	mi := &file_flowpipe_v1_flow_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1175,7 +1341,7 @@ func (x *FlowStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlowStatus.ProtoReflect.Descriptor instead.
 func (*FlowStatus) Descriptor() ([]byte, []int) {
-	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{10}
+	return file_flowpipe_v1_flow_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *FlowStatus) GetState() FlowState {
@@ -1256,7 +1422,7 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\v2\x13.flowpipe.v1.CpuSetR\x05value:\x028\x01B\b\n" +
 	"\x06_imageB\f\n" +
 	"\n" +
-	"_resources\"\xe3\x04\n" +
+	"_resources\"\xa9\x05\n" +
 	"\x11KubernetesOptions\x12L\n" +
 	"\n" +
 	"pod_labels\x18\x01 \x03(\v2-.flowpipe.v1.KubernetesOptions.PodLabelsEntryR\tpodLabels\x12[\n" +
@@ -1264,7 +1430,8 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x14service_account_name\x18\x03 \x01(\tH\x00R\x12serviceAccountName\x88\x01\x01\x12,\n" +
 	"\x12image_pull_secrets\x18\x04 \x03(\tR\x10imagePullSecrets\x121\n" +
 	"\x12runtime_class_name\x18\x05 \x01(\tH\x01R\x10runtimeClassName\x88\x01\x01\x12Z\n" +
-	"\x17streaming_workload_kind\x18\x06 \x01(\x0e2\".flowpipe.v1.StreamingWorkloadKindR\x15streamingWorkloadKind\x1a<\n" +
+	"\x17streaming_workload_kind\x18\x06 \x01(\x0e2\".flowpipe.v1.StreamingWorkloadKindR\x15streamingWorkloadKind\x12;\n" +
+	"\x04cron\x18\a \x01(\v2\".flowpipe.v1.KubernetesCronOptionsH\x02R\x04cron\x88\x01\x01\x1a<\n" +
 	"\x0ePodLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1aA\n" +
@@ -1272,7 +1439,23 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x17\n" +
 	"\x15_service_account_nameB\x15\n" +
-	"\x13_runtime_class_name\";\n" +
+	"\x13_runtime_class_nameB\a\n" +
+	"\x05_cron\"\x88\x04\n" +
+	"\x15KubernetesCronOptions\x12\x1a\n" +
+	"\bschedule\x18\x01 \x01(\tR\bschedule\x12 \n" +
+	"\ttime_zone\x18\x02 \x01(\tH\x00R\btimeZone\x88\x01\x01\x12\x1d\n" +
+	"\asuspend\x18\x03 \x01(\bH\x01R\asuspend\x88\x01\x01\x12?\n" +
+	"\x19starting_deadline_seconds\x18\x04 \x01(\x03H\x02R\x17startingDeadlineSeconds\x88\x01\x01\x12Q\n" +
+	"\x12concurrency_policy\x18\x05 \x01(\x0e2\".flowpipe.v1.CronConcurrencyPolicyR\x11concurrencyPolicy\x12F\n" +
+	"\x1dsuccessful_jobs_history_limit\x18\x06 \x01(\x05H\x03R\x1asuccessfulJobsHistoryLimit\x88\x01\x01\x12>\n" +
+	"\x19failed_jobs_history_limit\x18\a \x01(\x05H\x04R\x16failedJobsHistoryLimit\x88\x01\x01B\f\n" +
+	"\n" +
+	"_time_zoneB\n" +
+	"\n" +
+	"\b_suspendB\x1c\n" +
+	"\x1a_starting_deadline_secondsB \n" +
+	"\x1e_successful_jobs_history_limitB\x1c\n" +
+	"\x1a_failed_jobs_history_limit\";\n" +
 	"\tExecution\x12.\n" +
 	"\x04mode\x18\x01 \x01(\x0e2\x1a.flowpipe.v1.ExecutionModeR\x04mode\"\xdd\x02\n" +
 	"\tStageSpec\x12\x12\n" +
@@ -1320,7 +1503,12 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12%\n" +
 	"\x0eactive_version\x18\x03 \x01(\x04R\ractiveVersion\x12\x1a\n" +
 	"\bworkload\x18\x04 \x01(\tR\bworkload\x12=\n" +
-	"\flast_updated\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vlastUpdated*\x8f\x01\n" +
+	"\flast_updated\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vlastUpdated*\xac\x01\n" +
+	"\x15CronConcurrencyPolicy\x12'\n" +
+	"#CRON_CONCURRENCY_POLICY_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dCRON_CONCURRENCY_POLICY_ALLOW\x10\x01\x12\"\n" +
+	"\x1eCRON_CONCURRENCY_POLICY_FORBID\x10\x02\x12#\n" +
+	"\x1fCRON_CONCURRENCY_POLICY_REPLACE\x10\x03*\x8f\x01\n" +
 	"\x15StreamingWorkloadKind\x12'\n" +
 	"#STREAMING_WORKLOAD_KIND_UNSPECIFIED\x10\x00\x12&\n" +
 	"\"STREAMING_WORKLOAD_KIND_DEPLOYMENT\x10\x01\x12%\n" +
@@ -1367,63 +1555,67 @@ func file_flowpipe_v1_flow_proto_rawDescGZIP() []byte {
 	return file_flowpipe_v1_flow_proto_rawDescData
 }
 
-var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_flowpipe_v1_flow_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_flowpipe_v1_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_flowpipe_v1_flow_proto_goTypes = []any{
-	(StreamingWorkloadKind)(0),    // 0: flowpipe.v1.StreamingWorkloadKind
-	(ImagePullPolicy)(0),          // 1: flowpipe.v1.ImagePullPolicy
-	(RestartPolicy)(0),            // 2: flowpipe.v1.RestartPolicy
-	(ExecutionMode)(0),            // 3: flowpipe.v1.ExecutionMode
-	(QueueSchemaFormat)(0),        // 4: flowpipe.v1.QueueSchemaFormat
-	(FlowState)(0),                // 5: flowpipe.v1.FlowState
-	(*Flow)(nil),                  // 6: flowpipe.v1.Flow
-	(*FlowSpec)(nil),              // 7: flowpipe.v1.FlowSpec
-	(*KubernetesSettings)(nil),    // 8: flowpipe.v1.KubernetesSettings
-	(*KubernetesOptions)(nil),     // 9: flowpipe.v1.KubernetesOptions
-	(*Execution)(nil),             // 10: flowpipe.v1.Execution
-	(*StageSpec)(nil),             // 11: flowpipe.v1.StageSpec
-	(*QueueSpec)(nil),             // 12: flowpipe.v1.QueueSpec
-	(*QueueSchema)(nil),           // 13: flowpipe.v1.QueueSchema
-	(*Resources)(nil),             // 14: flowpipe.v1.Resources
-	(*CpuSet)(nil),                // 15: flowpipe.v1.CpuSet
-	(*FlowStatus)(nil),            // 16: flowpipe.v1.FlowStatus
-	nil,                           // 17: flowpipe.v1.FlowSpec.LabelsEntry
-	nil,                           // 18: flowpipe.v1.KubernetesSettings.CpuPinningEntry
-	nil,                           // 19: flowpipe.v1.KubernetesOptions.PodLabelsEntry
-	nil,                           // 20: flowpipe.v1.KubernetesOptions.PodAnnotationsEntry
-	(*ObservabilityConfig)(nil),   // 21: flowpipe.v1.ObservabilityConfig
-	(*structpb.Struct)(nil),       // 22: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil), // 23: google.protobuf.Timestamp
+	(CronConcurrencyPolicy)(0),    // 0: flowpipe.v1.CronConcurrencyPolicy
+	(StreamingWorkloadKind)(0),    // 1: flowpipe.v1.StreamingWorkloadKind
+	(ImagePullPolicy)(0),          // 2: flowpipe.v1.ImagePullPolicy
+	(RestartPolicy)(0),            // 3: flowpipe.v1.RestartPolicy
+	(ExecutionMode)(0),            // 4: flowpipe.v1.ExecutionMode
+	(QueueSchemaFormat)(0),        // 5: flowpipe.v1.QueueSchemaFormat
+	(FlowState)(0),                // 6: flowpipe.v1.FlowState
+	(*Flow)(nil),                  // 7: flowpipe.v1.Flow
+	(*FlowSpec)(nil),              // 8: flowpipe.v1.FlowSpec
+	(*KubernetesSettings)(nil),    // 9: flowpipe.v1.KubernetesSettings
+	(*KubernetesOptions)(nil),     // 10: flowpipe.v1.KubernetesOptions
+	(*KubernetesCronOptions)(nil), // 11: flowpipe.v1.KubernetesCronOptions
+	(*Execution)(nil),             // 12: flowpipe.v1.Execution
+	(*StageSpec)(nil),             // 13: flowpipe.v1.StageSpec
+	(*QueueSpec)(nil),             // 14: flowpipe.v1.QueueSpec
+	(*QueueSchema)(nil),           // 15: flowpipe.v1.QueueSchema
+	(*Resources)(nil),             // 16: flowpipe.v1.Resources
+	(*CpuSet)(nil),                // 17: flowpipe.v1.CpuSet
+	(*FlowStatus)(nil),            // 18: flowpipe.v1.FlowStatus
+	nil,                           // 19: flowpipe.v1.FlowSpec.LabelsEntry
+	nil,                           // 20: flowpipe.v1.KubernetesSettings.CpuPinningEntry
+	nil,                           // 21: flowpipe.v1.KubernetesOptions.PodLabelsEntry
+	nil,                           // 22: flowpipe.v1.KubernetesOptions.PodAnnotationsEntry
+	(*ObservabilityConfig)(nil),   // 23: flowpipe.v1.ObservabilityConfig
+	(*structpb.Struct)(nil),       // 24: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 25: google.protobuf.Timestamp
 }
 var file_flowpipe_v1_flow_proto_depIdxs = []int32{
-	7,  // 0: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
-	16, // 1: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
-	10, // 2: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
-	11, // 3: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
-	12, // 4: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
-	17, // 5: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
-	21, // 6: flowpipe.v1.FlowSpec.observability:type_name -> flowpipe.v1.ObservabilityConfig
-	8,  // 7: flowpipe.v1.FlowSpec.kubernetes:type_name -> flowpipe.v1.KubernetesSettings
-	9,  // 8: flowpipe.v1.FlowSpec.kubernetes_options:type_name -> flowpipe.v1.KubernetesOptions
-	1,  // 9: flowpipe.v1.KubernetesSettings.image_pull_policy:type_name -> flowpipe.v1.ImagePullPolicy
-	2,  // 10: flowpipe.v1.KubernetesSettings.restart_policy:type_name -> flowpipe.v1.RestartPolicy
-	18, // 11: flowpipe.v1.KubernetesSettings.cpu_pinning:type_name -> flowpipe.v1.KubernetesSettings.CpuPinningEntry
-	14, // 12: flowpipe.v1.KubernetesSettings.resources:type_name -> flowpipe.v1.Resources
-	19, // 13: flowpipe.v1.KubernetesOptions.pod_labels:type_name -> flowpipe.v1.KubernetesOptions.PodLabelsEntry
-	20, // 14: flowpipe.v1.KubernetesOptions.pod_annotations:type_name -> flowpipe.v1.KubernetesOptions.PodAnnotationsEntry
-	0,  // 15: flowpipe.v1.KubernetesOptions.streaming_workload_kind:type_name -> flowpipe.v1.StreamingWorkloadKind
-	3,  // 16: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
-	22, // 17: flowpipe.v1.StageSpec.config:type_name -> google.protobuf.Struct
-	13, // 18: flowpipe.v1.QueueSpec.schema:type_name -> flowpipe.v1.QueueSchema
-	4,  // 19: flowpipe.v1.QueueSchema.format:type_name -> flowpipe.v1.QueueSchemaFormat
-	5,  // 20: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
-	23, // 21: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
-	15, // 22: flowpipe.v1.KubernetesSettings.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	8,  // 0: flowpipe.v1.Flow.spec:type_name -> flowpipe.v1.FlowSpec
+	18, // 1: flowpipe.v1.Flow.status:type_name -> flowpipe.v1.FlowStatus
+	12, // 2: flowpipe.v1.FlowSpec.execution:type_name -> flowpipe.v1.Execution
+	13, // 3: flowpipe.v1.FlowSpec.stages:type_name -> flowpipe.v1.StageSpec
+	14, // 4: flowpipe.v1.FlowSpec.queues:type_name -> flowpipe.v1.QueueSpec
+	19, // 5: flowpipe.v1.FlowSpec.labels:type_name -> flowpipe.v1.FlowSpec.LabelsEntry
+	23, // 6: flowpipe.v1.FlowSpec.observability:type_name -> flowpipe.v1.ObservabilityConfig
+	9,  // 7: flowpipe.v1.FlowSpec.kubernetes:type_name -> flowpipe.v1.KubernetesSettings
+	10, // 8: flowpipe.v1.FlowSpec.kubernetes_options:type_name -> flowpipe.v1.KubernetesOptions
+	2,  // 9: flowpipe.v1.KubernetesSettings.image_pull_policy:type_name -> flowpipe.v1.ImagePullPolicy
+	3,  // 10: flowpipe.v1.KubernetesSettings.restart_policy:type_name -> flowpipe.v1.RestartPolicy
+	20, // 11: flowpipe.v1.KubernetesSettings.cpu_pinning:type_name -> flowpipe.v1.KubernetesSettings.CpuPinningEntry
+	16, // 12: flowpipe.v1.KubernetesSettings.resources:type_name -> flowpipe.v1.Resources
+	21, // 13: flowpipe.v1.KubernetesOptions.pod_labels:type_name -> flowpipe.v1.KubernetesOptions.PodLabelsEntry
+	22, // 14: flowpipe.v1.KubernetesOptions.pod_annotations:type_name -> flowpipe.v1.KubernetesOptions.PodAnnotationsEntry
+	1,  // 15: flowpipe.v1.KubernetesOptions.streaming_workload_kind:type_name -> flowpipe.v1.StreamingWorkloadKind
+	11, // 16: flowpipe.v1.KubernetesOptions.cron:type_name -> flowpipe.v1.KubernetesCronOptions
+	0,  // 17: flowpipe.v1.KubernetesCronOptions.concurrency_policy:type_name -> flowpipe.v1.CronConcurrencyPolicy
+	4,  // 18: flowpipe.v1.Execution.mode:type_name -> flowpipe.v1.ExecutionMode
+	24, // 19: flowpipe.v1.StageSpec.config:type_name -> google.protobuf.Struct
+	15, // 20: flowpipe.v1.QueueSpec.schema:type_name -> flowpipe.v1.QueueSchema
+	5,  // 21: flowpipe.v1.QueueSchema.format:type_name -> flowpipe.v1.QueueSchemaFormat
+	6,  // 22: flowpipe.v1.FlowStatus.state:type_name -> flowpipe.v1.FlowState
+	25, // 23: flowpipe.v1.FlowStatus.last_updated:type_name -> google.protobuf.Timestamp
+	17, // 24: flowpipe.v1.KubernetesSettings.CpuPinningEntry.value:type_name -> flowpipe.v1.CpuSet
+	25, // [25:25] is the sub-list for method output_type
+	25, // [25:25] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_flowpipe_v1_flow_proto_init() }
@@ -1435,17 +1627,18 @@ func file_flowpipe_v1_flow_proto_init() {
 	file_flowpipe_v1_flow_proto_msgTypes[1].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[2].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[3].OneofWrappers = []any{}
-	file_flowpipe_v1_flow_proto_msgTypes[5].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[4].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[6].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[7].OneofWrappers = []any{}
 	file_flowpipe_v1_flow_proto_msgTypes[8].OneofWrappers = []any{}
+	file_flowpipe_v1_flow_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flowpipe_v1_flow_proto_rawDesc), len(file_flowpipe_v1_flow_proto_rawDesc)),
-			NumEnums:      6,
-			NumMessages:   15,
+			NumEnums:      7,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

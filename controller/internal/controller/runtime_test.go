@@ -149,6 +149,61 @@ func TestEnsureRuntimeCreatesJob(t *testing.T) {
 	}
 }
 
+func TestEnsureRuntimeCreatesCronJob(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	image := "custom:tag"
+	otelEndpoint := "collector:4317"
+	schedule := "*/5 * * * *"
+	spec := &flowpipev1.FlowSpec{
+		Name: "simple-pipeline-cron",
+		Kubernetes: &flowpipev1.KubernetesSettings{
+			Image: &image,
+		},
+		KubernetesOptions: &flowpipev1.KubernetesOptions{
+			Cron: &flowpipev1.KubernetesCronOptions{
+				Schedule: schedule,
+			},
+		},
+		Execution: &flowpipev1.Execution{
+			Mode: flowpipev1.ExecutionMode_EXECUTION_MODE_JOB,
+		},
+	}
+
+	workload, err := ensureRuntime(
+		context.Background(),
+		client,
+		"default",
+		spec,
+		corev1.PullIfNotPresent,
+		true,
+		otelEndpoint,
+	)
+	if err != nil {
+		t.Fatalf("ensureRuntime error: %v", err)
+	}
+	if workload != "simple-pipeline-cron" {
+		t.Fatalf("expected cronjob workload name, got %q", workload)
+	}
+
+	if _, err := client.CoreV1().ConfigMaps("default").Get(context.Background(), "simple-pipeline-cron-config", metav1.GetOptions{}); err != nil {
+		t.Fatalf("expected configmap: %v", err)
+	}
+
+	cronJob, err := client.BatchV1().CronJobs("default").Get(context.Background(), "simple-pipeline-cron", metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("expected cronjob: %v", err)
+	}
+	if got := cronJob.Spec.Schedule; got != schedule {
+		t.Fatalf("expected schedule %q, got %q", schedule, got)
+	}
+	if got := cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image; got != image {
+		t.Fatalf("expected cronjob image %q, got %q", image, got)
+	}
+	if cronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy != corev1.RestartPolicyNever {
+		t.Fatalf("expected restart policy never, got %q", cronJob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy)
+	}
+}
+
 func TestEnsureRuntimeAppliesKubernetesOptions(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	image := "runtime:latest"

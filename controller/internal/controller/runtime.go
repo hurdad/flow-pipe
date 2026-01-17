@@ -66,6 +66,10 @@ func ensureRuntime(
 
 	switch mode {
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
+		options := spec.GetKubernetesOptions()
+		if options != nil && options.Cron != nil && options.Cron.Schedule != "" {
+			return applyCronJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, options.Cron)
+		}
 		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
@@ -311,6 +315,7 @@ func applyJob(
 	otelEndpoint string,
 ) (string, error) {
 	name := spec.Name
+	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), spec.GetKubernetesOptions())
 	desired := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -320,47 +325,9 @@ func applyJob(
 			},
 		},
 		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						flowLabelKey: name,
-					},
-					Annotations: map[string]string{
-						runtimeConfigHashKey: configChecksum,
-					},
-				},
-				Spec: corev1.PodSpec{
-					RestartPolicy: restartPolicyFromSpec(spec),
-					Containers: []corev1.Container{
-						{
-							Name:            "runtime",
-							Image:           image,
-							ImagePullPolicy: imagePullPolicy,
-							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "flow-config",
-									MountPath: runtimeConfigMountDir,
-								},
-							},
-						},
-					},
-					Volumes: []corev1.Volume{
-						{
-							Name: "flow-config",
-							VolumeSource: corev1.VolumeSource{
-								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{Name: configMapName},
-								},
-							},
-						},
-					},
-				},
-			},
+			Template: template,
 		},
 	}
-	applyKubernetesOptions(&desired.Spec.Template, spec.GetKubernetesOptions())
 
 	jobs := client.BatchV1().Jobs(namespace)
 	_, err := jobs.Get(ctx, name, metav1.GetOptions{})
@@ -372,6 +339,73 @@ func applyJob(
 	}
 
 	return name, nil
+}
+
+func applyCronJob(
+	ctx context.Context,
+	client kubernetes.Interface,
+	namespace string,
+	spec *flowpipev1.FlowSpec,
+	configMapName string,
+	image string,
+	imagePullPolicy corev1.PullPolicy,
+	configChecksum string,
+	observabilityEnabled bool,
+	otelEndpoint string,
+	cron *flowpipev1.KubernetesCronOptions,
+) (string, error) {
+	name := spec.Name
+	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), spec.GetKubernetesOptions())
+	desired := &batchv1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels: map[string]string{
+				flowLabelKey: name,
+			},
+		},
+		Spec: batchv1.CronJobSpec{
+			Schedule: cron.GetSchedule(),
+			JobTemplate: batchv1.JobTemplateSpec{
+				Spec: batchv1.JobSpec{
+					Template: template,
+				},
+			},
+		},
+	}
+
+	if cron.TimeZone != nil {
+		desired.Spec.TimeZone = cron.TimeZone
+	}
+	if cron.Suspend != nil {
+		desired.Spec.Suspend = cron.Suspend
+	}
+	if cron.StartingDeadlineSeconds != nil {
+		desired.Spec.StartingDeadlineSeconds = cron.StartingDeadlineSeconds
+	}
+	if cron.SuccessfulJobsHistoryLimit != nil {
+		desired.Spec.SuccessfulJobsHistoryLimit = cron.SuccessfulJobsHistoryLimit
+	}
+	if cron.FailedJobsHistoryLimit != nil {
+		desired.Spec.FailedJobsHistoryLimit = cron.FailedJobsHistoryLimit
+	}
+	if cron.ConcurrencyPolicy != flowpipev1.CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_UNSPECIFIED {
+		desired.Spec.ConcurrencyPolicy = cronConcurrencyPolicyFromSpec(cron.ConcurrencyPolicy)
+	}
+
+	cronJobs := client.BatchV1().CronJobs(namespace)
+	current, err := cronJobs.Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			_, err = cronJobs.Create(ctx, desired, metav1.CreateOptions{})
+		}
+		return name, err
+	}
+
+	current.Spec = desired.Spec
+	current.Labels = desired.Labels
+	_, err = cronJobs.Update(ctx, current, metav1.UpdateOptions{})
+	return name, err
 }
 
 func deleteRuntimeResources(
@@ -399,6 +433,10 @@ func deleteRuntimeResources(
 
 	if err := client.BatchV1().Jobs(namespace).Delete(ctx, flowName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		errs = append(errs, fmt.Errorf("delete job %q: %w", flowName, err))
+	}
+
+	if err := client.BatchV1().CronJobs(namespace).Delete(ctx, flowName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		errs = append(errs, fmt.Errorf("delete cronjob %q: %w", flowName, err))
 	}
 
 	configMapName := fmt.Sprintf("%s-config", flowName)
@@ -474,6 +512,72 @@ func runtimeEnv(observabilityEnabled bool, otelEndpoint string) []corev1.EnvVar 
 	)
 
 	return env
+}
+
+func runtimePodTemplate(
+	flowName string,
+	configMapName string,
+	image string,
+	imagePullPolicy corev1.PullPolicy,
+	configChecksum string,
+	observabilityEnabled bool,
+	otelEndpoint string,
+	restartPolicy corev1.RestartPolicy,
+	options *flowpipev1.KubernetesOptions,
+) corev1.PodTemplateSpec {
+	template := corev1.PodTemplateSpec{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				flowLabelKey: flowName,
+			},
+			Annotations: map[string]string{
+				runtimeConfigHashKey: configChecksum,
+			},
+		},
+		Spec: corev1.PodSpec{
+			RestartPolicy: restartPolicy,
+			Containers: []corev1.Container{
+				{
+					Name:            "runtime",
+					Image:           image,
+					ImagePullPolicy: imagePullPolicy,
+					Args:            []string{runtimeConfigPath},
+					Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      "flow-config",
+							MountPath: runtimeConfigMountDir,
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "flow-config",
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{Name: configMapName},
+						},
+					},
+				},
+			},
+		},
+	}
+	applyKubernetesOptions(&template, options)
+	return template
+}
+
+func cronConcurrencyPolicyFromSpec(policy flowpipev1.CronConcurrencyPolicy) batchv1.ConcurrencyPolicy {
+	switch policy {
+	case flowpipev1.CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_FORBID:
+		return batchv1.ForbidConcurrent
+	case flowpipev1.CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_REPLACE:
+		return batchv1.ReplaceConcurrent
+	case flowpipev1.CronConcurrencyPolicy_CRON_CONCURRENCY_POLICY_ALLOW:
+		fallthrough
+	default:
+		return batchv1.AllowConcurrent
+	}
 }
 
 func applyKubernetesOptions(template *corev1.PodTemplateSpec, options *flowpipev1.KubernetesOptions) {
