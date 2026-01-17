@@ -94,6 +94,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   state.metrics_counters_only = metrics_cfg.counters_only();
   state.latency_histograms =
       !metrics_cfg.latency_histograms_disabled() && !state.metrics_counters_only;
+  state.jemalloc_metrics_enabled = !metrics_cfg.jemalloc_metrics_disabled();
 
   if (!state.stage_metrics_enabled && !state.queue_metrics_enabled && !state.flow_metrics_enabled) {
     return;
@@ -156,7 +157,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   // ----------------------------------------------------------
   // jemalloc observable metrics
   // ----------------------------------------------------------
-  if (!state.metrics_counters_only) {
+  if (!state.metrics_counters_only && state.jemalloc_metrics_enabled) {
     auto meter = api_provider->GetMeter("flowpipe.jemalloc");
 
     auto allocated = meter->CreateInt64ObservableGauge("flowpipe.jemalloc.allocated.bytes",
@@ -242,9 +243,9 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   if (debug) {
     fprintf(stderr,
             "[otel] metrics enabled "
-            "(stage=%d queue=%d flow=%d histograms=%d counters_only=%d)\n",
+            "(stage=%d queue=%d flow=%d histograms=%d counters_only=%d jemalloc=%d)\n",
             state.stage_metrics_enabled, state.queue_metrics_enabled, state.flow_metrics_enabled,
-            state.latency_histograms, state.metrics_counters_only);
+            state.latency_histograms, state.metrics_counters_only, state.jemalloc_metrics_enabled);
   }
 }
 
