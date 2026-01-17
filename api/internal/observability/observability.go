@@ -55,6 +55,7 @@ func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error,
 	levelVar := new(slog.LevelVar)
 	levelVar.Set(parseLogLevel(cfg.LogLevel))
 	slogger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: levelVar}))
+	slog.SetDefault(slogger)
 	lg := Logger{
 		slog: slogger,
 	}
