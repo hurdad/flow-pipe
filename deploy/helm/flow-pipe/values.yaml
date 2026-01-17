@@ -76,6 +76,27 @@ api:
   port: 8080
   serviceName: flow-api
   logLevel: info
+  auth:
+    enabled: false
+    # When true, create a Secret containing the API key.
+    createSecret: false
+    # Secret name to reference for FLOW_API_KEY.
+    secretName: flow-pipe-api-auth
+    # Secret key holding the API key string.
+    secretKey: api-key
+    # API key value used when createSecret is true.
+    apiKey: ""
+  tls:
+    enabled: false
+    # Secret name holding TLS cert/key for the HTTP server.
+    secretName: flow-pipe-api-tls
+    # Secret keys containing the certificate and private key.
+    certKey: tls.crt
+    keyKey: tls.key
+    # Mount path for TLS material inside the API container.
+    mountPath: /etc/flow-pipe/tls
+    # Expected server name for gRPC TLS clients.
+    serverName: flow-pipe-api
 
   httpService:
     # Options: ClusterIP (default), LoadBalancer

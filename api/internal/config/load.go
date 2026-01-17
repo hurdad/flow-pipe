@@ -46,6 +46,60 @@ func Load() Config {
 			envOrDefault("FLOW_LOG_LEVEL", "info"),
 			"log level (debug, info, warn, error)",
 		)
+
+		authEnabled = flag.Bool(
+			"auth-enabled",
+			envBoolOrDefault("FLOW_AUTH_ENABLED", false),
+			"enable API authentication",
+		)
+
+		apiKey = flag.String(
+			"api-key",
+			envOrDefault("FLOW_API_KEY", ""),
+			"shared API key for authentication",
+		)
+
+		httpTLSEnabled = flag.Bool(
+			"http-tls-enabled",
+			envBoolOrDefault("FLOW_HTTP_TLS_ENABLED", false),
+			"enable TLS for the HTTP server",
+		)
+
+		httpTLSCertFile = flag.String(
+			"http-tls-cert",
+			envOrDefault("FLOW_HTTP_TLS_CERT", ""),
+			"path to the TLS certificate for the HTTP server",
+		)
+
+		httpTLSKeyFile = flag.String(
+			"http-tls-key",
+			envOrDefault("FLOW_HTTP_TLS_KEY", ""),
+			"path to the TLS key for the HTTP server",
+		)
+
+		grpcTLSEnabled = flag.Bool(
+			"grpc-tls-enabled",
+			envBoolOrDefault("FLOW_GRPC_TLS_ENABLED", false),
+			"enable TLS for the gRPC server",
+		)
+
+		grpcTLSCertFile = flag.String(
+			"grpc-tls-cert",
+			envOrDefault("FLOW_GRPC_TLS_CERT", ""),
+			"path to the TLS certificate for the gRPC server",
+		)
+
+		grpcTLSKeyFile = flag.String(
+			"grpc-tls-key",
+			envOrDefault("FLOW_GRPC_TLS_KEY", ""),
+			"path to the TLS key for the gRPC server",
+		)
+
+		grpcTLSServerName = flag.String(
+			"grpc-tls-server-name",
+			envOrDefault("FLOW_GRPC_TLS_SERVER_NAME", ""),
+			"expected server name for gRPC TLS clients",
+		)
 	)
 
 	flag.Parse()
@@ -58,5 +112,14 @@ func Load() Config {
 		ServiceName:          *serviceName,
 		ObservabilityEnabled: *observabilityEnabled,
 		LogLevel:             *logLevel,
+		AuthEnabled:          *authEnabled,
+		APIKey:               *apiKey,
+		HTTPTLSEnabled:       *httpTLSEnabled,
+		HTTPTLSCertFile:      *httpTLSCertFile,
+		HTTPTLSKeyFile:       *httpTLSKeyFile,
+		GRPCTLSEnabled:       *grpcTLSEnabled,
+		GRPCTLSCertFile:      *grpcTLSCertFile,
+		GRPCTLSKeyFile:       *grpcTLSKeyFile,
+		GRPCTLSServerName:    *grpcTLSServerName,
 	}
 }

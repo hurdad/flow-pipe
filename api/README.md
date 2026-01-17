@@ -197,6 +197,15 @@ The API can be configured using **environment variables** or **CLI flags**. Envi
 | `FLOW_HTTP_ADDR` | HTTP (grpc-gateway) listen address | `:8080` |
 | `FLOW_GRPC_ADDR` | gRPC listen address | `:9090` |
 | `ETCD_ENDPOINTS` | Comma-separated etcd endpoints | `http://127.0.0.1:2379` |
+| `FLOW_AUTH_ENABLED` | Enable API authentication checks | `false` |
+| `FLOW_API_KEY` | Shared API key for API authentication | (empty) |
+| `FLOW_HTTP_TLS_ENABLED` | Enable TLS for the HTTP server | `false` |
+| `FLOW_HTTP_TLS_CERT` | Path to HTTP TLS certificate | (empty) |
+| `FLOW_HTTP_TLS_KEY` | Path to HTTP TLS private key | (empty) |
+| `FLOW_GRPC_TLS_ENABLED` | Enable TLS for the gRPC server | `false` |
+| `FLOW_GRPC_TLS_CERT` | Path to gRPC TLS certificate | (empty) |
+| `FLOW_GRPC_TLS_KEY` | Path to gRPC TLS private key | (empty) |
+| `FLOW_GRPC_TLS_SERVER_NAME` | Expected gRPC TLS server name | (empty) |
 
 ### CLI Flags
 
@@ -205,8 +214,50 @@ The API can be configured using **environment variables** or **CLI flags**. Envi
 | `-http-addr` | HTTP listen address |
 | `-grpc-addr` | gRPC listen address |
 | `-etcd` | Comma-separated etcd endpoints |
+| `-auth-enabled` | Enable API authentication |
+| `-api-key` | Shared API key for API authentication |
+| `-http-tls-enabled` | Enable TLS for the HTTP server |
+| `-http-tls-cert` | Path to HTTP TLS certificate |
+| `-http-tls-key` | Path to HTTP TLS private key |
+| `-grpc-tls-enabled` | Enable TLS for the gRPC server |
+| `-grpc-tls-cert` | Path to gRPC TLS certificate |
+| `-grpc-tls-key` | Path to gRPC TLS private key |
+| `-grpc-tls-server-name` | Expected gRPC TLS server name |
 
 Environment variables provide the defaults; flags override for local debugging.
+
+---
+
+## API Authentication
+
+When authentication is enabled, requests must include an API key in the
+`Authorization` header using the Bearer scheme.
+
+Example:
+```
+Authorization: Bearer <api-key>
+```
+
+Enable authentication by setting `FLOW_AUTH_ENABLED=true` and providing
+`FLOW_API_KEY`, or passing `-auth-enabled` and `-api-key` flags.
+
+---
+
+## HTTP TLS
+
+To serve the HTTP (grpc-gateway) endpoint over TLS, set
+`FLOW_HTTP_TLS_ENABLED=true` and provide certificate and key paths via
+`FLOW_HTTP_TLS_CERT` and `FLOW_HTTP_TLS_KEY` (or the matching CLI flags).
+
+---
+
+## gRPC TLS
+
+To enable TLS for the gRPC server, set `FLOW_GRPC_TLS_ENABLED=true` and
+provide certificate and key paths via `FLOW_GRPC_TLS_CERT` and
+`FLOW_GRPC_TLS_KEY`. The HTTP gateway also uses these settings when
+connecting back to gRPC, so configure `FLOW_GRPC_TLS_SERVER_NAME` to match
+the certificate's expected server name.
 
 ---
 
