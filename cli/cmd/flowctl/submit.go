@@ -12,8 +12,6 @@ import (
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -44,12 +42,7 @@ var submitCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), submitTimeout)
 		defer cancel()
 
-		conn, err := grpc.DialContext(
-			ctx,
-			submitAPIAddr,
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithBlock(),
-		)
+		conn, err := dialAPI(ctx, submitAPIAddr)
 		if err != nil {
 			return fmt.Errorf("connect to api %s: %w", submitAPIAddr, err)
 		}
