@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -51,7 +52,9 @@ func (l Logger) write(ctx context.Context, level slog.Level, msg string, attrs .
 // It returns a shutdown function that should be called on process exit, and a logger that emits messages
 // to stdout.
 func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error, Logger, error) {
-	slogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	levelVar := new(slog.LevelVar)
+	levelVar.Set(parseLogLevel(cfg.LogLevel))
+	slogger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: levelVar}))
 	lg := Logger{
 		slog: slogger,
 	}
@@ -119,6 +122,19 @@ func Setup(ctx context.Context, cfg config.Config) (func(context.Context) error,
 	}
 
 	return shutdown, lg, nil
+}
+
+func parseLogLevel(level string) slog.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return slog.LevelDebug
+	case "warn", "warning":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }
 
 // Tracer returns a named tracer from the global provider.

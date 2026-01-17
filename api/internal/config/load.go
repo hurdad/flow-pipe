@@ -40,6 +40,12 @@ func Load() Config {
 			envBoolOrDefault("FLOW_OBSERVABILITY_ENABLED", false),
 			"enable OpenTelemetry exporters",
 		)
+
+		logLevel = flag.String(
+			"log-level",
+			envOrDefault("FLOW_LOG_LEVEL", "info"),
+			"log level (debug, info, warn, error)",
+		)
 	)
 
 	flag.Parse()
@@ -51,5 +57,6 @@ func Load() Config {
 		OTLPEndpoint:         *otelEndpoint,
 		ServiceName:          *serviceName,
 		ObservabilityEnabled: *observabilityEnabled,
+		LogLevel:             *logLevel,
 	}
 }

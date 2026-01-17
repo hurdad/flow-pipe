@@ -32,6 +32,12 @@ func Load() Config {
 			"enable OpenTelemetry exporters",
 		)
 
+		logLevel = flag.String(
+			"log-level",
+			envOrDefault("FLOW_LOG_LEVEL", "info"),
+			"log level (debug, info, warn, error)",
+		)
+
 		workerCount = flag.Int(
 			"worker-count",
 			envIntOrDefault("FLOW_CONTROLLER_WORKER_COUNT", 1),
@@ -97,6 +103,7 @@ func Load() Config {
 		ServiceName:                 *serviceName,
 		RuntimeNamespace:            *runtimeNamespace,
 		ObservabilityEnabled:        *observabilityEnabled,
+		LogLevel:                    *logLevel,
 		WorkerCount:                 workers,
 		LeaderElectionEnabled:       *leaderElectionEnabled,
 		LeaderElectionName:          *leaderElectionName,

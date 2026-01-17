@@ -19,6 +19,9 @@ type Config struct {
 	// Whether observability exporters should be enabled
 	ObservabilityEnabled bool
 
+	// LogLevel sets the slog level (debug, info, warn, error).
+	LogLevel string
+
 	// Number of workers processing the reconciliation queue.
 	WorkerCount int
 
