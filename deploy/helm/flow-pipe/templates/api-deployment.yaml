@@ -15,7 +15,7 @@ spec:
         app: flow-pipe-api
     spec:
       containers:
-        - name: api
+        - name: flow-api
           image: {{ .Values.api.image }}
           imagePullPolicy: {{ .Values.api.imagePullPolicy | default "IfNotPresent" }}
           ports:
