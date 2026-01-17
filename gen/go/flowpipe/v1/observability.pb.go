@@ -510,10 +510,12 @@ type ObservabilityConfig_MetricsConfig struct {
 	// Cost / cardinality controls
 	LatencyHistogramsDisabled bool `protobuf:"varint,4,opt,name=latency_histograms_disabled,json=latencyHistogramsDisabled,proto3" json:"latency_histograms_disabled,omitempty"`
 	CountersOnly              bool `protobuf:"varint,5,opt,name=counters_only,json=countersOnly,proto3" json:"counters_only,omitempty"`
+	// Disable jemalloc runtime metrics (if supported by runtime)
+	JemallocMetricsDisabled bool `protobuf:"varint,6,opt,name=jemalloc_metrics_disabled,json=jemallocMetricsDisabled,proto3" json:"jemalloc_metrics_disabled,omitempty"`
 	// Collection interval hints
-	MinCollectionIntervalMs uint32 `protobuf:"varint,6,opt,name=min_collection_interval_ms,json=minCollectionIntervalMs,proto3" json:"min_collection_interval_ms,omitempty"`
-	CollectionIntervalMs    uint32 `protobuf:"varint,7,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
-	LatencyBudgetMs         uint32 `protobuf:"varint,8,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
+	MinCollectionIntervalMs uint32 `protobuf:"varint,7,opt,name=min_collection_interval_ms,json=minCollectionIntervalMs,proto3" json:"min_collection_interval_ms,omitempty"`
+	CollectionIntervalMs    uint32 `protobuf:"varint,8,opt,name=collection_interval_ms,json=collectionIntervalMs,proto3" json:"collection_interval_ms,omitempty"`
+	LatencyBudgetMs         uint32 `protobuf:"varint,9,opt,name=latency_budget_ms,json=latencyBudgetMs,proto3" json:"latency_budget_ms,omitempty"`
 	unknownFields           protoimpl.UnknownFields
 	sizeCache               protoimpl.SizeCache
 }
@@ -579,6 +581,13 @@ func (x *ObservabilityConfig_MetricsConfig) GetLatencyHistogramsDisabled() bool 
 func (x *ObservabilityConfig_MetricsConfig) GetCountersOnly() bool {
 	if x != nil {
 		return x.CountersOnly
+	}
+	return false
+}
+
+func (x *ObservabilityConfig_MetricsConfig) GetJemallocMetricsDisabled() bool {
+	if x != nil {
+		return x.JemallocMetricsDisabled
 	}
 	return false
 }
@@ -802,7 +811,7 @@ var File_flowpipe_v1_observability_proto protoreflect.FileDescriptor
 
 const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\n" +
-	"\x1fflowpipe/v1/observability.proto\x12\vflowpipe.v1\"\xd5\x13\n" +
+	"\x1fflowpipe/v1/observability.proto\x12\vflowpipe.v1\"\x91\x14\n" +
 	"\x13ObservabilityConfig\x12'\n" +
 	"\x0fmetrics_enabled\x18\x01 \x01(\bR\x0emetricsEnabled\x12'\n" +
 	"\x0ftracing_enabled\x18\x02 \x01(\bR\x0etracingEnabled\x12!\n" +
@@ -841,16 +850,17 @@ const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\x16ATTRIBUTES_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ATTRIBUTES_MINIMAL\x10\x01\x12\x17\n" +
 	"\x13ATTRIBUTES_STANDARD\x10\x02\x12\x16\n" +
-	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\xb3\x03\n" +
+	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\xef\x03\n" +
 	"\rMetricsConfig\x124\n" +
 	"\x16stage_metrics_disabled\x18\x01 \x01(\bR\x14stageMetricsDisabled\x124\n" +
 	"\x16queue_metrics_disabled\x18\x02 \x01(\bR\x14queueMetricsDisabled\x122\n" +
 	"\x15flow_metrics_disabled\x18\x03 \x01(\bR\x13flowMetricsDisabled\x12>\n" +
 	"\x1blatency_histograms_disabled\x18\x04 \x01(\bR\x19latencyHistogramsDisabled\x12#\n" +
-	"\rcounters_only\x18\x05 \x01(\bR\fcountersOnly\x12;\n" +
-	"\x1amin_collection_interval_ms\x18\x06 \x01(\rR\x17minCollectionIntervalMs\x124\n" +
-	"\x16collection_interval_ms\x18\a \x01(\rR\x14collectionIntervalMs\x12*\n" +
-	"\x11latency_budget_ms\x18\b \x01(\rR\x0flatencyBudgetMs\x1a\xe7\x03\n" +
+	"\rcounters_only\x18\x05 \x01(\bR\fcountersOnly\x12:\n" +
+	"\x19jemalloc_metrics_disabled\x18\x06 \x01(\bR\x17jemallocMetricsDisabled\x12;\n" +
+	"\x1amin_collection_interval_ms\x18\a \x01(\rR\x17minCollectionIntervalMs\x124\n" +
+	"\x16collection_interval_ms\x18\b \x01(\rR\x14collectionIntervalMs\x12*\n" +
+	"\x11latency_budget_ms\x18\t \x01(\rR\x0flatencyBudgetMs\x1a\xe7\x03\n" +
 	"\rLoggingConfig\x12]\n" +
 	"\tprocessor\x18\x01 \x01(\x0e2?.flowpipe.v1.ObservabilityConfig.LoggingConfig.LogProcessorTypeR\tprocessor\x12P\n" +
 	"\x05batch\x18\x02 \x01(\v2:.flowpipe.v1.ObservabilityConfig.LoggingConfig.BatchConfigR\x05batch\x1a\xbe\x01\n" +
