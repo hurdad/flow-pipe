@@ -19,6 +19,7 @@ func (c *Controller) enqueueExisting(ctx context.Context) error {
 
 	for _, f := range flows {
 		c.queue.Add(f.Name)
+		c.logger.Debug(ctx, "queued existing flow", slog.String("flow", f.Name))
 	}
 
 	c.logger.Info(ctx, "seeded existing flows", slog.Int("count", len(flows)))
@@ -49,7 +50,7 @@ func (c *Controller) runWatch(ctx context.Context) {
 				attribute.String("flow.name", ev.Flow.Name),
 				attribute.String("event.type", string(ev.Type)),
 			))
-			c.logger.Info(
+			c.logger.Debug(
 				ctx,
 				"watch event received",
 				slog.String("event", string(ev.Type)),
@@ -64,6 +65,7 @@ func (c *Controller) runWatch(ctx context.Context) {
 					slog.String("flow", ev.Flow.Name),
 				)
 				c.queue.Add(ev.Flow.Name)
+				c.logger.Debug(ctx, "queued flow for reconcile", slog.String("flow", ev.Flow.Name))
 			case store.WatchUpdated:
 				c.logger.Info(
 					ctx,
@@ -71,6 +73,7 @@ func (c *Controller) runWatch(ctx context.Context) {
 					slog.String("flow", ev.Flow.Name),
 				)
 				c.queue.Add(ev.Flow.Name)
+				c.logger.Debug(ctx, "queued flow for reconcile", slog.String("flow", ev.Flow.Name))
 			case store.WatchDeleted:
 				c.logger.Info(
 					ctx,
@@ -78,6 +81,7 @@ func (c *Controller) runWatch(ctx context.Context) {
 					slog.String("flow", ev.Flow.Name),
 				)
 				c.queue.Add(ev.Flow.Name)
+				c.logger.Debug(ctx, "queued flow for reconcile", slog.String("flow", ev.Flow.Name))
 			}
 		}
 	}
