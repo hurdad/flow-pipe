@@ -118,10 +118,13 @@ message ObservabilityConfig {
     bool latency_histograms_disabled = 4;
     bool counters_only = 5;
 
+    // Disable jemalloc runtime metrics (if supported by runtime)
+    bool jemalloc_metrics_disabled = 6;
+
     // Collection interval hints
-    uint32 min_collection_interval_ms = 6;
-    uint32 collection_interval_ms = 7;
-    uint32 latency_budget_ms = 8;
+    uint32 min_collection_interval_ms = 7;
+    uint32 collection_interval_ms = 8;
+    uint32 latency_budget_ms = 9;
   }
 
   MetricsConfig metrics = 7;
