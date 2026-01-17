@@ -421,17 +421,17 @@
     "ObservabilityConfigMetricsConfig": {
       "type": "object",
       "properties": {
-        "stageMetricsEnabled": {
+        "stageMetricsDisabled": {
           "type": "boolean",
-          "title": "Granularity controls"
+          "title": "Granularity controls (disable defaults to false)"
         },
-        "queueMetricsEnabled": {
+        "queueMetricsDisabled": {
           "type": "boolean"
         },
-        "flowMetricsEnabled": {
+        "flowMetricsDisabled": {
           "type": "boolean"
         },
-        "latencyHistogramsEnabled": {
+        "latencyHistogramsDisabled": {
           "type": "boolean",
           "title": "Cost / cardinality controls"
         },

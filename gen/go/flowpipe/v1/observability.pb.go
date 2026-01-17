@@ -503,7 +503,7 @@ func (x *ObservabilityConfig_TracingConfig) GetLatencyBudgetMs() uint32 {
 // ==========================================================
 type ObservabilityConfig_MetricsConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Granularity controls
+	// Granularity controls (disable defaults to false)
 	StageMetricsDisabled bool `protobuf:"varint,1,opt,name=stage_metrics_disabled,json=stageMetricsDisabled,proto3" json:"stage_metrics_disabled,omitempty"`
 	QueueMetricsDisabled bool `protobuf:"varint,2,opt,name=queue_metrics_disabled,json=queueMetricsDisabled,proto3" json:"queue_metrics_disabled,omitempty"`
 	FlowMetricsDisabled  bool `protobuf:"varint,3,opt,name=flow_metrics_disabled,json=flowMetricsDisabled,proto3" json:"flow_metrics_disabled,omitempty"`
@@ -802,7 +802,7 @@ var File_flowpipe_v1_observability_proto protoreflect.FileDescriptor
 
 const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\n" +
-	"\x1fflowpipe/v1/observability.proto\x12\vflowpipe.v1\"\xcd\x13\n" +
+	"\x1fflowpipe/v1/observability.proto\x12\vflowpipe.v1\"\xd5\x13\n" +
 	"\x13ObservabilityConfig\x12'\n" +
 	"\x0fmetrics_enabled\x18\x01 \x01(\bR\x0emetricsEnabled\x12'\n" +
 	"\x0ftracing_enabled\x18\x02 \x01(\bR\x0etracingEnabled\x12!\n" +
@@ -841,8 +841,8 @@ const file_flowpipe_v1_observability_proto_rawDesc = "" +
 	"\x16ATTRIBUTES_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ATTRIBUTES_MINIMAL\x10\x01\x12\x17\n" +
 	"\x13ATTRIBUTES_STANDARD\x10\x02\x12\x16\n" +
-	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\xab\x03\n" +
-	"\rMetricsConfig\x122\n" +
+	"\x12ATTRIBUTES_VERBOSE\x10\x03\x1a\xb3\x03\n" +
+	"\rMetricsConfig\x124\n" +
 	"\x16stage_metrics_disabled\x18\x01 \x01(\bR\x14stageMetricsDisabled\x124\n" +
 	"\x16queue_metrics_disabled\x18\x02 \x01(\bR\x14queueMetricsDisabled\x122\n" +
 	"\x15flow_metrics_disabled\x18\x03 \x01(\bR\x13flowMetricsDisabled\x12>\n" +
