@@ -13,6 +13,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/hurdad/flow-pipe/api/internal/config"
 	"github.com/hurdad/flow-pipe/api/internal/observability"
@@ -20,16 +21,33 @@ import (
 )
 
 type HTTPServer struct {
-	addr   string
-	server *http.Server
+	addr        string
+	server      *http.Server
+	tlsEnabled  bool
+	tlsCertFile string
+	tlsKeyFile  string
 }
 
 func NewHTTPServer(cfg config.Config) (*HTTPServer, error) {
+	if err := ensureAPIKeyConfigured(cfg); err != nil {
+		return nil, err
+	}
+	if err := ensureHTTPServerTLSConfigured(cfg); err != nil {
+		return nil, err
+	}
+
 	mux := runtime.NewServeMux()
 
 	ctx := context.Background()
-	opts := []grpc.DialOption{
-		grpc.WithInsecure(), // OK for in-cluster; TLS later
+	opts := []grpc.DialOption{}
+	if cfg.GRPCTLSEnabled {
+		creds, err := credentials.NewClientTLSFromFile(cfg.GRPCTLSCertFile, cfg.GRPCTLSServerName)
+		if err != nil {
+			return nil, fmt.Errorf("grpc tls config: %w", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure()) // OK for in-cluster; TLS later
 	}
 
 	if err := flowpipev1.RegisterFlowServiceHandlerFromEndpoint(
@@ -70,18 +88,25 @@ func NewHTTPServer(cfg config.Config) (*HTTPServer, error) {
 
 	tracer := observability.Tracer("flow-api/http")
 
+	handler := apiKeyHTTPMiddleware(cfg, mux)
 	srv := &http.Server{
 		Addr:    cfg.HTTPAddr,
-		Handler: httpMiddleware(mux, tracer, requestCount, latency),
+		Handler: httpMiddleware(handler, tracer, requestCount, latency),
 	}
 
 	return &HTTPServer{
-		addr:   cfg.HTTPAddr,
-		server: srv,
+		addr:        cfg.HTTPAddr,
+		server:      srv,
+		tlsEnabled:  cfg.HTTPTLSEnabled,
+		tlsCertFile: cfg.HTTPTLSCertFile,
+		tlsKeyFile:  cfg.HTTPTLSKeyFile,
 	}, nil
 }
 
 func (h *HTTPServer) Run() error {
+	if h.tlsEnabled {
+		return h.server.ListenAndServeTLS(h.tlsCertFile, h.tlsKeyFile)
+	}
 	return h.server.ListenAndServe()
 }
 

@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/hurdad/flow-pipe/api/internal/config"
@@ -28,6 +29,13 @@ type GRPCServer struct {
 }
 
 func NewGRPCServer(cfg config.Config, store store.Store) (*GRPCServer, error) {
+	if err := ensureAPIKeyConfigured(cfg); err != nil {
+		return nil, err
+	}
+	if err := ensureGRPCServerTLSConfigured(cfg); err != nil {
+		return nil, err
+	}
+
 	meter := otel.Meter("github.com/hurdad/flow-pipe/api/grpc")
 	requestCount, err := meter.Int64Counter(
 		"flow_api_grpc_requests_total",
@@ -53,9 +61,20 @@ func NewGRPCServer(cfg config.Config, store store.Store) (*GRPCServer, error) {
 		return nil, fmt.Errorf("listen %s: %w", cfg.GRPCAddr, err)
 	}
 
-	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(unaryTracingInterceptor(tracer, requestCount, latency)),
-	)
+	serverOpts := []grpc.ServerOption{
+		grpc.ChainUnaryInterceptor(
+			apiKeyUnaryInterceptor(cfg),
+			unaryTracingInterceptor(tracer, requestCount, latency),
+		),
+	}
+	if cfg.GRPCTLSEnabled {
+		creds, err := credentials.NewServerTLSFromFile(cfg.GRPCTLSCertFile, cfg.GRPCTLSKeyFile)
+		if err != nil {
+			return nil, fmt.Errorf("grpc tls config: %w", err)
+		}
+		serverOpts = append(serverOpts, grpc.Creds(creds))
+	}
+	grpcServer := grpc.NewServer(serverOpts...)
 	flowServer := service.NewFlowServer(store)
 	schemaRegistryServer := service.NewSchemaRegistryServer(store)
 	flowpipev1.RegisterFlowServiceServer(grpcServer, flowServer)
