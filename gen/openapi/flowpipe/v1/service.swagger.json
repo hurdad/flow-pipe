@@ -555,7 +555,7 @@
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
-      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "rpcStatus": {
       "type": "object",
@@ -588,6 +588,17 @@
           "description": "CPU core identifiers."
         }
       }
+    },
+    "v1CronConcurrencyPolicy": {
+      "type": "string",
+      "enum": [
+        "CRON_CONCURRENCY_POLICY_UNSPECIFIED",
+        "CRON_CONCURRENCY_POLICY_ALLOW",
+        "CRON_CONCURRENCY_POLICY_FORBID",
+        "CRON_CONCURRENCY_POLICY_REPLACE"
+      ],
+      "default": "CRON_CONCURRENCY_POLICY_UNSPECIFIED",
+      "description": "CronJob concurrency policy options.\n\n - CRON_CONCURRENCY_POLICY_UNSPECIFIED: Concurrency policy not specified (controller default).\n - CRON_CONCURRENCY_POLICY_ALLOW: Allow concurrent jobs.\n - CRON_CONCURRENCY_POLICY_FORBID: Forbid concurrent jobs.\n - CRON_CONCURRENCY_POLICY_REPLACE: Replace concurrent jobs."
     },
     "v1Execution": {
       "type": "object",
@@ -735,6 +746,43 @@
       "default": "IMAGE_PULL_POLICY_UNSPECIFIED",
       "description": "Kubernetes image pull policy.\n\n - IMAGE_PULL_POLICY_UNSPECIFIED: Pull policy not specified (controller default).\n - IMAGE_PULL_POLICY_ALWAYS: Always pull the image.\n - IMAGE_PULL_POLICY_IF_NOT_PRESENT: Pull if not present on node.\n - IMAGE_PULL_POLICY_NEVER: Never pull the image."
     },
+    "v1KubernetesCronOptions": {
+      "type": "object",
+      "properties": {
+        "schedule": {
+          "type": "string",
+          "description": "Cron schedule in standard format."
+        },
+        "timeZone": {
+          "type": "string",
+          "description": "Optional time zone name for the schedule."
+        },
+        "suspend": {
+          "type": "boolean",
+          "description": "Optional suspend flag for the CronJob."
+        },
+        "startingDeadlineSeconds": {
+          "type": "string",
+          "format": "int64",
+          "description": "Optional deadline in seconds for starting missed jobs."
+        },
+        "concurrencyPolicy": {
+          "$ref": "#/definitions/v1CronConcurrencyPolicy",
+          "description": "Concurrency policy for overlapping job runs."
+        },
+        "successfulJobsHistoryLimit": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Optional number of successful jobs to retain."
+        },
+        "failedJobsHistoryLimit": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Optional number of failed jobs to retain."
+        }
+      },
+      "description": "CronJob options for scheduled flow runs."
+    },
     "v1KubernetesOptions": {
       "type": "object",
       "properties": {
@@ -770,6 +818,10 @@
         "streamingWorkloadKind": {
           "$ref": "#/definitions/v1StreamingWorkloadKind",
           "description": "Streaming runtime workload kind (Deployment or DaemonSet)."
+        },
+        "cron": {
+          "$ref": "#/definitions/v1KubernetesCronOptions",
+          "description": "CronJob options for run-to-completion job workloads."
         }
       },
       "description": "Kubernetes runtime options for flow workloads."
