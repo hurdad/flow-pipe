@@ -41,6 +41,7 @@ func (c *Controller) worker(ctx context.Context) {
 				c.queueLagSeconds.Record(ctx, lag.Seconds(), metric.WithAttributes(attribute.String("flow.name", name)))
 			}
 
+			c.logger.Debug(ctx, "dequeued flow", slog.String("flow", name), slog.Duration("queue_lag", lag), slog.Int("queue_depth", queueDepth))
 			c.logger.Info(ctx, "reconcile requested", slog.String("flow", name), slog.Duration("queue_lag", lag), slog.Int("queue_depth", queueDepth))
 			if err := c.reconcile(ctx, name); err != nil {
 				c.logger.Error(ctx, "reconcile failed", slog.String("flow", name), slog.Any("error", err))
@@ -72,6 +73,7 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 	if spec == nil {
 		// Flow deleted or not yet fully written
 		c.logger.Info(ctx, "flow not found or incomplete", slog.String("flow", name))
+		c.logger.Debug(ctx, "deleting runtime resources for missing flow", slog.String("flow", name))
 		if err := deleteRuntimeResources(ctx, c.kube, c.runtimeNamespace, name); err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
@@ -95,6 +97,7 @@ func (c *Controller) reconcile(ctx context.Context, name string) error {
 		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
+	c.logger.Debug(ctx, "runtime workload ensured", slog.String("flow", name), slog.String("workload", workload))
 
 	// Minimal, correct status update
 	status := &flowpipev1.FlowStatus{
