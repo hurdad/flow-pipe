@@ -92,6 +92,12 @@ void InitFromProto(const flowpipe::v1::ObservabilityConfig* cfg) {
     InitMetrics(cfg, global, debug);
   } else {
     FP_LOG_DEBUG("observability: metrics disabled");
+    auto& state = GetOtelState();
+    state.stage_metrics_enabled = false;
+    state.queue_metrics_enabled = false;
+    state.flow_metrics_enabled = false;
+    state.latency_histograms = false;
+    state.metrics_counters_only = false;
   }
 
   FP_LOG_DEBUG("observability: InitFromProto complete");
