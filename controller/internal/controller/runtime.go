@@ -13,6 +13,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/yaml"
@@ -24,6 +25,7 @@ const (
 	runtimeConfigMountDir = "/config"
 	runtimeConfigPath     = "/config/flow.yaml"
 	runtimeConfigHashKey  = "flowpipe.io/flow-config-checksum"
+	resourceProfileKey    = "flowpipe.io/resource-profile"
 )
 
 func ensureRuntime(
@@ -64,23 +66,28 @@ func ensureRuntime(
 		mode = spec.Execution.Mode
 	}
 
+	resourceIntent := (*flowpipev1.Resources)(nil)
+	if spec.Kubernetes != nil {
+		resourceIntent = spec.Kubernetes.Resources
+	}
+
 	switch mode {
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_JOB:
 		options := spec.GetKubernetesOptions()
 		if options != nil && options.Cron != nil && options.Cron.Schedule != "" {
-			return applyCronJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, options.Cron)
+			return applyCronJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options.Cron)
 		}
-		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint)
+		return applyJob(ctx, client, namespace, spec, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent)
 	case flowpipev1.ExecutionMode_EXECUTION_MODE_STREAMING:
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
 		options := spec.GetKubernetesOptions()
 		if options != nil && options.StreamingWorkloadKind == flowpipev1.StreamingWorkloadKind_STREAMING_WORKLOAD_KIND_DAEMONSET {
-			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, options)
+			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options)
 		}
-		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, options)
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options)
 	default:
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
-		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, spec.GetKubernetesOptions())
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, spec.GetKubernetesOptions())
 	}
 }
 
@@ -143,6 +150,7 @@ func applyDeployment(
 	configChecksum string,
 	observabilityEnabled bool,
 	otelEndpoint string,
+	resources *flowpipev1.Resources,
 	options *flowpipev1.KubernetesOptions,
 ) (string, error) {
 	desired := &appsv1.Deployment{
@@ -199,6 +207,7 @@ func applyDeployment(
 			},
 		},
 	}
+	applyResourceIntent(&desired.Spec.Template, resources)
 	applyKubernetesOptions(&desired.Spec.Template, options)
 
 	deployments := client.AppsV1().Deployments(namespace)
@@ -229,6 +238,7 @@ func applyDaemonSet(
 	configChecksum string,
 	observabilityEnabled bool,
 	otelEndpoint string,
+	resources *flowpipev1.Resources,
 	options *flowpipev1.KubernetesOptions,
 ) (string, error) {
 	desired := &appsv1.DaemonSet{
@@ -284,6 +294,7 @@ func applyDaemonSet(
 			},
 		},
 	}
+	applyResourceIntent(&desired.Spec.Template, resources)
 	applyKubernetesOptions(&desired.Spec.Template, options)
 
 	daemonSets := client.AppsV1().DaemonSets(namespace)
@@ -313,9 +324,10 @@ func applyJob(
 	configChecksum string,
 	observabilityEnabled bool,
 	otelEndpoint string,
+	resources *flowpipev1.Resources,
 ) (string, error) {
 	name := spec.Name
-	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), spec.GetKubernetesOptions())
+	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), resources, spec.GetKubernetesOptions())
 	desired := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -352,10 +364,11 @@ func applyCronJob(
 	configChecksum string,
 	observabilityEnabled bool,
 	otelEndpoint string,
+	resources *flowpipev1.Resources,
 	cron *flowpipev1.KubernetesCronOptions,
 ) (string, error) {
 	name := spec.Name
-	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), spec.GetKubernetesOptions())
+	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), resources, spec.GetKubernetesOptions())
 	desired := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -523,6 +536,7 @@ func runtimePodTemplate(
 	observabilityEnabled bool,
 	otelEndpoint string,
 	restartPolicy corev1.RestartPolicy,
+	resources *flowpipev1.Resources,
 	options *flowpipev1.KubernetesOptions,
 ) corev1.PodTemplateSpec {
 	template := corev1.PodTemplateSpec{
@@ -563,6 +577,7 @@ func runtimePodTemplate(
 			},
 		},
 	}
+	applyResourceIntent(&template, resources)
 	applyKubernetesOptions(&template, options)
 	return template
 }
@@ -626,6 +641,42 @@ func applyKubernetesOptions(template *corev1.PodTemplateSpec, options *flowpipev
 
 	if options.RuntimeClassName != nil {
 		template.Spec.RuntimeClassName = options.RuntimeClassName
+	}
+}
+
+func applyResourceIntent(template *corev1.PodTemplateSpec, intent *flowpipev1.Resources) {
+	if template == nil || intent == nil {
+		return
+	}
+
+	if intent.Profile != nil && *intent.Profile != "" {
+		if template.Annotations == nil {
+			template.Annotations = map[string]string{}
+		}
+		template.Annotations[resourceProfileKey] = *intent.Profile
+	}
+
+	if len(template.Spec.Containers) == 0 {
+		return
+	}
+
+	requests := corev1.ResourceList{}
+	if intent.CpuCores != nil && *intent.CpuCores > 0 {
+		requests[corev1.ResourceCPU] = *resource.NewQuantity(int64(*intent.CpuCores), resource.DecimalSI)
+	}
+	if intent.MemoryMb != nil && *intent.MemoryMb > 0 {
+		requests[corev1.ResourceMemory] = *resource.NewQuantity(int64(*intent.MemoryMb)*1000*1000, resource.DecimalSI)
+	}
+	if len(requests) == 0 {
+		return
+	}
+
+	container := &template.Spec.Containers[0]
+	if container.Resources.Requests == nil {
+		container.Resources.Requests = corev1.ResourceList{}
+	}
+	for key, value := range requests {
+		container.Resources.Requests[key] = value
 	}
 }
 
