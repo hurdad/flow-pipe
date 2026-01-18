@@ -36,6 +36,11 @@ etcd:
   port: 2379
   ha:
     enabled: false
+  monitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+    labels: {}
   service:
     # Options: ClusterIP (default), LoadBalancer
     type: ClusterIP

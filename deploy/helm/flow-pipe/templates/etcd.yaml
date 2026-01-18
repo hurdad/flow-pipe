@@ -9,6 +9,9 @@ kind: Service
 metadata:
   name: {{ include "flowpipe.etcdHeadlessName" . }}
   namespace: {{ include "flowpipe.namespace" . }}
+  labels:
+    app: flow-pipe-etcd
+    flowpipe.etcd.service: headless
 spec:
   clusterIP: None
   selector:
@@ -90,6 +93,9 @@ kind: Service
 metadata:
   name: flow-pipe-etcd
   namespace: {{ include "flowpipe.namespace" . }}
+  labels:
+    app: flow-pipe-etcd
+    flowpipe.etcd.service: client
 spec:
   type: {{ .Values.etcd.service.type | default "ClusterIP" }}
   selector:
@@ -165,6 +171,9 @@ kind: Service
 metadata:
   name: flow-pipe-etcd
   namespace: {{ include "flowpipe.namespace" . }}
+  labels:
+    app: flow-pipe-etcd
+    flowpipe.etcd.service: client
 spec:
   type: {{ .Values.etcd.service.type | default "ClusterIP" }}
   selector:
