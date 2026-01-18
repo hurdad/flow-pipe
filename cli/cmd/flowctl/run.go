@@ -8,7 +8,6 @@ import (
 	"github.com/hurdad/flow-pipe/cli/internal/loader"
 	"github.com/hurdad/flow-pipe/pkg/flow/normalize"
 	"github.com/hurdad/flow-pipe/pkg/flow/validate"
-	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/spf13/cobra"
 )
@@ -33,39 +32,19 @@ var runCmd = &cobra.Command{
 			return err
 		}
 
-		// 3. Encode FlowSpec → JSON
-		data, err := protojson.MarshalOptions{
-			EmitUnpopulated: true,
-			UseProtoNames:   true,
-		}.Marshal(spec)
-		if err != nil {
-			return fmt.Errorf("encode flow spec: %w", err)
-		}
-
-		// 4. Execute runtime
+		// 3. Execute runtime
 		runtime := "flow_runtime"
 
-		c := exec.Command(runtime)
+		c := exec.Command(runtime, path)
 		c.Stdin = os.Stdin
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 
-		stdin, err := c.StdinPipe()
-		if err != nil {
-			return err
+		if err := c.Run(); err != nil {
+			return fmt.Errorf("run flow runtime: %w", err)
 		}
 
-		if err := c.Start(); err != nil {
-			return err
-		}
-
-		// Send FlowSpec JSON to runtime stdin
-		if _, err := stdin.Write(data); err != nil {
-			return err
-		}
-		stdin.Close()
-
-		return c.Wait()
+		return nil
 	},
 }
 
