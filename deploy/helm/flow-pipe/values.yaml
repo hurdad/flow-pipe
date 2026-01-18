@@ -59,7 +59,6 @@ controller:
   imagePullPolicy: IfNotPresent
   replicas: 1
   workerCount: 1
-  port: 8080
   serviceName: flow-controller
   logLevel: info
   resources:
