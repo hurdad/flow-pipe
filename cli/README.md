@@ -74,6 +74,25 @@ The binary will be created in the current directory unless `-o` is specified.
 
 ---
 
+## API TLS
+
+When the API enables gRPC TLS (`FLOW_GRPC_TLS_*`), configure `flowctl` with:
+
+```bash
+flowctl submit flow.yaml \
+  --api api.example.com:9090 \
+  --grpc-tls-enabled \
+  --grpc-tls-cert /path/to/ca.pem \
+  --grpc-tls-server-name api.example.com
+```
+
+Flags/environment variables:
+- `--grpc-tls-enabled` (or `FLOW_GRPC_TLS_ENABLED`)
+- `--grpc-tls-cert` (or `FLOW_GRPC_TLS_CERT`)
+- `--grpc-tls-server-name` (or `FLOW_GRPC_TLS_SERVER_NAME`)
+
+---
+
 ## Docker
 
 A multi-stage Dockerfile is provided to build a minimal image.
@@ -151,6 +170,9 @@ Behavior:
 Flags:
 - `--api` – API address (defaults to `localhost:9090`)
 - `--api-key` – API key for authenticated APIs (or set `FLOW_API_KEY`)
+- `--grpc-tls-enabled` – enable gRPC TLS (or set `FLOW_GRPC_TLS_ENABLED`)
+- `--grpc-tls-cert` – gRPC TLS certificate path (or set `FLOW_GRPC_TLS_CERT`)
+- `--grpc-tls-server-name` – expected TLS server name (or set `FLOW_GRPC_TLS_SERVER_NAME`)
 - `--timeout` – gRPC request timeout (default 5s)
 
 ---

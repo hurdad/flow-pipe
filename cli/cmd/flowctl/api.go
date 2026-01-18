@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -14,14 +15,32 @@ func dialAPI(ctx context.Context, addr string) (*grpc.ClientConn, error) {
 		return nil, fmt.Errorf("api address is required")
 	}
 
+	if grpcTLSEnabled {
+		if strings.TrimSpace(grpcTLSCertFile) == "" {
+			return nil, fmt.Errorf("grpc tls enabled but cert file is empty")
+		}
+		if strings.TrimSpace(grpcTLSServerName) == "" {
+			return nil, fmt.Errorf("grpc tls enabled but server name is empty")
+		}
+	}
+
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
+	}
+	if grpcTLSEnabled {
+		creds, err := credentials.NewClientTLSFromFile(grpcTLSCertFile, grpcTLSServerName)
+		if err != nil {
+			return nil, fmt.Errorf("grpc tls config: %w", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
 	if strings.TrimSpace(apiKey) != "" {
 		opts = append(opts, grpc.WithPerRPCCredentials(apiKeyCredentials{
-			token: formatBearerToken(apiKey),
+			token:                    formatBearerToken(apiKey),
+			requireTransportSecurity: grpcTLSEnabled,
 		}))
 	}
 
@@ -38,7 +57,8 @@ func dialAPI(ctx context.Context, addr string) (*grpc.ClientConn, error) {
 }
 
 type apiKeyCredentials struct {
-	token string
+	token                    string
+	requireTransportSecurity bool
 }
 
 func (c apiKeyCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
@@ -49,7 +69,7 @@ func (c apiKeyCredentials) GetRequestMetadata(ctx context.Context, uri ...string
 }
 
 func (c apiKeyCredentials) RequireTransportSecurity() bool {
-	return false
+	return c.requireTransportSecurity
 }
 
 func formatBearerToken(token string) string {
