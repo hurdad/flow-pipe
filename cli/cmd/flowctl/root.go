@@ -3,15 +3,19 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	apiAddr   string
-	apiKey    string
-	namespace string
-	verbose   bool
+	apiAddr           string
+	apiKey            string
+	namespace         string
+	verbose           bool
+	grpcTLSEnabled    bool
+	grpcTLSCertFile   string
+	grpcTLSServerName string
 )
 
 var rootCmd = &cobra.Command{
@@ -40,6 +44,24 @@ func init() {
 		os.Getenv("FLOW_API_KEY"),
 		"Flow-pipe API key (or set FLOW_API_KEY)",
 	)
+	rootCmd.PersistentFlags().BoolVar(
+		&grpcTLSEnabled,
+		"grpc-tls-enabled",
+		envBoolDefault("FLOW_GRPC_TLS_ENABLED", false),
+		"Enable TLS for gRPC connections (or set FLOW_GRPC_TLS_ENABLED)",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&grpcTLSCertFile,
+		"grpc-tls-cert",
+		os.Getenv("FLOW_GRPC_TLS_CERT"),
+		"Path to gRPC TLS certificate (or set FLOW_GRPC_TLS_CERT)",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&grpcTLSServerName,
+		"grpc-tls-server-name",
+		os.Getenv("FLOW_GRPC_TLS_SERVER_NAME"),
+		"Expected gRPC TLS server name (or set FLOW_GRPC_TLS_SERVER_NAME)",
+	)
 
 	rootCmd.PersistentFlags().StringVar(
 		&namespace,
@@ -64,4 +86,16 @@ func debugf(format string, args ...any) {
 	if verbose {
 		fmt.Fprintf(os.Stderr, format+"\n", args...)
 	}
+}
+
+func envBoolDefault(key string, fallback bool) bool {
+	value, ok := os.LookupEnv(key)
+	if !ok {
+		return fallback
+	}
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
 }
