@@ -6,16 +6,16 @@
 #include <mutex>
 #include <optional>
 
-#include "stop_token.h"
+#include "flowpipe/queue.h"
 
 namespace flowpipe {
 
 template <typename T>
-class BoundedQueue {
+class BoundedQueue : public IQueue<T> {
  public:
   explicit BoundedQueue(std::size_t capacity) : capacity_(capacity) {}
 
-  bool push(T item, const StopToken& stop) {
+  bool push(T item, const StopToken& stop) override {
     std::unique_lock lock(mu_);
     not_full_.wait(lock,
                    [&] { return stop.stop_requested() || closed_ || queue_.size() < capacity_; });
@@ -28,7 +28,7 @@ class BoundedQueue {
     return true;
   }
 
-  std::optional<T> pop(const StopToken& stop) {
+  std::optional<T> pop(const StopToken& stop) override {
     std::unique_lock lock(mu_);
     not_empty_.wait(lock, [&] { return stop.stop_requested() || closed_ || !queue_.empty(); });
 
@@ -41,7 +41,7 @@ class BoundedQueue {
     return std::nullopt;
   }
 
-  void close() {
+  void close() override {
     std::lock_guard lock(mu_);
     closed_ = true;
     not_empty_.notify_all();
