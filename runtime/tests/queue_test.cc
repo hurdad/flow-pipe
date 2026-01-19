@@ -89,4 +89,37 @@ TEST(DurableQueueTest, PersistsPayloadsAcrossInstances) {
   }
 }
 
+TEST(DurableQueueTest, CompactsOnHeadAdvance) {
+  std::atomic<bool> stop_flag{false};
+  StopToken stop{&stop_flag};
+
+  TempQueueFile temp_file(".bin");
+  constexpr size_t kPayloadSize = 5 * 1024 * 1024;
+  std::string data(kPayloadSize, 'x');
+  PayloadMeta meta{};
+
+  {
+    DurableQueue queue(3, temp_file.path.string());
+    auto payload1 = BuildPayload(data, meta);
+    auto payload2 = BuildPayload(data, meta);
+    ASSERT_FALSE(payload1.empty());
+    ASSERT_FALSE(payload2.empty());
+    EXPECT_TRUE(queue.push(std::move(payload1), stop));
+    EXPECT_TRUE(queue.push(std::move(payload2), stop));
+  }
+
+  uintmax_t size_before = std::filesystem::file_size(temp_file.path);
+  ASSERT_GT(size_before, 0u);
+
+  {
+    DurableQueue queue(3, temp_file.path.string());
+    auto item = queue.pop(stop);
+    ASSERT_TRUE(item.has_value());
+  }
+
+  uintmax_t size_after = std::filesystem::file_size(temp_file.path);
+  EXPECT_GT(size_after, 0u);
+  EXPECT_LT(size_after, size_before);
+}
+
 }  // namespace flowpipe
