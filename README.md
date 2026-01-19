@@ -105,24 +105,25 @@ flowchart LR
 User / CI / Git
       |
       v
-Kubernetes API Server (etcd)
-      |
-      v
 +-------------------------------+
 | Flow API + Schema Registry    |  (Go Deployments + Services)
+| - etcd-backed storage         |
 | - validate flow spec          |
 | - version schemas             |
 +-------------------------------+
       |
       v
-Flow Custom Resource (CRD)
+Flow spec (stored via Flow API)
       |
       v
 +-------------------------------+
 | Flow Controller               |  (Go Deployment)
-| - reconcile Flow CRs          |
+| - reconcile flow specs        |
 | - render Kubernetes resources |
 +-------------------------------+
+      |
+      v
+Kubernetes API Server (etcd)
       |
       v
 Kubernetes Resources
