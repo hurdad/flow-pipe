@@ -133,6 +133,12 @@ queues:
     capacity: 65536
 ```
 
+```mermaid
+flowchart LR
+  Spout[Spout: sqs_listener] -->|objects queue| Transform[Transform: csv_parser]
+  Transform -->|trades queue| Sink[Sink: db_writer]
+```
+
 ---
 
 ## Design Principles
