@@ -2,7 +2,7 @@
 
 This directory contains **flow definitions** for **flow-pipe**.
 
-Flows are written in **YAML** and describe:
+Flows are written in **YAML** (or JSON) and describe:
 - queues
 - stages
 - wiring between stages
@@ -125,7 +125,9 @@ Optional fields:
 | File | Description |
 |----|------------|
 | `noop.yaml` | Minimal source → sink pipeline |
+| `noop.json` | JSON form of the minimal source → sink pipeline |
 | `noop.observability.yaml` | No-op pipeline with observability enabled |
+| `noop.k3s.yaml` | No-op pipeline tailored for k3s defaults |
 | `noop.observability.k3s.yaml` | No-op pipeline for k3s with observability enabled |
 | `simple.pipeline.yaml` | Source → transform → sink |
 | `simple.pipeline.observability.k3s.yaml` | Job-mode simple pipeline for k3s with observability enabled |

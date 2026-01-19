@@ -24,3 +24,15 @@ make install     # optional: install runtime artifacts
 ```
 
 All build artifacts are produced under the top-level `cmake-build/` directory created by `make configure`.
+
+### Optional: OpenTelemetry support
+
+To compile with OpenTelemetry exporters, you must initialize the `third_party/opentelemetry-cpp` submodule and configure CMake with `FLOWPIPE_ENABLE_OTEL=ON`:
+
+```bash
+git submodule update --init --recursive
+cmake -S . -B cmake-build -DFLOWPIPE_ENABLE_OTEL=ON
+cmake --build cmake-build --target flow_runtime
+```
+
+This replaces `make configure` for that build configuration.
