@@ -49,48 +49,6 @@ The pipeline definition is identical in both cases; only the lifecycle differs.
 
 ---
 
-## Architecture Overview
-
-```
-User / CI / Git
-      |
-      v
-+------------------+
-|   Flow API       |  (Go)
-|  - validate      |
-|  - version       |
-|  - write spec    |
-|   Schema Registry|  (Go)
-|  - store schemas |
-|  - version       |
-+------------------+
-          |
-          v
-        etcd
-          |
-          v
-+------------------+
-|  Controller      |  (Go)
-|  - reconcile     |
-|  - render K8s    |
-+------------------+
-          |
-          v
-   Kubernetes
-          |
-          v
-+------------------+
-| Runtime          |  (C++)
-|  - build DAG     |
-|  - spawn threads |
-|  - run pipeline  |
-+------------------+
-```
-
-The runtime is **Kubernetes-agnostic**. Kubernetes is used only for lifecycle and scheduling.
-
----
-
 ## Schema Registry Service
 
 flow-pipe ships with a schema registry service to manage versioned queue schemas.
@@ -138,6 +96,47 @@ flowchart LR
   Spout[Spout: sqs_listener] -->|objects queue| Transform[Transform: csv_parser]
   Transform -->|trades queue| Sink[Sink: db_writer]
 ```
+
+---
+
+## Architecture Overview (Kubernetes)
+
+```
+User / CI / Git
+      |
+      v
+Kubernetes API Server (etcd)
+      |
+      v
++-------------------------------+
+| Flow API + Schema Registry    |  (Go Deployments + Services)
+| - validate flow spec          |
+| - version schemas             |
++-------------------------------+
+      |
+      v
+Flow Custom Resource (CRD)
+      |
+      v
++-------------------------------+
+| Flow Controller               |  (Go Deployment)
+| - reconcile Flow CRs          |
+| - render Kubernetes resources |
++-------------------------------+
+      |
+      v
+Kubernetes Resources
+  - Deployment / DaemonSet / Job (runtime pods)
+  - ConfigMaps (flow specs + schemas)
+  - Services (API + registry)
+      |
+      v
+Runtime Pods (C++ data plane)
+  - build DAG
+  - run queues + stages
+```
+
+The runtime is **Kubernetes-agnostic**; Kubernetes provides lifecycle, scheduling, and configuration.
 
 ---
 
