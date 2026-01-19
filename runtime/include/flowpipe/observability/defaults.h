@@ -13,9 +13,9 @@ namespace flowpipe::observability {
 //
 struct GlobalDefaults {
   bool observability_enabled = false;  // Master observability switch.
-  bool metrics_enabled = true;   // Are metrics allowed at all?
-  bool tracing_enabled = false;  // Are traces allowed at all?
-  bool logs_enabled = false;     // Are logs allowed at all?
+  bool metrics_enabled = true;         // Are metrics allowed at all?
+  bool tracing_enabled = false;        // Are traces allowed at all?
+  bool logs_enabled = false;           // Are logs allowed at all?
 
   // Default OTLP endpoint (used when flow does not override)
   std::string otlp_endpoint;  // OTEL OTLP gRPC endpoint

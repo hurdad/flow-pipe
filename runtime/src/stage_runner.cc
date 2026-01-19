@@ -39,8 +39,8 @@ static inline bool ValidateInputSchema(const QueueRuntime& queue, const Payload&
 
   if (payload.meta.schema_id != queue.schema_id) {
     FP_LOG_ERROR_FMT(
-        "stage '{}' received payload with schema_id '{}' on queue '{}' (expected '{}')",
-        stage_name, payload.meta.schema_id, queue.name, queue.schema_id);
+        "stage '{}' received payload with schema_id '{}' on queue '{}' (expected '{}')", stage_name,
+        payload.meta.schema_id, queue.name, queue.schema_id);
     return false;
   }
 
@@ -59,9 +59,10 @@ static inline bool ApplyOutputSchema(const QueueRuntime& queue, Payload& payload
   }
 
   if (payload.meta.schema_id != queue.schema_id) {
-    FP_LOG_ERROR_FMT("stage '{}' produced payload with schema_id '{}' for queue '{}' (expected "
-                     "'{}')",
-                     stage_name, payload.meta.schema_id, queue.name, queue.schema_id);
+    FP_LOG_ERROR_FMT(
+        "stage '{}' produced payload with schema_id '{}' for queue '{}' (expected "
+        "'{}')",
+        stage_name, payload.meta.schema_id, queue.name, queue.schema_id);
     return false;
   }
 

@@ -97,9 +97,8 @@ void ValidateRealtimePriority(const std::string& stage_name, int priority) {
   }
 
   if (priority < min_priority || priority > max_priority) {
-    FP_LOG_ERROR_FMT(
-        "real-time priority configured for stage '{}' is {} but valid range is {}-{}",
-        stage_name, priority, min_priority, max_priority);
+    FP_LOG_ERROR_FMT("real-time priority configured for stage '{}' is {} but valid range is {}-{}",
+                     stage_name, priority, min_priority, max_priority);
     throw std::runtime_error("invalid real-time priority for stage: " + stage_name);
   }
 #else
@@ -288,7 +287,8 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   // ------------------------------------------------------------
   for (const auto& s : spec.stages()) {
     const std::string stage_name = s.name();
-    FP_LOG_INFO_FMT("initializing stage '{}' type={} threads={}", stage_name, s.type(), s.threads());
+    FP_LOG_INFO_FMT("initializing stage '{}' type={} threads={}", stage_name, s.type(),
+                    s.threads());
 
     if (s.threads() < 1) {
       FP_LOG_ERROR_FMT("invalid stage '{}': threads must be >= 1", s.name());
@@ -314,8 +314,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     const bool should_set_realtime = realtime_priority.has_value();
 
     // Resolve plugin name: explicit plugin wins, otherwise default to type-based naming.
-    const std::string plugin_name =
-        s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so";
+    const std::string plugin_name = s.has_plugin() ? s.plugin() : "libstage_" + s.type() + ".so";
     IStage* stage = registry_.create_stage(plugin_name, &s.config());
     enum class StageKind { kSource, kTransform, kSink };
     StageKind kind;
@@ -366,13 +365,13 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* src = dynamic_cast<ISourceStage*>(worker_stage);
         if (!src) {
-          FP_LOG_ERROR_FMT("source worker stage '{}' does not implement source interface", stage_name);
+          FP_LOG_ERROR_FMT("source worker stage '{}' does not implement source interface",
+                           stage_name);
           registry_.destroy_stage(worker_stage);
           throw std::runtime_error("worker stage is not a source: " + stage_name);
         }
-        threads.emplace_back(
-            [&, src, out, i, stage_name, should_pin, pinning_cpus, should_set_realtime,
-             realtime_priority]() {
+        threads.emplace_back([&, src, out, i, stage_name, should_pin, pinning_cpus,
+                              should_set_realtime, realtime_priority]() {
           if (should_pin) {
             ApplyCpuPinning(stage_name, i, pinning_cpus);
           }
@@ -401,13 +400,13 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
         IStage* worker_stage = registry_.create_stage(plugin_name, &s.config());
         auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
         if (!xf) {
-          FP_LOG_ERROR_FMT("transform worker stage '{}' does not implement transform interface", stage_name);
+          FP_LOG_ERROR_FMT("transform worker stage '{}' does not implement transform interface",
+                           stage_name);
           registry_.destroy_stage(worker_stage);
           throw std::runtime_error("worker stage is not a transform: " + stage_name);
         }
-        threads.emplace_back(
-            [&, xf, in, out, i, stage_name, should_pin, pinning_cpus, should_set_realtime,
-             realtime_priority]() {
+        threads.emplace_back([&, xf, in, out, i, stage_name, should_pin, pinning_cpus,
+                              should_set_realtime, realtime_priority]() {
           if (should_pin) {
             ApplyCpuPinning(stage_name, i, pinning_cpus);
           }

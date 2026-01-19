@@ -1,11 +1,11 @@
+#include <gtest/gtest.h>
+
 #include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <string>
-
-#include <gtest/gtest.h>
 
 #include "flowpipe/bounded_queue.h"
 #include "flowpipe/durable_queue.h"

@@ -29,7 +29,9 @@ struct PayloadMeta {
   // Schema identifier for payload validation (optional).
   std::string schema_id;
 
-  bool has_schema_id() const noexcept { return !schema_id.empty(); }
+  bool has_schema_id() const noexcept {
+    return !schema_id.empty();
+  }
 
   constexpr bool has_trace() const noexcept {
     for (int i = 0; i < trace_id_size; ++i) {
@@ -52,13 +54,16 @@ struct Payload {
 
   constexpr Payload() = default;
 
-  constexpr Payload(std::shared_ptr<uint8_t[]> buf, size_t buffer_size,
-                    PayloadMeta m = {})
+  constexpr Payload(std::shared_ptr<uint8_t[]> buf, size_t buffer_size, PayloadMeta m = {})
       : buffer(std::move(buf)), size(buffer_size), meta(m) {}
 
-  constexpr const uint8_t* data() const noexcept { return buffer.get(); }
+  constexpr const uint8_t* data() const noexcept {
+    return buffer.get();
+  }
 
-  constexpr uint8_t* data() noexcept { return buffer.get(); }
+  constexpr uint8_t* data() noexcept {
+    return buffer.get();
+  }
 
   constexpr bool empty() const noexcept {
     return buffer == nullptr || size == 0;
