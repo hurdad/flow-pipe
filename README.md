@@ -178,7 +178,7 @@ flow-pipe/
 ├── controller/    # Go Kubernetes controller
 ├── deploy/        # Helm chart + Argo CD manifests
 ├── docs/          # Design documentation
-├── flows/         # Example flow definitions (YAML)
+├── flows/         # Example flow definitions (YAML/JSON)
 ├── gen/           # Generated protobuf code
 ├── pkg/           # Shared Go helpers used by CLI/API/controller
 ├── proto/         # Protobuf schemas
@@ -206,6 +206,8 @@ make api
 make controller
 make cli
 ```
+
+`make all` runs `git submodule update --init --recursive` for you. If you want to build the runtime with OpenTelemetry enabled, configure CMake manually with `-DFLOWPIPE_ENABLE_OTEL=ON` (see `runtime/README.md` for details).
 
 CMake defaults to installing the runtime under `/opt/flow-pipe` inside the Docker images. Use `make install` (after `make configure`) to install locally with your chosen prefix.
 

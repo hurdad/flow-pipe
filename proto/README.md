@@ -12,8 +12,9 @@ Use the top-level make targets to generate language bindings:
 
 ```bash
 make configure   # one-time CMake configure
+make proto       # generate Go + C++ bindings
 make proto-go    # generate Go bindings in gen/go
-make proto-cpp   # generate C++ bindings in build/ (used by runtime)
+make proto-cpp   # generate C++ bindings in cmake-build/proto (used by runtime)
 ```
 
 Generated artifacts are consumed by `api/`, `controller/`, and the C++ runtime without editing these source `.proto` files directly.
