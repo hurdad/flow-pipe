@@ -245,6 +245,12 @@ message QueueSpec {
 
   // Optional schema definition for queue payloads.
   optional QueueSchema schema = 3;
+
+  // Queue implementation type.
+  optional QueueType type = 4;
+
+  // Optional filesystem path for durable queue storage.
+  optional string durable_path = 5;
 }
 
 message QueueSchema {
@@ -279,6 +285,18 @@ enum QueueSchemaFormat {
 
   // Apache Parquet schema.
   QUEUE_SCHEMA_FORMAT_PARQUET = 5;
+}
+
+// Queue implementation type.
+enum QueueType {
+  // Type not specified (defaults to in-memory queue).
+  QUEUE_TYPE_UNSPECIFIED = 0;
+
+  // In-memory bounded queue.
+  QUEUE_TYPE_IN_MEMORY = 1;
+
+  // Durable queue with on-disk persistence.
+  QUEUE_TYPE_DURABLE = 2;
 }
 
 // ============================================================

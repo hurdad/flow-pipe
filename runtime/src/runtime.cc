@@ -3,6 +3,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstring>
+#include <filesystem>
 #include <optional>
 #ifdef __linux__
 #include <pthread.h>
@@ -15,6 +16,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "flowpipe/bounded_queue.h"
+#include "flowpipe/durable_queue.h"
 #include "flowpipe/queue_runtime.h"
 #include "flowpipe/signal_handler.h"
 #include "flowpipe/stage_runner.h"
@@ -57,6 +60,22 @@ std::string FormatCpuList(const std::vector<uint32_t>& cpus) {
     oss << cpus[i];
   }
   return oss.str();
+}
+
+std::string ResolveDurableQueuePath(const flowpipe::v1::QueueSpec& spec,
+                                    const std::string& queue_name) {
+  if (spec.has_durable_path()) {
+    return spec.durable_path();
+  }
+
+  std::error_code error;
+  const auto base = std::filesystem::temp_directory_path(error);
+  const std::string filename = "flowpipe_queue_" + queue_name + ".bin";
+  if (error) {
+    return filename;
+  }
+
+  return (base / filename).string();
 }
 
 std::optional<int> ResolveRealtimePriority(const flowpipe::v1::StageSpec& stage) {
@@ -222,14 +241,30 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       qr->schema_id = q.schema().schema_id();
     }
 
-    qr->queue = std::make_shared<BoundedQueue<Payload>>(q.capacity());
+    auto queue_type = q.type();
+    if (queue_type == flowpipe::v1::QUEUE_TYPE_UNSPECIFIED) {
+      queue_type = flowpipe::v1::QUEUE_TYPE_IN_MEMORY;
+    }
+
+    switch (queue_type) {
+      case flowpipe::v1::QUEUE_TYPE_DURABLE: {
+        const std::string path = ResolveDurableQueuePath(q, q.name());
+        FP_LOG_INFO_FMT("using durable queue '{}' at {}", q.name(), path);
+        qr->queue = std::make_shared<DurableQueue>(q.capacity(), path);
+        break;
+      }
+      case flowpipe::v1::QUEUE_TYPE_IN_MEMORY:
+      default:
+        qr->queue = std::make_shared<BoundedQueue<Payload>>(q.capacity());
+        break;
+    }
 
     queues.emplace(qr->name, std::move(qr));
   }
 
   FP_LOG_INFO_FMT("initialized {} runtime queues", queues.size());
 
-  std::vector<std::shared_ptr<BoundedQueue<Payload>>> runtime_queues;
+  std::vector<std::shared_ptr<IQueue<Payload>>> runtime_queues;
   runtime_queues.reserve(queues.size());
   for (const auto& [name, queue_runtime] : queues) {
     (void)name;

@@ -3,8 +3,8 @@
 #include <memory>
 #include <string>
 
-#include "flowpipe/bounded_queue.h"
 #include "flowpipe/payload.h"
+#include "flowpipe/queue.h"
 
 namespace flowpipe {
 
@@ -17,7 +17,7 @@ struct QueueRuntime {
   uint32_t capacity = 0;
 
   // Runtime queue used by producers and consumers
-  std::shared_ptr<BoundedQueue<Payload>> queue;
+  std::shared_ptr<IQueue<Payload>> queue;
 
   // Optional schema identifier for payload validation.
   std::string schema_id;

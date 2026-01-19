@@ -558,8 +558,7 @@
       "enum": [
         "NULL_VALUE"
       ],
-      "default": "NULL_VALUE",
-      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+      "default": "NULL_VALUE"
     },
     "rpcStatus": {
       "type": "object",
@@ -987,8 +986,26 @@
         "schema": {
           "$ref": "#/definitions/v1QueueSchema",
           "description": "Optional schema definition for queue payloads."
+        },
+        "type": {
+          "$ref": "#/definitions/v1QueueType",
+          "description": "Queue implementation type."
+        },
+        "durablePath": {
+          "type": "string",
+          "description": "Optional filesystem path for durable queue storage."
         }
       }
+    },
+    "v1QueueType": {
+      "type": "string",
+      "enum": [
+        "QUEUE_TYPE_UNSPECIFIED",
+        "QUEUE_TYPE_IN_MEMORY",
+        "QUEUE_TYPE_DURABLE"
+      ],
+      "default": "QUEUE_TYPE_UNSPECIFIED",
+      "description": "Queue implementation type.\n\n - QUEUE_TYPE_UNSPECIFIED: Type not specified (defaults to in-memory queue).\n - QUEUE_TYPE_IN_MEMORY: In-memory bounded queue.\n - QUEUE_TYPE_DURABLE: Durable queue with on-disk persistence."
     },
     "v1Resources": {
       "type": "object",
