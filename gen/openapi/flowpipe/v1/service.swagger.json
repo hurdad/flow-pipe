@@ -761,6 +761,18 @@
       "default": "IMAGE_PULL_POLICY_UNSPECIFIED",
       "description": "Kubernetes image pull policy.\n\n - IMAGE_PULL_POLICY_UNSPECIFIED: Pull policy not specified (controller default).\n - IMAGE_PULL_POLICY_ALWAYS: Always pull the image.\n - IMAGE_PULL_POLICY_IF_NOT_PRESENT: Pull if not present on node.\n - IMAGE_PULL_POLICY_NEVER: Never pull the image."
     },
+    "v1InMemorySchemaFormat": {
+      "type": "string",
+      "enum": [
+        "IN_MEMORY_SCHEMA_FORMAT_UNSPECIFIED",
+        "IN_MEMORY_SCHEMA_FORMAT_ARROW",
+        "IN_MEMORY_SCHEMA_FORMAT_PROTOBUF",
+        "IN_MEMORY_SCHEMA_FORMAT_FLATBUFFERS",
+        "IN_MEMORY_SCHEMA_FORMAT_JSON"
+      ],
+      "default": "IN_MEMORY_SCHEMA_FORMAT_UNSPECIFIED",
+      "description": " - IN_MEMORY_SCHEMA_FORMAT_ARROW: Apache Arrow (columnar, immutable, zero-copy).\n - IN_MEMORY_SCHEMA_FORMAT_PROTOBUF: Protocol Buffers objects / decoded messages.\n - IN_MEMORY_SCHEMA_FORMAT_FLATBUFFERS: FlatBuffers (zero-copy, row-oriented).\n - IN_MEMORY_SCHEMA_FORMAT_JSON: JSON objects (slow, but sometimes necessary)."
+    },
     "v1KubernetesCronOptions": {
       "type": "object",
       "properties": {
@@ -941,8 +953,8 @@
       "type": "object",
       "properties": {
         "format": {
-          "$ref": "#/definitions/v1QueueSchemaFormat",
-          "description": "Schema format identifier."
+          "$ref": "#/definitions/v1InMemorySchemaFormat",
+          "description": "Runtime representation of messages in the queue."
         },
         "schemaId": {
           "type": "string",
@@ -958,19 +970,6 @@
           "description": "Optional registry base URL override."
         }
       }
-    },
-    "v1QueueSchemaFormat": {
-      "type": "string",
-      "enum": [
-        "QUEUE_SCHEMA_FORMAT_UNSPECIFIED",
-        "QUEUE_SCHEMA_FORMAT_AVRO",
-        "QUEUE_SCHEMA_FORMAT_JSON",
-        "QUEUE_SCHEMA_FORMAT_PROTOBUF",
-        "QUEUE_SCHEMA_FORMAT_FLATBUFFERS",
-        "QUEUE_SCHEMA_FORMAT_PARQUET"
-      ],
-      "default": "QUEUE_SCHEMA_FORMAT_UNSPECIFIED",
-      "description": " - QUEUE_SCHEMA_FORMAT_UNSPECIFIED: Format not specified.\n - QUEUE_SCHEMA_FORMAT_AVRO: Apache Avro schema.\n - QUEUE_SCHEMA_FORMAT_JSON: JSON Schema.\n - QUEUE_SCHEMA_FORMAT_PROTOBUF: Protocol Buffers.\n - QUEUE_SCHEMA_FORMAT_FLATBUFFERS: FlatBuffers schema.\n - QUEUE_SCHEMA_FORMAT_PARQUET: Apache Parquet schema."
     },
     "v1QueueSpec": {
       "type": "object",
@@ -1051,7 +1050,7 @@
           "description": "Schema version in the registry."
         },
         "format": {
-          "$ref": "#/definitions/v1QueueSchemaFormat",
+          "$ref": "#/definitions/v1InMemorySchemaFormat",
           "description": "Schema format identifier."
         },
         "rawSchema": {

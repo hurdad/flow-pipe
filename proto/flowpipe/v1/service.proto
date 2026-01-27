@@ -156,7 +156,7 @@ message SchemaDefinition {
   uint32 version = 2;
 
   // Schema format identifier.
-  QueueSchemaFormat format = 3;
+  InMemorySchemaFormat format = 3;
 
   // Raw schema payload.
   bytes raw_schema = 4;
