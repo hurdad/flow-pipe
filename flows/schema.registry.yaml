@@ -2,7 +2,7 @@ queues:
   - name: trades
     capacity: 256
     schema:
-      format: QUEUE_SCHEMA_FORMAT_JSON
+      format: IN_MEMORY_SCHEMA_FORMAT_JSON
       schema_id: trade
       version: 2
       registry_url: http://schema-registry:8080
@@ -10,7 +10,7 @@ queues:
   - name: normalized_trades
     capacity: 256
     schema:
-      format: QUEUE_SCHEMA_FORMAT_JSON
+      format: IN_MEMORY_SCHEMA_FORMAT_JSON
       schema_id: trade_normalized
       version: 1
       registry_url: http://schema-registry:8080
