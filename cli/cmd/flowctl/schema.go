@@ -170,21 +170,19 @@ var schemaDeleteCmd = &cobra.Command{
 	},
 }
 
-func parseQueueSchemaFormat(value string) (flowpipev1.QueueSchemaFormat, error) {
+func parseQueueSchemaFormat(value string) (flowpipev1.InMemorySchemaFormat, error) {
 	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "avro":
-		return flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_AVRO, nil
-	case "json", "json-schema", "jsonschema":
-		return flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON, nil
+	case "arrow", "apache-arrow":
+		return flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_ARROW, nil
+	case "json":
+		return flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_JSON, nil
 	case "protobuf", "proto":
-		return flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_PROTOBUF, nil
+		return flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_PROTOBUF, nil
 	case "flatbuffers", "flatbuffer":
-		return flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_FLATBUFFERS, nil
-	case "parquet":
-		return flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_PARQUET, nil
+		return flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_FLATBUFFERS, nil
 	default:
-		return flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED, fmt.Errorf(
-			"unsupported schema format %q (use avro, json, protobuf, flatbuffers, parquet)",
+		return flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_UNSPECIFIED, fmt.Errorf(
+			"unsupported schema format %q (use arrow, json, protobuf, flatbuffers)",
 			value,
 		)
 	}
@@ -239,7 +237,7 @@ func init() {
 		&schemaCreateFormat,
 		"format",
 		"",
-		"schema format (avro, json, protobuf, flatbuffers, parquet)",
+		"schema format (arrow, json, protobuf, flatbuffers)",
 	)
 
 	schemaCreateCmd.Flags().StringVar(
