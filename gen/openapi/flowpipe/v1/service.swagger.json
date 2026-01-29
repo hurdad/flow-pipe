@@ -695,6 +695,13 @@
         "kubernetesOptions": {
           "$ref": "#/definitions/v1KubernetesOptions",
           "description": "Kubernetes runtime options."
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Environment variables injected into the runtime process."
         }
       }
     },

@@ -57,6 +57,9 @@ message FlowSpec {
 
   // Kubernetes runtime options.
   optional KubernetesOptions kubernetes_options = 13;
+
+  // Environment variables injected into the runtime process.
+  map<string, string> env = 14;
 }
 
 // Kubernetes runtime settings for flow workloads.
