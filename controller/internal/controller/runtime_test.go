@@ -17,6 +17,9 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 	otelEndpoint := "collector:4317"
 	spec := &flowpipev1.FlowSpec{
 		Name: "noop-observability",
+		Env: map[string]string{
+			"FLOWPIPE_CUSTOM_ENV": "enabled",
+		},
 		Kubernetes: &flowpipev1.KubernetesSettings{
 			Image: &image,
 		},
@@ -54,6 +57,17 @@ func TestEnsureRuntimeCreatesDeployment(t *testing.T) {
 	}
 	if got := deploy.Spec.Template.Spec.Containers[0].Args; len(got) != 1 || got[0] != runtimeConfigPath {
 		t.Fatalf("expected runtime config arg %q, got %v", runtimeConfigPath, got)
+	}
+
+	seenCustomEnv := false
+	for _, entry := range deploy.Spec.Template.Spec.Containers[0].Env {
+		if entry.Name == "FLOWPIPE_CUSTOM_ENV" && entry.Value == "enabled" {
+			seenCustomEnv = true
+			break
+		}
+	}
+	if !seenCustomEnv {
+		t.Fatalf("expected custom env var to be set on runtime container")
 	}
 }
 
