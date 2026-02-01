@@ -42,7 +42,7 @@ public:
     NoopSourceConfig cfg;
     std::string error;
     if (!ProtobufConfigParser<NoopSourceConfig>::Parse(config, &cfg, &error)) {
-      FP_LOG_ERROR_FMT("noop_source invalid config: {}", error);
+      FP_LOG_ERROR(std::string("noop_source invalid config: ") + error);
       return false;
     }
 
