@@ -36,7 +36,7 @@ public:
   // ------------------------------------------------------------
   // ConfigurableStage
   // ------------------------------------------------------------
-  bool Configure(const google::protobuf::Struct& config) override {
+  bool configure(const google::protobuf::Struct& config) override {
     NoopTransformConfig cfg;
     std::string error;
     if (!ProtobufConfigParser<NoopTransformConfig>::Parse(config, &cfg, &error)) {

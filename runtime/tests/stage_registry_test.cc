@@ -59,7 +59,7 @@ class RejectingConfigStage : public ConfigurableStage, public IStage {
  public:
   explicit RejectingConfigStage(bool accept) : accept_(accept) {}
 
-  bool Configure(const google::protobuf::Struct&) override {
+  bool configure(const google::protobuf::Struct&) override {
     ++configure_calls;
     return accept_;
   }

@@ -35,7 +35,7 @@ IStage* StageRegistry::create_stage(const std::string& plugin_name,
     google::protobuf::Struct empty;
     const auto& cfg = config ? *config : empty;
 
-    if (!configurable->Configure(cfg)) {
+    if (!configurable->configure(cfg)) {
       it->second.destroy(stage);
       throw std::runtime_error("stage rejected configuration: " + plugin_name);
     }
