@@ -40,7 +40,7 @@ public:
     NoopTransformConfig cfg;
     std::string error;
     if (!ProtobufConfigParser<NoopTransformConfig>::Parse(config, &cfg, &error)) {
-      FP_LOG_ERROR_FMT("noop_transform invalid config: {}", error);
+      FP_LOG_ERROR(std::string("noop_transform invalid config: ") + error);
       return false;
     }
 
