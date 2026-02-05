@@ -10,8 +10,7 @@ namespace flowpipe {
 template <typename Config>
 class ProtobufConfigParser {
  public:
-  static bool Parse(const google::protobuf::Struct& config,
-                    Config* out,
+  static bool Parse(const google::protobuf::Struct& config, Config* out,
                     std::string* error = nullptr) {
     if (!out) {
       if (error) {

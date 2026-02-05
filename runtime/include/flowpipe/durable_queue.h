@@ -187,9 +187,9 @@ class DurableQueue final : public IQueue<Payload> {
       std::memcpy(meta.span_id, header.span_id, PayloadMeta::span_id_size);
       meta.schema_id = std::move(schema_id);
 
-      queue_.push_back(QueueItem{Payload(std::move(buffer), static_cast<size_t>(header.payload_size),
-                                         std::move(meta)),
-                                 sizeof(DiskHeader) + header.schema_id_size + header.payload_size});
+      queue_.push_back(QueueItem{
+          Payload(std::move(buffer), static_cast<size_t>(header.payload_size), std::move(meta)),
+          sizeof(DiskHeader) + header.schema_id_size + header.payload_size});
     }
   }
 
@@ -234,9 +234,9 @@ class DurableQueue final : public IQueue<Payload> {
         continue;
       }
 
-      queue_.push_back(QueueItem{Payload(std::move(buffer), static_cast<size_t>(header.payload_size),
-                                         std::move(meta)),
-                                 sizeof(DiskHeader) + header.schema_id_size + header.payload_size});
+      queue_.push_back(QueueItem{
+          Payload(std::move(buffer), static_cast<size_t>(header.payload_size), std::move(meta)),
+          sizeof(DiskHeader) + header.schema_id_size + header.payload_size});
     }
   }
 
