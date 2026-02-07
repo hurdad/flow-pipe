@@ -149,6 +149,37 @@ install(TARGETS flowpipe_runtime
 )
 
 # ------------------------------------------------------------
+# Install OpenTelemetry shared libraries (when enabled)
+# ------------------------------------------------------------
+if(FLOWPIPE_ENABLE_OTEL)
+    install(TARGETS
+            opentelemetry_common
+            opentelemetry_api
+            opentelemetry_sdk
+            opentelemetry_metrics
+            opentelemetry_trace
+            opentelemetry_logs
+            opentelemetry_resources
+            opentelemetry_otlp_recordable
+            opentelemetry_exporter_otlp_grpc
+            opentelemetry_exporter_otlp_grpc_metrics
+            opentelemetry_exporter_otlp_grpc_log
+            opentelemetry_exporter_otlp_grpc_client
+            opentelemetry_ext
+            opentelemetry_exporter_otlp_http
+            opentelemetry_exporter_otlp_http_metric
+            opentelemetry_exporter_otlp_http_log
+            opentelemetry_exporter_otlp_http_client
+            opentelemetry_http_client_curl
+            opentelemetry_proto
+            EXPORT flowpipeTargets
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+endif()
+
+# ------------------------------------------------------------
 # Install public headers
 # ------------------------------------------------------------
 install(
