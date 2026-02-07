@@ -113,7 +113,7 @@ User / CI / Git
 +-------------------------------+
       |
       v
-Flow spec (stored via Flow API)
+Flow spec (stored in etcd via Flow API)
       |
       v
 +-------------------------------+
@@ -123,7 +123,7 @@ Flow spec (stored via Flow API)
 +-------------------------------+
       |
       v
-Kubernetes API Server (etcd)
+Kubernetes API Server
       |
       v
 Kubernetes Resources
