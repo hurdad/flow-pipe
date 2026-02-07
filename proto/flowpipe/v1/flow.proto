@@ -57,6 +57,9 @@ message FlowSpec {
 
   // Kubernetes runtime options.
   optional KubernetesOptions kubernetes_options = 13;
+
+  // Environment variables injected into the runtime process.
+  map<string, string> env = 14;
 }
 
 // Kubernetes runtime settings for flow workloads.
@@ -254,8 +257,8 @@ message QueueSpec {
 }
 
 message QueueSchema {
-  // Schema format identifier.
-  QueueSchemaFormat format = 1;
+  // Runtime representation of messages in the queue.
+  InMemorySchemaFormat format = 1;
 
   // Schema identifier.
   string schema_id = 2;
@@ -267,24 +270,39 @@ message QueueSchema {
   optional string registry_url = 4;
 }
 
-enum QueueSchemaFormat {
-  // Format not specified.
-  QUEUE_SCHEMA_FORMAT_UNSPECIFIED = 0;
+enum InMemorySchemaFormat {
+  IN_MEMORY_SCHEMA_FORMAT_UNSPECIFIED = 0;
 
-  // Apache Avro schema.
-  QUEUE_SCHEMA_FORMAT_AVRO = 1;
+  // Apache Arrow (columnar, immutable, zero-copy).
+  IN_MEMORY_SCHEMA_FORMAT_ARROW = 1;
+
+  // Protocol Buffers objects / decoded messages.
+  IN_MEMORY_SCHEMA_FORMAT_PROTOBUF = 2;
+
+  // FlatBuffers (zero-copy, row-oriented).
+  IN_MEMORY_SCHEMA_FORMAT_FLATBUFFERS = 3;
+
+  // JSON objects (slow, but sometimes necessary).
+  IN_MEMORY_SCHEMA_FORMAT_JSON = 4;
+}
+
+enum ExternalSchemaFormat {
+  EXTERNAL_SCHEMA_FORMAT_UNSPECIFIED = 0;
+
+  // Apache Avro (schema-evolving wire/storage format).
+  EXTERNAL_SCHEMA_FORMAT_AVRO = 1;
 
   // JSON Schema.
-  QUEUE_SCHEMA_FORMAT_JSON = 2;
+  EXTERNAL_SCHEMA_FORMAT_JSON = 2;
 
-  // Protocol Buffers.
-  QUEUE_SCHEMA_FORMAT_PROTOBUF = 3;
+  // Protocol Buffers (binary wire format).
+  EXTERNAL_SCHEMA_FORMAT_PROTOBUF = 3;
 
-  // FlatBuffers schema.
-  QUEUE_SCHEMA_FORMAT_FLATBUFFERS = 4;
+  // FlatBuffers (binary wire + zero-copy).
+  EXTERNAL_SCHEMA_FORMAT_FLATBUFFERS = 4;
 
-  // Apache Parquet schema.
-  QUEUE_SCHEMA_FORMAT_PARQUET = 5;
+  // Apache Parquet (columnar file format).
+  EXTERNAL_SCHEMA_FORMAT_PARQUET = 5;
 }
 
 // Queue implementation type.

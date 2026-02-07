@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"sort"
 
 	flowpipev1 "github.com/hurdad/flow-pipe/gen/go/flowpipe/v1"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -82,12 +83,12 @@ func ensureRuntime(
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
 		options := spec.GetKubernetesOptions()
 		if options != nil && options.StreamingWorkloadKind == flowpipev1.StreamingWorkloadKind_STREAMING_WORKLOAD_KIND_DAEMONSET {
-			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options)
+			return applyDaemonSet(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options, spec.GetEnv())
 		}
-		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options)
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, options, spec.GetEnv())
 	default:
 		workloadName := fmt.Sprintf("%s-runtime", spec.Name)
-		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, spec.GetKubernetesOptions())
+		return applyDeployment(ctx, client, namespace, spec.Name, workloadName, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, resourceIntent, spec.GetKubernetesOptions(), spec.GetEnv())
 	}
 }
 
@@ -152,6 +153,7 @@ func applyDeployment(
 	otelEndpoint string,
 	resources *flowpipev1.Resources,
 	options *flowpipev1.KubernetesOptions,
+	env map[string]string,
 ) (string, error) {
 	desired := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -184,7 +186,7 @@ func applyDeployment(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
+							Env:             runtimeEnv(observabilityEnabled, otelEndpoint, env),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -240,6 +242,7 @@ func applyDaemonSet(
 	otelEndpoint string,
 	resources *flowpipev1.Resources,
 	options *flowpipev1.KubernetesOptions,
+	env map[string]string,
 ) (string, error) {
 	desired := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -271,7 +274,7 @@ func applyDaemonSet(
 							Image:           image,
 							ImagePullPolicy: imagePullPolicy,
 							Args:            []string{runtimeConfigPath},
-							Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
+							Env:             runtimeEnv(observabilityEnabled, otelEndpoint, env),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "flow-config",
@@ -327,7 +330,19 @@ func applyJob(
 	resources *flowpipev1.Resources,
 ) (string, error) {
 	name := spec.Name
-	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), resources, spec.GetKubernetesOptions())
+	template := runtimePodTemplate(
+		spec.Name,
+		configMapName,
+		image,
+		imagePullPolicy,
+		configChecksum,
+		observabilityEnabled,
+		otelEndpoint,
+		restartPolicyFromSpec(spec),
+		resources,
+		spec.GetKubernetesOptions(),
+		spec.GetEnv(),
+	)
 	desired := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -368,7 +383,19 @@ func applyCronJob(
 	cron *flowpipev1.KubernetesCronOptions,
 ) (string, error) {
 	name := spec.Name
-	template := runtimePodTemplate(spec.Name, configMapName, image, imagePullPolicy, configChecksum, observabilityEnabled, otelEndpoint, restartPolicyFromSpec(spec), resources, spec.GetKubernetesOptions())
+	template := runtimePodTemplate(
+		spec.Name,
+		configMapName,
+		image,
+		imagePullPolicy,
+		configChecksum,
+		observabilityEnabled,
+		otelEndpoint,
+		restartPolicyFromSpec(spec),
+		resources,
+		spec.GetKubernetesOptions(),
+		spec.GetEnv(),
+	)
 	desired := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -505,24 +532,43 @@ func restartPolicyFromSpec(spec *flowpipev1.FlowSpec) corev1.RestartPolicy {
 	}
 }
 
-func runtimeEnv(observabilityEnabled bool, otelEndpoint string) []corev1.EnvVar {
+func runtimeEnv(observabilityEnabled bool, otelEndpoint string, extraEnv map[string]string) []corev1.EnvVar {
 	env := []corev1.EnvVar{
 		{Name: "FLOWPIPE_OBSERVABILITY_ENABLED", Value: fmt.Sprintf("%t", observabilityEnabled)},
 	}
 
-	if !observabilityEnabled {
+	if observabilityEnabled {
+		env = append(env,
+			corev1.EnvVar{Name: "FLOWPIPE_METRICS_ENABLED", Value: "true"},
+			corev1.EnvVar{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
+			corev1.EnvVar{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
+			corev1.EnvVar{
+				Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
+				Value: otelEndpoint,
+			},
+		)
+	}
+
+	if len(extraEnv) == 0 {
 		return env
 	}
 
-	env = append(env,
-		corev1.EnvVar{Name: "FLOWPIPE_METRICS_ENABLED", Value: "true"},
-		corev1.EnvVar{Name: "FLOWPIPE_TRACING_ENABLED", Value: "true"},
-		corev1.EnvVar{Name: "FLOWPIPE_LOGS_ENABLED", Value: "true"},
-		corev1.EnvVar{
-			Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
-			Value: otelEndpoint,
-		},
-	)
+	existing := make(map[string]struct{}, len(env))
+	for _, entry := range env {
+		existing[entry.Name] = struct{}{}
+	}
+
+	keys := make([]string, 0, len(extraEnv))
+	for key := range extraEnv {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		if _, ok := existing[key]; ok {
+			continue
+		}
+		env = append(env, corev1.EnvVar{Name: key, Value: extraEnv[key]})
+	}
 
 	return env
 }
@@ -538,6 +584,7 @@ func runtimePodTemplate(
 	restartPolicy corev1.RestartPolicy,
 	resources *flowpipev1.Resources,
 	options *flowpipev1.KubernetesOptions,
+	env map[string]string,
 ) corev1.PodTemplateSpec {
 	template := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
@@ -556,7 +603,7 @@ func runtimePodTemplate(
 					Image:           image,
 					ImagePullPolicy: imagePullPolicy,
 					Args:            []string{runtimeConfigPath},
-					Env:             runtimeEnv(observabilityEnabled, otelEndpoint),
+					Env:             runtimeEnv(observabilityEnabled, otelEndpoint, env),
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      "flow-config",

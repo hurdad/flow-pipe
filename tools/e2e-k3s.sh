@@ -362,7 +362,7 @@ queues:
   - name: q1
     capacity: 256
     schema:
-      format: QUEUE_SCHEMA_FORMAT_JSON
+      format: IN_MEMORY_SCHEMA_FORMAT_JSON
       schema_id: orders
       version: 2
 stages:

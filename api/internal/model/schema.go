@@ -5,8 +5,8 @@ import (
 )
 
 type SchemaDefinition struct {
-	SchemaID  string                       `json:"schema_id"`
-	Version   uint32                       `json:"version"`
-	Format    flowpipev1.QueueSchemaFormat `json:"format"`
-	RawSchema []byte                       `json:"raw_schema"`
+	SchemaID  string                          `json:"schema_id"`
+	Version   uint32                          `json:"version"`
+	Format    flowpipev1.InMemorySchemaFormat `json:"format"`
+	RawSchema []byte                          `json:"raw_schema"`
 }

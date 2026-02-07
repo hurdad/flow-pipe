@@ -33,7 +33,7 @@ func TestSchemaRegistryLifecycle(t *testing.T) {
 
 	first, err := store.CreateSchema(ctx, &model.SchemaDefinition{
 		SchemaID:  "orders",
-		Format:    flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON,
+		Format:    flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_JSON,
 		RawSchema: []byte(`{"type":"object"}`),
 	})
 	if err != nil {
@@ -45,7 +45,7 @@ func TestSchemaRegistryLifecycle(t *testing.T) {
 
 	second, err := store.CreateSchema(ctx, &model.SchemaDefinition{
 		SchemaID:  "orders",
-		Format:    flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_JSON,
+		Format:    flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_JSON,
 		RawSchema: []byte(`{"type":"object","version":2}`),
 	})
 	if err != nil {

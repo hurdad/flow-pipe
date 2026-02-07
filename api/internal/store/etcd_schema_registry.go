@@ -57,7 +57,7 @@ func (s *EtcdStore) CreateSchema(
 	if schema.SchemaID == "" {
 		return nil, fmt.Errorf("schema id is required")
 	}
-	if schema.Format == flowpipev1.QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED {
+	if schema.Format == flowpipev1.InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_UNSPECIFIED {
 		return nil, fmt.Errorf("schema format is required")
 	}
 	if len(schema.RawSchema) == 0 {

@@ -2,11 +2,11 @@
 #include "flowpipe/configurable_stage.h"
 #include "flowpipe/observability/logging.h"
 #include "flowpipe/plugin.h"
+#include "flowpipe/protobuf_config.h"
 
 #include "noop_source.pb.h"
 
 #include <google/protobuf/struct.pb.h>
-#include <google/protobuf/util/json_util.h>
 
 #include <chrono>
 #include <cstring>
@@ -38,22 +38,11 @@ public:
   // ------------------------------------------------------------
   // ConfigurableStage
   // ------------------------------------------------------------
-  bool Configure(const google::protobuf::Struct& config) override {
-    std::string json;
-    auto status =
-        google::protobuf::util::MessageToJsonString(config, &json);
-
-    if (!status.ok()) {
-      FP_LOG_ERROR("noop_source failed to serialize config");
-      return false;
-    }
-
+  bool configure(const google::protobuf::Struct& config) override {
     NoopSourceConfig cfg;
-    status =
-        google::protobuf::util::JsonStringToMessage(json, &cfg);
-
-    if (!status.ok()) {
-      FP_LOG_ERROR("noop_source invalid config");
+    std::string error;
+    if (!ProtobufConfigParser<NoopSourceConfig>::Parse(config, &cfg, &error)) {
+      FP_LOG_ERROR(std::string("noop_source invalid config: ") + error);
       return false;
     }
 

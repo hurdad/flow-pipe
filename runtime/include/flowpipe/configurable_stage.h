@@ -11,7 +11,7 @@ class ConfigurableStage {
   // Called once after stage construction.
   // The config is opaque to the runtime.
   // The plugin is responsible for parsing & validating.
-  virtual bool Configure(const google::protobuf::Struct& config) = 0;
+  virtual bool configure(const google::protobuf::Struct& config) = 0;
 };
 
 }  // namespace flowpipe

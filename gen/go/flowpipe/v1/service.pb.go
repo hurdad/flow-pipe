@@ -442,7 +442,7 @@ type SchemaDefinition struct {
 	// Schema version in the registry.
 	Version uint32 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
 	// Schema format identifier.
-	Format QueueSchemaFormat `protobuf:"varint,3,opt,name=format,proto3,enum=flowpipe.v1.QueueSchemaFormat" json:"format,omitempty"`
+	Format InMemorySchemaFormat `protobuf:"varint,3,opt,name=format,proto3,enum=flowpipe.v1.InMemorySchemaFormat" json:"format,omitempty"`
 	// Raw schema payload.
 	RawSchema     []byte `protobuf:"bytes,4,opt,name=raw_schema,json=rawSchema,proto3" json:"raw_schema,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -493,11 +493,11 @@ func (x *SchemaDefinition) GetVersion() uint32 {
 	return 0
 }
 
-func (x *SchemaDefinition) GetFormat() QueueSchemaFormat {
+func (x *SchemaDefinition) GetFormat() InMemorySchemaFormat {
 	if x != nil {
 		return x.Format
 	}
-	return QueueSchemaFormat_QUEUE_SCHEMA_FORMAT_UNSPECIFIED
+	return InMemorySchemaFormat_IN_MEMORY_SCHEMA_FORMAT_UNSPECIFIED
 }
 
 func (x *SchemaDefinition) GetRawSchema() []byte {
@@ -759,11 +759,11 @@ const file_flowpipe_v1_service_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"C\n" +
 	"\x13RollbackFlowRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\x04R\aversion\"\xa0\x01\n" +
+	"\aversion\x18\x02 \x01(\x04R\aversion\"\xa3\x01\n" +
 	"\x10SchemaDefinition\x12\x1b\n" +
 	"\tschema_id\x18\x01 \x01(\tR\bschemaId\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\rR\aversion\x126\n" +
-	"\x06format\x18\x03 \x01(\x0e2\x1e.flowpipe.v1.QueueSchemaFormatR\x06format\x12\x1d\n" +
+	"\aversion\x18\x02 \x01(\rR\aversion\x129\n" +
+	"\x06format\x18\x03 \x01(\x0e2!.flowpipe.v1.InMemorySchemaFormatR\x06format\x12\x1d\n" +
 	"\n" +
 	"raw_schema\x18\x04 \x01(\fR\trawSchema\"L\n" +
 	"\x13CreateSchemaRequest\x125\n" +
@@ -825,7 +825,7 @@ var file_flowpipe_v1_service_proto_goTypes = []any{
 	(*DeleteSchemaRequest)(nil),        // 14: flowpipe.v1.DeleteSchemaRequest
 	(*FlowSpec)(nil),                   // 15: flowpipe.v1.FlowSpec
 	(*FlowStatus)(nil),                 // 16: flowpipe.v1.FlowStatus
-	(QueueSchemaFormat)(0),             // 17: flowpipe.v1.QueueSchemaFormat
+	(InMemorySchemaFormat)(0),          // 17: flowpipe.v1.InMemorySchemaFormat
 	(*Flow)(nil),                       // 18: flowpipe.v1.Flow
 	(*emptypb.Empty)(nil),              // 19: google.protobuf.Empty
 }
@@ -834,7 +834,7 @@ var file_flowpipe_v1_service_proto_depIdxs = []int32{
 	15, // 1: flowpipe.v1.UpdateFlowRequest.spec:type_name -> flowpipe.v1.FlowSpec
 	16, // 2: flowpipe.v1.FlowSummary.status:type_name -> flowpipe.v1.FlowStatus
 	5,  // 3: flowpipe.v1.ListFlowsResponse.flows:type_name -> flowpipe.v1.FlowSummary
-	17, // 4: flowpipe.v1.SchemaDefinition.format:type_name -> flowpipe.v1.QueueSchemaFormat
+	17, // 4: flowpipe.v1.SchemaDefinition.format:type_name -> flowpipe.v1.InMemorySchemaFormat
 	9,  // 5: flowpipe.v1.CreateSchemaRequest.schema:type_name -> flowpipe.v1.SchemaDefinition
 	9,  // 6: flowpipe.v1.ListSchemaVersionsResponse.schemas:type_name -> flowpipe.v1.SchemaDefinition
 	0,  // 7: flowpipe.v1.FlowService.CreateFlow:input_type -> flowpipe.v1.CreateFlowRequest
