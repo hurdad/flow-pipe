@@ -172,6 +172,7 @@ if(FLOWPIPE_ENABLE_OTEL)
             opentelemetry_exporter_otlp_http_client
             opentelemetry_http_client_curl
             opentelemetry_proto
+            opentelemetry_proto_grpc
             EXPORT flowpipeTargets
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
