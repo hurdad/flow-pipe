@@ -3,9 +3,11 @@
 #include <google/protobuf/struct.pb.h>
 #include <gtest/gtest.h>
 
+#include <atomic>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -42,6 +44,31 @@ class RecordingLoader : public StageLoader {
   int unload_calls = 0;
   std::string last_unloaded_path;
   std::vector<std::string> load_calls;
+};
+
+
+class ThreadSafeRecordingLoader : public StageLoader {
+ public:
+  LoadedPlugin load(const std::string& plugin_name) override {
+    load_calls.fetch_add(1, std::memory_order_relaxed);
+    LoadedPlugin plugin = loaded_plugin;
+    plugin.path = plugin_name + ".so";
+    return plugin;
+  }
+
+  void unload(LoadedPlugin&) override {
+    unload_calls.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  LoadedPlugin loaded_plugin{
+      .handle = reinterpret_cast<void*>(0x1),
+      .create = nullptr,
+      .destroy = nullptr,
+      .path = "fake.so",
+  };
+
+  std::atomic<int> load_calls{0};
+  std::atomic<int> unload_calls{0};
 };
 
 class DummyStage : public IStage {
@@ -181,6 +208,56 @@ TEST(StageRegistryTest, DestroyAndShutdownReleaseInstances) {
   EXPECT_EQ(loader_ptr->unload_calls, 1);
 
   g_destroy_counter = nullptr;
+}
+
+
+static std::atomic<int>* g_atomic_destroy_counter = nullptr;
+
+static void AtomicDestroyStageThunk(IStage* stage) {
+  EXPECT_NE(g_atomic_destroy_counter, nullptr);
+  g_atomic_destroy_counter->fetch_add(1, std::memory_order_relaxed);
+  delete stage;
+}
+
+TEST(StageRegistryTest, ConcurrentCreateDestroyAndShutdownAreSynchronized) {
+  std::atomic<int> destroy_count{0};
+  g_atomic_destroy_counter = &destroy_count;
+
+  auto loader = std::make_unique<ThreadSafeRecordingLoader>();
+  loader->loaded_plugin.create = &CreateDummyStage;
+  loader->loaded_plugin.destroy = &AtomicDestroyStageThunk;
+  auto* loader_ptr = loader.get();
+
+  constexpr int kThreads = 8;
+  constexpr int kIterationsPerThread = 200;
+
+  {
+    StageRegistry registry(std::move(loader));
+
+    std::vector<std::thread> workers;
+    workers.reserve(kThreads);
+    for (int i = 0; i < kThreads; ++i) {
+      workers.emplace_back([&registry]() {
+        for (int j = 0; j < kIterationsPerThread; ++j) {
+          IStage* stage = registry.create_stage("dummy", nullptr);
+          registry.destroy_stage(stage);
+        }
+      });
+    }
+
+    for (auto& worker : workers) {
+      worker.join();
+    }
+
+    registry.shutdown();
+    registry.shutdown();
+  }
+
+  EXPECT_EQ(destroy_count.load(std::memory_order_relaxed), kThreads * kIterationsPerThread);
+  EXPECT_EQ(loader_ptr->load_calls.load(std::memory_order_relaxed), 1);
+  EXPECT_EQ(loader_ptr->unload_calls.load(std::memory_order_relaxed), 1);
+
+  g_atomic_destroy_counter = nullptr;
 }
 
 }  // namespace

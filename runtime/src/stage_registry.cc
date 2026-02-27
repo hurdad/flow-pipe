@@ -20,6 +20,8 @@ StageRegistry::StageRegistry(std::unique_ptr<StageLoader> loader) : loader_(std:
 
 IStage* StageRegistry::create_stage(const std::string& plugin_name,
                                     const google::protobuf::Struct* config) {
+  std::lock_guard<std::mutex> lock(lifecycle_mutex_);
+
   auto it = plugins_.find(plugin_name);
   if (it == plugins_.end()) {
     auto plugin = loader_->load(plugin_name);
@@ -50,6 +52,8 @@ IStage* StageRegistry::create_stage(const std::string& plugin_name,
 }
 
 void StageRegistry::destroy_stage(IStage* stage) {
+  std::lock_guard<std::mutex> lock(lifecycle_mutex_);
+
   for (auto it = instances_.begin(); it != instances_.end(); ++it) {
     if (it->stage == stage) {
       auto& plugin = plugins_.at(it->plugin_name);
@@ -61,6 +65,8 @@ void StageRegistry::destroy_stage(IStage* stage) {
 }
 
 void StageRegistry::shutdown() {
+  std::lock_guard<std::mutex> lock(lifecycle_mutex_);
+
   for (auto& inst : instances_) {
     auto& plugin = plugins_.at(inst.plugin_name);
     plugin.destroy(inst.stage);
