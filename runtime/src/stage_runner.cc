@@ -153,7 +153,6 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
         span->End();
       }
 #endif
-      output.queue->close();
       break;
     } catch (...) {
       FP_LOG_ERROR_FMT("source stage '{}' threw unknown exception", stage->name());
@@ -165,7 +164,6 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
         span->End();
       }
 #endif
-      output.queue->close();
       break;
     }
     const uint64_t end_ns = now_ns();
@@ -204,9 +202,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
     }
   }
 
-  FP_LOG_DEBUG_FMT("source stage '{}' closing output queue", stage->name());
-
-  output.queue->close();
+  FP_LOG_DEBUG_FMT("source stage '{}' runner exiting", stage->name());
 }
 
 // ------------------------------------------------------------
@@ -269,7 +265,6 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
         span->End();
       }
 #endif
-      output.queue->close();
       break;
     } catch (...) {
       FP_LOG_ERROR_FMT("transform stage '{}' threw unknown exception", stage->name());
@@ -281,7 +276,6 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
         span->End();
       }
 #endif
-      output.queue->close();
       break;
     }
     const uint64_t end_ns = now_ns();
@@ -315,9 +309,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
     }
   }
 
-  FP_LOG_DEBUG_FMT("transform stage '{}' closing output queue", stage->name());
-
-  output.queue->close();
+  FP_LOG_DEBUG_FMT("transform stage '{}' runner exiting", stage->name());
 }
 
 // ------------------------------------------------------------
