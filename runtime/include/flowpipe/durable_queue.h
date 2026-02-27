@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <condition_variable>
 #include <cstddef>
 #include <cstdint>
@@ -25,8 +26,9 @@ class DurableQueue final : public IQueue<Payload> {
 
   bool push(Payload item, const StopToken& stop) override {
     std::unique_lock lock(mu_);
-    not_full_.wait(lock,
-                   [&] { return stop.stop_requested() || closed_ || queue_.size() < capacity_; });
+    while (!stop.stop_requested() && !closed_ && queue_.size() >= capacity_) {
+      not_full_.wait_for(lock, kStopPollInterval);
+    }
 
     if (stop.stop_requested() || closed_) {
       return false;
@@ -44,7 +46,9 @@ class DurableQueue final : public IQueue<Payload> {
 
   std::optional<Payload> pop(const StopToken& stop) override {
     std::unique_lock lock(mu_);
-    not_empty_.wait(lock, [&] { return stop.stop_requested() || closed_ || !queue_.empty(); });
+    while (!stop.stop_requested() && !closed_ && queue_.empty()) {
+      not_empty_.wait_for(lock, kStopPollInterval);
+    }
 
     if (!queue_.empty()) {
       QueueItem front = std::move(queue_.front());
@@ -67,6 +71,8 @@ class DurableQueue final : public IQueue<Payload> {
   }
 
  private:
+  static constexpr auto kStopPollInterval = std::chrono::milliseconds(10);
+
   struct QueueItem {
     Payload payload;
     uint64_t record_bytes = 0;

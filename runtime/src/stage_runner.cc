@@ -148,6 +148,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
       if (metrics) {
         metrics->RecordStageError(stage->name().c_str());
       }
+      ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
@@ -159,6 +160,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
       if (metrics) {
         metrics->RecordStageError(stage->name().c_str());
       }
+      ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
@@ -260,6 +262,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
       if (metrics) {
         metrics->RecordStageError(stage->name().c_str());
       }
+      ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
@@ -271,6 +274,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
       if (metrics) {
         metrics->RecordStageError(stage->name().c_str());
       }
+      ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
@@ -365,6 +369,7 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
       if (metrics) {
         metrics->RecordStageError(stage->name().c_str());
       }
+      ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
@@ -376,6 +381,7 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
       if (metrics) {
         metrics->RecordStageError(stage->name().c_str());
       }
+      ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
