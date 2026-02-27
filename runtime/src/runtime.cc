@@ -390,6 +390,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
       if (kind == StageKind::kSource) {
         auto out = queues.at(s.output_queue());
+        auto remaining_stage_workers = std::make_shared<std::atomic<uint32_t>>(s.threads());
         for (uint32_t i = 0; i < worker_stages.size(); ++i) {
           auto* worker_stage = worker_stages[i];
           auto* src = dynamic_cast<ISourceStage*>(worker_stage);
@@ -404,7 +405,8 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
           active_workers.fetch_add(1);
           threads.emplace_back([&, src, worker_stage, out, i, stage_name, should_pin, pinning_cpus,
-                                should_set_realtime, realtime_priority]() {
+                                should_set_realtime, realtime_priority,
+                                remaining_stage_workers]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -414,6 +416,12 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", stage_name, i);
 
             RunSourceStage(src, ctx, *out, &metrics);
+
+            if (remaining_stage_workers->fetch_sub(1) == 1) {
+              FP_LOG_DEBUG_FMT("stage '{}' source worker {} closing shared output queue",
+                               stage_name, i);
+              out->queue->close();
+            }
 
             registry_.destroy_stage(worker_stage);
 
@@ -430,6 +438,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       } else if (kind == StageKind::kTransform) {
         auto in = queues.at(s.input_queue());
         auto out = queues.at(s.output_queue());
+        auto remaining_stage_workers = std::make_shared<std::atomic<uint32_t>>(s.threads());
         for (uint32_t i = 0; i < worker_stages.size(); ++i) {
           auto* worker_stage = worker_stages[i];
           auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
@@ -444,7 +453,8 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
           active_workers.fetch_add(1);
           threads.emplace_back([&, xf, worker_stage, in, out, i, stage_name, should_pin,
-                                pinning_cpus, should_set_realtime, realtime_priority]() {
+                                pinning_cpus, should_set_realtime, realtime_priority,
+                                remaining_stage_workers]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -454,6 +464,12 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", stage_name, i);
 
             RunTransformStage(xf, ctx, *in, *out, &metrics);
+
+            if (remaining_stage_workers->fetch_sub(1) == 1) {
+              FP_LOG_DEBUG_FMT("stage '{}' transform worker {} closing shared output queue",
+                               stage_name, i);
+              out->queue->close();
+            }
 
             registry_.destroy_stage(worker_stage);
 

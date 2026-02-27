@@ -3,9 +3,12 @@
 #include <gtest/gtest.h>
 
 #include <atomic>
+#include <condition_variable>
 #include <cstdint>
+#include <mutex>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "flowpipe/bounded_queue.h"
@@ -103,6 +106,7 @@ TEST(RunSourceStageTest, EnqueuesPayloadsAndRecordsMetrics) {
   RecordingStageMetrics metrics;
 
   RunSourceStage(&stage, ctx, output, &metrics);
+  output.queue->close();
 
   auto first = output.queue->pop(ctx.stop);
   auto second = output.queue->pop(ctx.stop);
@@ -128,6 +132,7 @@ TEST(RunSourceStageTest, AppliesQueueSchemaIdToPayloads) {
   RecordingStageMetrics metrics;
 
   RunSourceStage(&stage, ctx, output, &metrics);
+  output.queue->close();
 
   auto first = output.queue->pop(ctx.stop);
   ASSERT_TRUE(first.has_value());
@@ -143,6 +148,8 @@ TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
   RecordingStageMetrics metrics;
 
   RunSourceStage(&stage, ctx, output, &metrics);
+
+  output.queue->close();
 
   EXPECT_EQ(metrics.queue_enqueues, 0);
   EXPECT_EQ(metrics.latency_calls, 0);
@@ -168,6 +175,7 @@ TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
   RecordingStageMetrics metrics;
 
   RunTransformStage(&stage, ctx, input, output, &metrics);
+  output.queue->close();
 
   auto out_payload = output.queue->pop(ctx.stop);
   auto closed = output.queue->pop(ctx.stop);
@@ -203,6 +211,8 @@ TEST(RunTransformStageTest, DropsPayloadsWithSchemaMismatch) {
 
   RunTransformStage(&stage, ctx, input, output, &metrics);
 
+  output.queue->close();
+
   auto out_payload = output.queue->pop(ctx.stop);
   EXPECT_FALSE(out_payload.has_value());
   EXPECT_EQ(metrics.error_calls, 1);
@@ -220,10 +230,185 @@ TEST(RunTransformStageTest, StopsWhenCancelledBeforeWork) {
 
   RunTransformStage(&stage, ctx, input, output, &metrics);
 
+  output.queue->close();
+
   EXPECT_EQ(metrics.queue_dequeues, 0);
   EXPECT_EQ(metrics.queue_enqueues, 0);
   EXPECT_EQ(metrics.latency_calls, 0);
   EXPECT_FALSE(output.queue->pop(ctx.stop).has_value());
+}
+
+class SequencedSourceStage : public ISourceStage {
+ public:
+  explicit SequencedSourceStage(bool should_wait) : should_wait_(should_wait) {}
+
+  std::string name() const override {
+    return "sequenced_source";
+  }
+
+  bool produce(StageContext&, Payload& out) override {
+    if (!should_wait_) {
+      return false;
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(mu_);
+      waiting_ = true;
+    }
+    cv_.notify_all();
+
+    std::unique_lock<std::mutex> lock(mu_);
+    cv_.wait(lock, [&]() { return released_; });
+
+    out.meta.flags = 7;
+    should_wait_ = false;
+    return true;
+  }
+
+  void WaitUntilWaiting() {
+    std::unique_lock<std::mutex> lock(mu_);
+    cv_.wait(lock, [&]() { return waiting_; });
+  }
+
+  void Release() {
+    {
+      std::lock_guard<std::mutex> lock(mu_);
+      released_ = true;
+    }
+    cv_.notify_all();
+  }
+
+ private:
+  bool should_wait_;
+  std::mutex mu_;
+  std::condition_variable cv_;
+  bool waiting_ = false;
+  bool released_ = false;
+};
+
+TEST(RuntimeQueueOwnershipTest, SourceWorkersCloseOutputOnlyAfterLastWorkerExits) {
+  auto output = MakeQueueRuntime("out", 4);
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+  auto remaining_workers = std::make_shared<std::atomic<int>>(2);
+
+  SequencedSourceStage exits_early(false);
+  SequencedSourceStage long_running(true);
+
+  auto worker = [&](ISourceStage* stage) {
+    RunSourceStage(stage, ctx, output, nullptr);
+    if (remaining_workers->fetch_sub(1) == 1) {
+      output.queue->close();
+    }
+  };
+
+  std::thread t1(worker, &exits_early);
+  std::thread t2(worker, &long_running);
+
+  long_running.WaitUntilWaiting();
+  EXPECT_TRUE(output.queue->push(Payload{}, ctx.stop));
+
+  long_running.Release();
+
+  t1.join();
+  t2.join();
+
+  int payloads = 0;
+  while (output.queue->pop(ctx.stop).has_value()) {
+    ++payloads;
+  }
+
+  EXPECT_GE(payloads, 2);
+}
+
+class ExitAfterOneTransformStage : public ITransformStage {
+ public:
+  std::string name() const override {
+    return "exit_after_one";
+  }
+
+  void process(StageContext&, const Payload&, Payload& output) override {
+    output.meta.flags = 1;
+  }
+};
+
+class BlockingTransformStage : public ITransformStage {
+ public:
+  std::string name() const override {
+    return "blocking_transform";
+  }
+
+  void process(StageContext&, const Payload&, Payload& output) override {
+    {
+      std::lock_guard<std::mutex> lock(mu_);
+      processing_ = true;
+    }
+    cv_.notify_all();
+
+    std::unique_lock<std::mutex> lock(mu_);
+    cv_.wait(lock, [&]() { return released_; });
+    output.meta.flags = 2;
+  }
+
+  void WaitUntilProcessing() {
+    std::unique_lock<std::mutex> lock(mu_);
+    cv_.wait(lock, [&]() { return processing_; });
+  }
+
+  void Release() {
+    {
+      std::lock_guard<std::mutex> lock(mu_);
+      released_ = true;
+    }
+    cv_.notify_all();
+  }
+
+ private:
+  std::mutex mu_;
+  std::condition_variable cv_;
+  bool processing_ = false;
+  bool released_ = false;
+};
+
+TEST(RuntimeQueueOwnershipTest, TransformWorkersCloseOutputOnlyAfterLastWorkerExits) {
+  auto input = MakeQueueRuntime("in", 4);
+  auto output = MakeQueueRuntime("out", 4);
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+  auto remaining_workers = std::make_shared<std::atomic<int>>(2);
+
+  ExitAfterOneTransformStage exits_early;
+  BlockingTransformStage long_running;
+
+  ASSERT_TRUE(input.queue->push(Payload{}, ctx.stop));
+
+  auto worker = [&](ITransformStage* stage) {
+    RunTransformStage(stage, ctx, input, output, nullptr);
+    if (remaining_workers->fetch_sub(1) == 1) {
+      output.queue->close();
+    }
+  };
+
+  std::thread t2(worker, &long_running);
+
+  long_running.WaitUntilProcessing();
+  ASSERT_TRUE(input.queue->push(Payload{}, ctx.stop));
+  std::thread t1(worker, &exits_early);
+  input.queue->close();
+
+  EXPECT_TRUE(output.queue->push(Payload{}, ctx.stop));
+
+  long_running.Release();
+
+  t1.join();
+  t2.join();
+
+  int payloads = 0;
+  while (output.queue->pop(ctx.stop).has_value()) {
+    ++payloads;
+  }
+
+  EXPECT_GE(payloads, 3);
 }
 
 }  // namespace
