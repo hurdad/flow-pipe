@@ -3,6 +3,7 @@
 #include <google/protobuf/struct.pb.h>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -32,6 +33,14 @@ class StageRegistry {
   };
 
   std::unique_ptr<StageLoader> loader_;
+  // Guards the full registry lifecycle state (plugins_ + instances_).
+  // Ordering contract:
+  //  - shutdown() holds this lock while it tears down instances/plugins so it
+  //    cannot race with concurrent destroy_stage() calls.
+  //  - create_stage() and destroy_stage() both hold this lock while mutating
+  //    registry containers, so workers cannot insert while another thread is
+  //    erasing.
+  mutable std::mutex lifecycle_mutex_;
   std::unordered_map<std::string, LoadedPlugin> plugins_;
   std::vector<StageInstance> instances_;
 };
