@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <condition_variable>
 #include <cstddef>
 #include <deque>
@@ -17,8 +18,9 @@ class BoundedQueue : public IQueue<T> {
 
   bool push(T item, const StopToken& stop) override {
     std::unique_lock lock(mu_);
-    not_full_.wait(lock,
-                   [&] { return stop.stop_requested() || closed_ || queue_.size() < capacity_; });
+    while (!stop.stop_requested() && !closed_ && queue_.size() >= capacity_) {
+      not_full_.wait_for(lock, kStopPollInterval);
+    }
 
     if (stop.stop_requested() || closed_)
       return false;
@@ -30,7 +32,9 @@ class BoundedQueue : public IQueue<T> {
 
   std::optional<T> pop(const StopToken& stop) override {
     std::unique_lock lock(mu_);
-    not_empty_.wait(lock, [&] { return stop.stop_requested() || closed_ || !queue_.empty(); });
+    while (!stop.stop_requested() && !closed_ && queue_.empty()) {
+      not_empty_.wait_for(lock, kStopPollInterval);
+    }
 
     if (!queue_.empty()) {
       T item = std::move(queue_.front());
@@ -49,6 +53,8 @@ class BoundedQueue : public IQueue<T> {
   }
 
  private:
+  static constexpr auto kStopPollInterval = std::chrono::milliseconds(10);
+
   std::size_t capacity_;
   std::mutex mu_;
   std::condition_variable not_empty_;

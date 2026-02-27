@@ -5,7 +5,9 @@
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
+#include <future>
 #include <string>
+#include <thread>
 
 #include "flowpipe/bounded_queue.h"
 #include "flowpipe/durable_queue.h"
@@ -56,6 +58,31 @@ TEST(BoundedQueueTest, PushAndPop) {
   EXPECT_EQ(*item, 42);
 }
 
+
+TEST(BoundedQueueTest, StopRequestUnblocksWaitingPushAndPop) {
+  std::atomic<bool> stop_push_flag{false};
+  StopToken stop_push{&stop_push_flag};
+  BoundedQueue<int> push_queue(1);
+  ASSERT_TRUE(push_queue.push(1, stop_push));
+  auto blocked_push =
+      std::async(std::launch::async, [&]() { return push_queue.push(2, stop_push); });
+
+  std::atomic<bool> stop_pop_flag{false};
+  StopToken stop_pop{&stop_pop_flag};
+  BoundedQueue<int> pop_queue(1);
+  auto blocked_pop = std::async(std::launch::async, [&]() { return pop_queue.pop(stop_pop); });
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  stop_push.request_stop();
+  stop_pop.request_stop();
+
+  EXPECT_EQ(blocked_push.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+  EXPECT_EQ(blocked_pop.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+
+  EXPECT_FALSE(blocked_push.get());
+  EXPECT_FALSE(blocked_pop.get().has_value());
+}
+
 TEST(DurableQueueTest, PersistsPayloadsAcrossInstances) {
   std::atomic<bool> stop_flag{false};
   StopToken stop{&stop_flag};
@@ -87,6 +114,42 @@ TEST(DurableQueueTest, PersistsPayloadsAcrossInstances) {
     EXPECT_EQ(item->meta.trace_id[0], static_cast<uint8_t>(0xAB));
     EXPECT_EQ(item->meta.span_id[0], static_cast<uint8_t>(0xCD));
   }
+}
+
+
+TEST(DurableQueueTest, StopRequestUnblocksWaitingPushAndPop) {
+  PayloadMeta meta{};
+
+  std::atomic<bool> stop_push_flag{false};
+  StopToken stop_push{&stop_push_flag};
+  TempQueueFile push_file("_push.bin");
+  DurableQueue push_queue(1, push_file.path.string());
+  auto payload = BuildPayload("x", meta);
+  ASSERT_FALSE(payload.empty());
+  ASSERT_TRUE(push_queue.push(std::move(payload), stop_push));
+  auto blocked_push = std::async(std::launch::async, [&]() {
+    auto next = BuildPayload("y", meta);
+    if (next.empty()) {
+      return true;
+    }
+    return push_queue.push(std::move(next), stop_push);
+  });
+
+  std::atomic<bool> stop_pop_flag{false};
+  StopToken stop_pop{&stop_pop_flag};
+  TempQueueFile pop_file("_pop.bin");
+  DurableQueue pop_queue(1, pop_file.path.string());
+  auto blocked_pop = std::async(std::launch::async, [&]() { return pop_queue.pop(stop_pop); });
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  stop_push.request_stop();
+  stop_pop.request_stop();
+
+  EXPECT_EQ(blocked_push.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+  EXPECT_EQ(blocked_pop.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+
+  EXPECT_FALSE(blocked_push.get());
+  EXPECT_FALSE(blocked_pop.get().has_value());
 }
 
 TEST(DurableQueueTest, CompactsOnHeadAdvance) {

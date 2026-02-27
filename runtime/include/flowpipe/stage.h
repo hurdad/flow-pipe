@@ -16,6 +16,10 @@ namespace flowpipe {
  */
 struct StageContext {
   StopToken stop;
+
+  void request_stop() {
+    stop.request_stop();
+  }
 };
 
 /**

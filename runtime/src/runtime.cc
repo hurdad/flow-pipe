@@ -428,7 +428,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", stage_name, i);
             if (auto_shutdown) {
               if (active_workers.fetch_sub(1) == 1) {
-                stop_flag.store(true);
+                stop.request_stop();
               }
             } else {
               active_workers.fetch_sub(1);
@@ -476,7 +476,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", stage_name, i);
             if (auto_shutdown) {
               if (active_workers.fetch_sub(1) == 1) {
-                stop_flag.store(true);
+                stop.request_stop();
               }
             } else {
               active_workers.fetch_sub(1);
@@ -515,7 +515,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", stage_name, i);
             if (auto_shutdown) {
               if (active_workers.fetch_sub(1) == 1) {
-                stop_flag.store(true);
+                stop.request_stop();
               }
             } else {
               active_workers.fetch_sub(1);
@@ -528,20 +528,20 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     FP_LOG_INFO_FMT("runtime started {} worker threads", threads.size());
 
     if (auto_shutdown && active_workers.load() == 0) {
-      stop_flag.store(true);
+      stop.request_stop();
     }
 
     // ------------------------------------------------------------
     // Join
     // ------------------------------------------------------------
-    while (!stop_flag.load()) {
+    while (!stop.stop_requested()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     close_runtime_queues();
     join_workers();
   } catch (...) {
-    stop_flag.store(true);
+    stop.request_stop();
     close_runtime_queues();
     join_workers();
     registry_.shutdown();

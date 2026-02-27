@@ -3,11 +3,14 @@
 #include <gtest/gtest.h>
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
+#include <future>
 #include <cstdint>
 #include <mutex>
 #include <memory>
 #include <string>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -216,6 +219,42 @@ TEST(RunTransformStageTest, DropsPayloadsWithSchemaMismatch) {
   auto out_payload = output.queue->pop(ctx.stop);
   EXPECT_FALSE(out_payload.has_value());
   EXPECT_EQ(metrics.error_calls, 1);
+}
+
+
+class ThrowingTransformStage : public ITransformStage {
+ public:
+  std::string name() const override {
+    return "throwing_transform";
+  }
+
+  void process(StageContext&, const Payload&, Payload&) override {
+    throw std::runtime_error("boom");
+  }
+};
+
+TEST(RunTransformStageTest, WorkerExceptionRequestsGlobalStopAndUnblocksPeers) {
+  auto input = MakeQueueRuntime("in", 1);
+  auto output = MakeQueueRuntime("out", 1);
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(Payload{}, ctx.stop));
+
+  ThrowingTransformStage first_worker;
+  ThrowingTransformStage second_worker;
+
+  auto run_worker = [&](ITransformStage* stage) {
+    RunTransformStage(stage, ctx, input, output, nullptr);
+  };
+
+  auto first = std::async(std::launch::async, run_worker, &first_worker);
+  auto second = std::async(std::launch::async, run_worker, &second_worker);
+
+  EXPECT_EQ(first.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+  EXPECT_EQ(second.wait_for(std::chrono::seconds(1)), std::future_status::ready);
+  EXPECT_TRUE(stop_flag.load());
 }
 
 TEST(RunTransformStageTest, StopsWhenCancelledBeforeWork) {
