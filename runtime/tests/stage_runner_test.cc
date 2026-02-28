@@ -450,5 +450,40 @@ TEST(RuntimeQueueOwnershipTest, TransformWorkersCloseOutputOnlyAfterLastWorkerEx
   EXPECT_GE(payloads, 3);
 }
 
+TEST(RuntimeQueueOwnershipTest, SharedOutputQueueClosesOnlyAfterAllProducerStagesExit) {
+  auto output = MakeQueueRuntime("out", 4);
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+  auto queue_remaining_producers = std::make_shared<std::atomic<int>>(2);
+
+  SequencedSourceStage exits_early(false);
+  SequencedSourceStage long_running(true);
+
+  auto worker = [&](ISourceStage* stage) {
+    RunSourceStage(stage, ctx, output, nullptr);
+    if (queue_remaining_producers->fetch_sub(1) == 1) {
+      output.queue->close();
+    }
+  };
+
+  std::thread t1(worker, &exits_early);
+  std::thread t2(worker, &long_running);
+
+  long_running.WaitUntilWaiting();
+  EXPECT_TRUE(output.queue->push(Payload{}, ctx.stop));
+
+  long_running.Release();
+
+  t1.join();
+  t2.join();
+
+  int payloads = 0;
+  while (output.queue->pop(ctx.stop).has_value()) {
+    ++payloads;
+  }
+
+  EXPECT_GE(payloads, 2);
+}
+
 }  // namespace
 }  // namespace flowpipe

@@ -259,6 +259,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   StageMetrics metrics;
 
   std::vector<std::thread> threads;
+  std::unordered_map<std::string, std::shared_ptr<std::atomic<uint32_t>>> queue_producer_workers;
 
   auto join_workers = [&threads]() {
     for (auto& t : threads) {
@@ -278,6 +279,18 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
   // Wire stages (runtime owns execution)
   // ------------------------------------------------------------
   try {
+    for (const auto& stage_spec : spec.stages()) {
+      if (!stage_spec.has_output_queue()) {
+        continue;
+      }
+
+      auto& producer_count = queue_producer_workers[stage_spec.output_queue()];
+      if (!producer_count) {
+        producer_count = std::make_shared<std::atomic<uint32_t>>(0);
+      }
+      producer_count->fetch_add(stage_spec.threads());
+    }
+
     for (const auto& s : spec.stages()) {
       const std::string stage_name = s.name();
       FP_LOG_INFO_FMT("initializing stage '{}' type={} threads={}", stage_name, s.type(),
@@ -367,7 +380,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
       if (kind == StageKind::kSource) {
         auto out = queues.at(s.output_queue());
-        auto remaining_stage_workers = std::make_shared<std::atomic<uint32_t>>(s.threads());
+        auto queue_remaining_producers = queue_producer_workers.at(s.output_queue());
         for (uint32_t i = 0; i < worker_stages.size(); ++i) {
           auto* worker_stage = worker_stages[i];
           auto* src = dynamic_cast<ISourceStage*>(worker_stage);
@@ -383,7 +396,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           active_workers.fetch_add(1);
           threads.emplace_back([&, src, worker_stage, out, i, stage_name, should_pin, pinning_cpus,
                                 should_set_realtime, realtime_priority,
-                                remaining_stage_workers]() {
+                                queue_remaining_producers]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -394,7 +407,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
             RunSourceStage(src, ctx, *out, &metrics);
 
-            if (remaining_stage_workers->fetch_sub(1) == 1) {
+            if (queue_remaining_producers->fetch_sub(1) == 1) {
               FP_LOG_DEBUG_FMT("stage '{}' source worker {} closing shared output queue",
                                stage_name, i);
               out->queue->close();
@@ -415,7 +428,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
       } else if (kind == StageKind::kTransform) {
         auto in = queues.at(s.input_queue());
         auto out = queues.at(s.output_queue());
-        auto remaining_stage_workers = std::make_shared<std::atomic<uint32_t>>(s.threads());
+        auto queue_remaining_producers = queue_producer_workers.at(s.output_queue());
         for (uint32_t i = 0; i < worker_stages.size(); ++i) {
           auto* worker_stage = worker_stages[i];
           auto* xf = dynamic_cast<ITransformStage*>(worker_stage);
@@ -431,7 +444,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           active_workers.fetch_add(1);
           threads.emplace_back([&, xf, worker_stage, in, out, i, stage_name, should_pin,
                                 pinning_cpus, should_set_realtime, realtime_priority,
-                                remaining_stage_workers]() {
+                                queue_remaining_producers]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -442,7 +455,7 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
             RunTransformStage(xf, ctx, *in, *out, &metrics);
 
-            if (remaining_stage_workers->fetch_sub(1) == 1) {
+            if (queue_remaining_producers->fetch_sub(1) == 1) {
               FP_LOG_DEBUG_FMT("stage '{}' transform worker {} closing shared output queue",
                                stage_name, i);
               out->queue->close();
