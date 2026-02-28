@@ -243,10 +243,9 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
   std::vector<std::shared_ptr<IQueue<Payload>>> runtime_queues;
   runtime_queues.reserve(queues.size());
-  for (const auto& [name, queue_runtime] : queues) {
-    (void)name;
+  for (const auto& kv : queues) {
     // Track the concrete queues so we can close them on shutdown.
-    runtime_queues.push_back(queue_runtime->queue);
+    runtime_queues.push_back(kv.second->queue);
   }
 
   SignalHandler::install(stop_flag);

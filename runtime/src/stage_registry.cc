@@ -64,6 +64,9 @@ void StageRegistry::destroy_stage(IStage* stage) {
   }
 }
 
+// Idempotent: instances_ and plugins_ are cleared on the first call, so the
+// implicit call from ~StageRegistry() is always a safe no-op if the caller
+// already invoked shutdown() explicitly.
 void StageRegistry::shutdown() {
   std::lock_guard<std::mutex> lock(lifecycle_mutex_);
 

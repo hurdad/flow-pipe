@@ -85,25 +85,13 @@ void Log(LogLevel level, const std::string& message, const char* file, int line)
 
   using opentelemetry::common::AttributeValue;
 
-  if (file && line > 0) {
-    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
-                          std::initializer_list<std::pair<std::string, AttributeValue>>{
-                              {"code.filepath", AttributeValue{file}},
-                              {"code.lineno", AttributeValue{line}},
-                          });
-  } else if (file) {
-    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
-                          std::initializer_list<std::pair<std::string, AttributeValue>>{
-                              {"code.filepath", AttributeValue{file}},
-                          });
-  } else if (line > 0) {
-    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
-                          std::initializer_list<std::pair<std::string, AttributeValue>>{
-                              {"code.lineno", AttributeValue{line}},
-                          });
-  } else {
-    logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message);
-  }
+  // __FILE__ is always non-null and __LINE__ is always > 0 at macro call sites,
+  // so both attributes are unconditionally available.
+  logger->EmitLogRecord(std::move(record), ToOtelSeverity(level), message,
+                        std::initializer_list<std::pair<std::string, AttributeValue>>{
+                            {"code.filepath", AttributeValue{file}},
+                            {"code.lineno", AttributeValue{line}},
+                        });
 #endif  // FLOWPIPE_ENABLE_OTEL
 }
 

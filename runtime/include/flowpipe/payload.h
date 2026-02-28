@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <new>
 #include <string>
 
 namespace flowpipe {
@@ -70,9 +69,10 @@ struct Payload {
   }
 };
 
-// Allocates a shared buffer for payload data using nothrow new.
+// Allocates a shared buffer for payload data.
+// Throws std::bad_alloc on OOM so callers always receive a valid buffer.
 inline std::shared_ptr<uint8_t[]> AllocatePayloadBuffer(size_t size) {
-  return std::shared_ptr<uint8_t[]>(new (std::nothrow) uint8_t[size]);
+  return std::shared_ptr<uint8_t[]>(new uint8_t[size]);
 }
 
 }  // namespace flowpipe

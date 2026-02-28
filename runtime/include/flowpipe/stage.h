@@ -44,7 +44,6 @@ struct ISourceStage : IStage {
  * Transform stage
  *
  * Transforms one input payload into one output payload.
- * (Later you can extend this to zero-or-more outputs.)
  */
 struct ITransformStage : IStage {
   virtual void process(StageContext& ctx, const Payload& input, Payload& output) = 0;
