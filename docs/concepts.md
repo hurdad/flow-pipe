@@ -23,15 +23,12 @@ Stages implement business logic only. Threading and lifecycle are owned by the r
 ---
 
 ## Queue
-A queue is the channel between stages. Flow definitions can choose between two queue
-implementations via `QueueSpec.type`:
+A queue is the channel between stages. Flows use the bounded in-memory queue
+implementation via `QueueSpec.type`:
 
 - **Bounded in-memory queue (default)**: A capacity-limited, in-memory channel that
   enforces backpressure. This is the default when `QueueSpec.type` is omitted or set
   to `QUEUE_TYPE_IN_MEMORY`.
-- **Durable queue**: A queue that persists payloads on disk. Use
-  `QUEUE_TYPE_DURABLE` and set `QueueSpec.durable_path` to a filesystem location for
-  the queue’s storage.
 
 Queue semantics:
 - MPSC or MPMC

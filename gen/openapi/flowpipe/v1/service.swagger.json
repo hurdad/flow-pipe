@@ -997,10 +997,6 @@
         "type": {
           "$ref": "#/definitions/v1QueueType",
           "description": "Queue implementation type."
-        },
-        "durablePath": {
-          "type": "string",
-          "description": "Optional filesystem path for durable queue storage."
         }
       }
     },
@@ -1008,11 +1004,10 @@
       "type": "string",
       "enum": [
         "QUEUE_TYPE_UNSPECIFIED",
-        "QUEUE_TYPE_IN_MEMORY",
-        "QUEUE_TYPE_DURABLE"
+        "QUEUE_TYPE_IN_MEMORY"
       ],
       "default": "QUEUE_TYPE_UNSPECIFIED",
-      "description": "Queue implementation type.\n\n - QUEUE_TYPE_UNSPECIFIED: Type not specified (defaults to in-memory queue).\n - QUEUE_TYPE_IN_MEMORY: In-memory bounded queue.\n - QUEUE_TYPE_DURABLE: Durable queue with on-disk persistence."
+      "description": "Queue implementation type.\n\n - QUEUE_TYPE_UNSPECIFIED: Type not specified (defaults to in-memory queue).\n - QUEUE_TYPE_IN_MEMORY: In-memory bounded queue."
     },
     "v1Resources": {
       "type": "object",
