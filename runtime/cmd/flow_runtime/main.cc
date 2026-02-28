@@ -21,7 +21,7 @@
 // Load flow spec from YAML
 // ------------------------------------------------------------
 static bool LoadFromYaml(const std::string& path, flowpipe::v1::FlowSpec& flow) {
-  FP_LOG_DEBUG_FMT("loading flow spec from YAML: %s", path.c_str());
+  FP_LOG_DEBUG_FMT("loading flow spec from YAML: {}", path);
 
   YAML::Node root;
   try {
@@ -56,7 +56,7 @@ static bool LoadFromYaml(const std::string& path, flowpipe::v1::FlowSpec& flow) 
 // Load flow spec from JSON
 // ------------------------------------------------------------
 static bool LoadFromJson(const std::string& path, flowpipe::v1::FlowSpec& flow) {
-  FP_LOG_DEBUG_FMT("loading flow spec from JSON: %s", path.c_str());
+  FP_LOG_DEBUG_FMT("loading flow spec from JSON: {}", path);
 
   std::ifstream in(path);
   if (!in) {
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
   }
 
   const std::string path = argv[1];
-  FP_LOG_DEBUG_FMT("flow spec path: %s", path.c_str());
+  FP_LOG_DEBUG_FMT("flow spec path: {}", path);
 
   flowpipe::v1::FlowSpec flow;
 
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
   flowpipe::Runtime runtime;
   int result = runtime.run(flow);
 
-  FP_LOG_DEBUG_FMT("runtime execution complete (exit_code=%d)", result);
+  FP_LOG_DEBUG_FMT("runtime execution complete (exit_code={})", result);
 
   // ----------------------------------------------------------
   // Observability shutdown

@@ -149,8 +149,7 @@ void InitMetrics(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   // ----------------------------------------------------------
   state.meter_provider = metrics_sdk::MeterProviderFactory::Create(std::move(context));
 
-  std::shared_ptr<opentelemetry::metrics::MeterProvider> api_provider(
-      std::move(state.meter_provider));
+  std::shared_ptr<opentelemetry::metrics::MeterProvider> api_provider = state.meter_provider;
 
   opentelemetry::metrics::Provider::SetMeterProvider(api_provider);
 

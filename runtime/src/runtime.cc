@@ -387,16 +387,14 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           if (!src) {
             FP_LOG_ERROR_FMT("source worker stage '{}' does not implement source interface",
                              stage_name);
-            for (auto* stage_to_destroy : worker_stages) {
-              registry_.destroy_stage(stage_to_destroy);
-            }
             throw std::runtime_error("worker stage is not a source: " + stage_name);
           }
 
           active_workers.fetch_add(1);
-          threads.emplace_back([&, src, worker_stage, out, i, stage_name, should_pin, pinning_cpus,
-                                should_set_realtime, realtime_priority,
-                                queue_remaining_producers]() {
+          try {
+            threads.emplace_back([&, src, worker_stage, out, i, stage_name, should_pin, pinning_cpus,
+                                  should_set_realtime, realtime_priority,
+                                  queue_remaining_producers]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -423,7 +421,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             } else {
               active_workers.fetch_sub(1);
             }
-          });
+            });
+          } catch (...) {
+            active_workers.fetch_sub(1);
+            throw;
+          }
         }
       } else if (kind == StageKind::kTransform) {
         auto in = queues.at(s.input_queue());
@@ -435,16 +437,14 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           if (!xf) {
             FP_LOG_ERROR_FMT("transform worker stage '{}' does not implement transform interface",
                              stage_name);
-            for (auto* stage_to_destroy : worker_stages) {
-              registry_.destroy_stage(stage_to_destroy);
-            }
             throw std::runtime_error("worker stage is not a transform: " + stage_name);
           }
 
           active_workers.fetch_add(1);
-          threads.emplace_back([&, xf, worker_stage, in, out, i, stage_name, should_pin,
-                                pinning_cpus, should_set_realtime, realtime_priority,
-                                queue_remaining_producers]() {
+          try {
+            threads.emplace_back([&, xf, worker_stage, in, out, i, stage_name, should_pin,
+                                  pinning_cpus, should_set_realtime, realtime_priority,
+                                  queue_remaining_producers]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -471,7 +471,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             } else {
               active_workers.fetch_sub(1);
             }
-          });
+            });
+          } catch (...) {
+            active_workers.fetch_sub(1);
+            throw;
+          }
         }
       } else if (kind == StageKind::kSink) {
         auto in = queues.at(s.input_queue());
@@ -481,15 +485,13 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
           if (!sink) {
             FP_LOG_ERROR_FMT("sink worker stage '{}' does not implement sink interface",
                              stage_name);
-            for (auto* stage_to_destroy : worker_stages) {
-              registry_.destroy_stage(stage_to_destroy);
-            }
             throw std::runtime_error("worker stage is not a sink: " + stage_name);
           }
 
           active_workers.fetch_add(1);
-          threads.emplace_back([&, sink, worker_stage, in, i, stage_name, should_pin, pinning_cpus,
-                                should_set_realtime, realtime_priority]() {
+          try {
+            threads.emplace_back([&, sink, worker_stage, in, i, stage_name, should_pin, pinning_cpus,
+                                  should_set_realtime, realtime_priority]() {
             if (should_pin) {
               ApplyCpuPinning(stage_name, i, pinning_cpus);
             }
@@ -510,7 +512,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             } else {
               active_workers.fetch_sub(1);
             }
-          });
+            });
+          } catch (...) {
+            active_workers.fetch_sub(1);
+            throw;
+          }
         }
       }
     }

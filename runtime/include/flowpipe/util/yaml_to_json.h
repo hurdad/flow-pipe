@@ -2,6 +2,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <cstdio>
 #include <ostream>
 #include <string>
 
@@ -27,6 +28,30 @@ namespace flowpipe::util {
 
 inline void yaml_to_json(const YAML::Node& node, std::ostream& out);
 
+// Emit a JSON-escaped quoted string. Handles all characters requiring escaping
+// per RFC 8259 §7: backslash, double-quote, and control characters (U+0000–U+001F).
+inline void json_escape_string(const std::string& s, std::ostream& out) {
+  out << '"';
+  for (unsigned char c : s) {
+    switch (c) {
+      case '"':  out << "\\\""; break;
+      case '\\': out << "\\\\"; break;
+      case '\n': out << "\\n";  break;
+      case '\r': out << "\\r";  break;
+      case '\t': out << "\\t";  break;
+      default:
+        if (c < 0x20) {
+          char buf[7];
+          std::snprintf(buf, sizeof(buf), "\\u%04x", c);
+          out << buf;
+        } else {
+          out << static_cast<char>(c);
+        }
+    }
+  }
+  out << '"';
+}
+
 inline void yaml_map_to_json(const YAML::Node& node, std::ostream& out) {
   out << "{";
   bool first = true;
@@ -35,7 +60,8 @@ inline void yaml_map_to_json(const YAML::Node& node, std::ostream& out) {
       out << ",";
     first = false;
 
-    out << "\"" << it.first.as<std::string>() << "\":";
+    json_escape_string(it.first.as<std::string>(), out);
+    out << ":";
 
     yaml_to_json(it.second, out);
   }
@@ -53,7 +79,7 @@ inline void yaml_seq_to_json(const YAML::Node& node, std::ostream& out) {
 }
 
 inline void yaml_scalar_to_json(const YAML::Node& node, std::ostream& out) {
-  out << "\"" << node.as<std::string>() << "\"";
+  json_escape_string(node.as<std::string>(), out);
 }
 
 inline void yaml_to_json(const YAML::Node& node, std::ostream& out) {
