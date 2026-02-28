@@ -1,6 +1,7 @@
 queues:
   # source → transform_a, transform_b
-  # 1 producer (source), 2 consumers (transform_a, transform_b)
+  # 1 producer (source), 2 competing consumers (load-balanced)
+  # NOTE: records are NOT broadcast/duplicated to both consumers.
   - name: q_in
     capacity: 512
 
