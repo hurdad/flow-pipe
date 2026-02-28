@@ -531,6 +531,11 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
     // Join
     // ------------------------------------------------------------
     while (!stop.stop_requested()) {
+      // Relay any OS signal (SIGINT/SIGTERM) received since the last iteration
+      // to the stop flag. This is the only place where the sig_atomic_t flag
+      // written by the signal handler is bridged to the atomic<bool> stop flag,
+      // keeping the signal handler itself async-signal-safe.
+      SignalHandler::relay();
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
