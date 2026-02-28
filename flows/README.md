@@ -131,7 +131,7 @@ Optional fields:
 | `noop.observability.k3s.yaml` | No-op pipeline for k3s with observability enabled |
 | `simple.pipeline.yaml` | Source → transform → sink |
 | `simple.pipeline.observability.k3s.yaml` | Job-mode simple pipeline for k3s with observability enabled |
-| `fanout.yaml` | Fan-out to multiple transforms and sinks |
+| `fanout.yaml` | Competing-consumer/load-balanced topology (not broadcast fan-out) |
 | `schema.registry.yaml` | Source → transform → sink with schema registry references |
 
 ---
@@ -142,6 +142,7 @@ Optional fields:
 - Each stage definition creates a new stage instance
 - Stages may run with multiple threads
 - YAML is converted to an internal protobuf representation at startup
+- A single queue with multiple consumers is **load-balanced**: each record is consumed by one downstream consumer, not duplicated to all consumers
 
 ---
 

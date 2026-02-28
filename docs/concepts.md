@@ -32,6 +32,8 @@ implementation via `QueueSpec.type`:
 
 Queue semantics:
 - MPSC or MPMC
+- Multiple consumers on one queue are **competing consumers** (load-balanced delivery)
+- A single queue does **not** broadcast/duplicate each record to every downstream consumer
 - Enforces backpressure
 - Closed automatically when producers exit
 
