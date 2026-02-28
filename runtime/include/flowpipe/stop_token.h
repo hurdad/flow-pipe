@@ -18,12 +18,12 @@ class StopToken {
 
   // Returns true if stop has been requested
   bool stop_requested() const noexcept {
-    return flag_ && flag_->load(std::memory_order_relaxed);
+    return flag_ && flag_->load(std::memory_order_acquire);
   }
 
   void request_stop() const noexcept {
     if (flag_) {
-      flag_->store(true, std::memory_order_relaxed);
+      flag_->store(true, std::memory_order_release);
     }
   }
 
