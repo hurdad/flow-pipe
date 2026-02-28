@@ -252,8 +252,6 @@ message QueueSpec {
   // Queue implementation type.
   optional QueueType type = 4;
 
-  // Optional filesystem path for durable queue storage.
-  optional string durable_path = 5;
 }
 
 message QueueSchema {
@@ -313,8 +311,6 @@ enum QueueType {
   // In-memory bounded queue.
   QUEUE_TYPE_IN_MEMORY = 1;
 
-  // Durable queue with on-disk persistence.
-  QUEUE_TYPE_DURABLE = 2;
 }
 
 // ============================================================

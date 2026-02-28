@@ -429,8 +429,6 @@ const (
 	QueueType_QUEUE_TYPE_UNSPECIFIED QueueType = 0
 	// In-memory bounded queue.
 	QueueType_QUEUE_TYPE_IN_MEMORY QueueType = 1
-	// Durable queue with on-disk persistence.
-	QueueType_QUEUE_TYPE_DURABLE QueueType = 2
 )
 
 // Enum value maps for QueueType.
@@ -438,12 +436,10 @@ var (
 	QueueType_name = map[int32]string{
 		0: "QUEUE_TYPE_UNSPECIFIED",
 		1: "QUEUE_TYPE_IN_MEMORY",
-		2: "QUEUE_TYPE_DURABLE",
 	}
 	QueueType_value = map[string]int32{
 		"QUEUE_TYPE_UNSPECIFIED": 0,
 		"QUEUE_TYPE_IN_MEMORY":   1,
-		"QUEUE_TYPE_DURABLE":     2,
 	}
 )
 
@@ -1184,9 +1180,7 @@ type QueueSpec struct {
 	// Optional schema definition for queue payloads.
 	Schema *QueueSchema `protobuf:"bytes,3,opt,name=schema,proto3,oneof" json:"schema,omitempty"`
 	// Queue implementation type.
-	Type *QueueType `protobuf:"varint,4,opt,name=type,proto3,enum=flowpipe.v1.QueueType,oneof" json:"type,omitempty"`
-	// Optional filesystem path for durable queue storage.
-	DurablePath   *string `protobuf:"bytes,5,opt,name=durable_path,json=durablePath,proto3,oneof" json:"durable_path,omitempty"`
+	Type          *QueueType `protobuf:"varint,4,opt,name=type,proto3,enum=flowpipe.v1.QueueType,oneof" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1247,13 +1241,6 @@ func (x *QueueSpec) GetType() QueueType {
 		return *x.Type
 	}
 	return QueueType_QUEUE_TYPE_UNSPECIFIED
-}
-
-func (x *QueueSpec) GetDurablePath() string {
-	if x != nil && x.DurablePath != nil {
-		return *x.DurablePath
-	}
-	return ""
 }
 
 type QueueSchema struct {
@@ -1613,16 +1600,14 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\f_input_queueB\x0f\n" +
 	"\r_output_queueB\t\n" +
 	"\a_pluginB\x14\n" +
-	"\x12_realtime_priority\"\xf0\x01\n" +
+	"\x12_realtime_priority\"\xb7\x01\n" +
 	"\tQueueSpec\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bcapacity\x18\x02 \x01(\rR\bcapacity\x125\n" +
 	"\x06schema\x18\x03 \x01(\v2\x18.flowpipe.v1.QueueSchemaH\x00R\x06schema\x88\x01\x01\x12/\n" +
-	"\x04type\x18\x04 \x01(\x0e2\x16.flowpipe.v1.QueueTypeH\x01R\x04type\x88\x01\x01\x12&\n" +
-	"\fdurable_path\x18\x05 \x01(\tH\x02R\vdurablePath\x88\x01\x01B\t\n" +
+	"\x04type\x18\x04 \x01(\x0e2\x16.flowpipe.v1.QueueTypeH\x01R\x04type\x88\x01\x01B\t\n" +
 	"\a_schemaB\a\n" +
-	"\x05_typeB\x0f\n" +
-	"\r_durable_path\"\xc9\x01\n" +
+	"\x05_type\"\xc9\x01\n" +
 	"\vQueueSchema\x129\n" +
 	"\x06format\x18\x01 \x01(\x0e2!.flowpipe.v1.InMemorySchemaFormatR\x06format\x12\x1b\n" +
 	"\tschema_id\x18\x02 \x01(\tR\bschemaId\x12\x1d\n" +
@@ -1685,11 +1670,10 @@ const file_flowpipe_v1_flow_proto_rawDesc = "" +
 	"\x1bEXTERNAL_SCHEMA_FORMAT_JSON\x10\x02\x12#\n" +
 	"\x1fEXTERNAL_SCHEMA_FORMAT_PROTOBUF\x10\x03\x12&\n" +
 	"\"EXTERNAL_SCHEMA_FORMAT_FLATBUFFERS\x10\x04\x12\"\n" +
-	"\x1eEXTERNAL_SCHEMA_FORMAT_PARQUET\x10\x05*Y\n" +
+	"\x1eEXTERNAL_SCHEMA_FORMAT_PARQUET\x10\x05*A\n" +
 	"\tQueueType\x12\x1a\n" +
 	"\x16QUEUE_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14QUEUE_TYPE_IN_MEMORY\x10\x01\x12\x16\n" +
-	"\x12QUEUE_TYPE_DURABLE\x10\x02*\xba\x01\n" +
+	"\x14QUEUE_TYPE_IN_MEMORY\x10\x01*\xba\x01\n" +
 	"\tFlowState\x12\x1a\n" +
 	"\x16FLOW_STATE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12FLOW_STATE_PENDING\x10\x01\x12\x18\n" +
