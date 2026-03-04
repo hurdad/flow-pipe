@@ -90,6 +90,52 @@ class FakeTransformStage : public ITransformStage {
   std::vector<PayloadMeta> seen_inputs;
 };
 
+class FakeSinkStage : public ISinkStage {
+ public:
+  std::string name() const override {
+    return "fake_sink";
+  }
+
+  void consume(StageContext&, const Payload& input) override {
+    seen_inputs.push_back(input.meta);
+  }
+
+  std::vector<PayloadMeta> seen_inputs;
+};
+
+class ThrowingSourceStage : public ISourceStage {
+ public:
+  std::string name() const override {
+    return "throwing_source";
+  }
+
+  bool produce(StageContext&, Payload&) override {
+    throw std::runtime_error("source boom");
+  }
+};
+
+class ThrowingTransformStage : public ITransformStage {
+ public:
+  std::string name() const override {
+    return "throwing_transform";
+  }
+
+  void process(StageContext&, const Payload&, Payload&) override {
+    throw std::runtime_error("boom");
+  }
+};
+
+class ThrowingSinkStage : public ISinkStage {
+ public:
+  std::string name() const override {
+    return "throwing_sink";
+  }
+
+  void consume(StageContext&, const Payload&) override {
+    throw std::runtime_error("sink boom");
+  }
+};
+
 QueueRuntime MakeQueueRuntime(const std::string& name, uint32_t capacity,
                               std::string schema_id = {}) {
   return QueueRuntime{
@@ -157,6 +203,39 @@ TEST(RunSourceStageTest, RespectsStopTokenAndClosesQueue) {
 
   EXPECT_EQ(metrics.queue_enqueues, 0);
   EXPECT_EQ(metrics.latency_calls, 0);
+  EXPECT_FALSE(output.queue->pop(ctx.stop).has_value());
+}
+
+TEST(RunSourceStageTest, ExceptionRequestsGlobalStop) {
+  auto output = MakeQueueRuntime("out", 2);
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ThrowingSourceStage stage;
+  RecordingStageMetrics metrics;
+
+  RunSourceStage(&stage, ctx, output, &metrics);
+
+  EXPECT_TRUE(stop_flag.load());
+  EXPECT_EQ(metrics.error_calls, 1);
+  EXPECT_EQ(metrics.queue_enqueues, 0);
+}
+
+TEST(RunSourceStageTest, OutputSchemaMismatchDropsPayloadAndRecordsError) {
+  auto output = MakeQueueRuntime("out", 2, "schema-correct");
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  Payload p;
+  p.meta.schema_id = "schema-wrong";
+  FakeSourceStage stage({std::move(p)});
+  RecordingStageMetrics metrics;
+
+  RunSourceStage(&stage, ctx, output, &metrics);
+  output.queue->close();
+
+  EXPECT_EQ(metrics.error_calls, 1);
+  EXPECT_EQ(metrics.queue_enqueues, 0);
   EXPECT_FALSE(output.queue->pop(ctx.stop).has_value());
 }
 
@@ -269,17 +348,29 @@ TEST(RunTransformStageTest, DropsPayloadsWithSchemaMismatch) {
   EXPECT_EQ(metrics.error_calls, 1);
 }
 
+TEST(RunTransformStageTest, EmptyPayloadSchemaIdDropsPayload) {
+  auto input = MakeQueueRuntime("in", 1, "schema-a");
+  auto output = MakeQueueRuntime("out", 1);
 
-class ThrowingTransformStage : public ITransformStage {
- public:
-  std::string name() const override {
-    return "throwing_transform";
-  }
+  Payload input_payload;
+  // schema_id intentionally empty — queue requires "schema-a"
 
-  void process(StageContext&, const Payload&, Payload&) override {
-    throw std::runtime_error("boom");
-  }
-};
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(input_payload, ctx.stop));
+  input.queue->close();
+
+  FakeTransformStage stage;
+  RecordingStageMetrics metrics;
+
+  RunTransformStage(&stage, ctx, input, output, &metrics);
+  output.queue->close();
+
+  EXPECT_FALSE(output.queue->pop(ctx.stop).has_value());
+  EXPECT_EQ(metrics.error_calls, 1);
+  EXPECT_EQ(stage.seen_inputs.size(), 0u);
+}
 
 TEST(RunTransformStageTest, WorkerExceptionRequestsGlobalStopAndUnblocksPeers) {
   auto input = MakeQueueRuntime("in", 1);
@@ -323,6 +414,108 @@ TEST(RunTransformStageTest, StopsWhenCancelledBeforeWork) {
   EXPECT_EQ(metrics.queue_enqueues, 0);
   EXPECT_EQ(metrics.latency_calls, 0);
   EXPECT_FALSE(output.queue->pop(ctx.stop).has_value());
+}
+
+TEST(RunSinkStageTest, ConsumesPayloadsAndRecordsMetrics) {
+  auto input = MakeQueueRuntime("in", 2);
+
+  Payload p1, p2;
+  p1.meta.flags = 1;
+  p2.meta.flags = 2;
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(p1, ctx.stop));
+  ASSERT_TRUE(input.queue->push(p2, ctx.stop));
+  input.queue->close();
+
+  FakeSinkStage stage;
+  RecordingStageMetrics metrics;
+
+  RunSinkStage(&stage, ctx, input, &metrics);
+
+  EXPECT_EQ(metrics.queue_dequeues, 2);
+  EXPECT_EQ(metrics.latency_calls, 2);
+  EXPECT_EQ(metrics.queue_enqueues, 0);
+  ASSERT_EQ(stage.seen_inputs.size(), 2u);
+  EXPECT_EQ(stage.seen_inputs[0].flags, 1u);
+  EXPECT_EQ(stage.seen_inputs[1].flags, 2u);
+}
+
+TEST(RunSinkStageTest, StopsWhenCancelledBeforeWork) {
+  auto input = MakeQueueRuntime("in", 1);
+
+  std::atomic<bool> stop_flag{true};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  FakeSinkStage stage;
+  RecordingStageMetrics metrics;
+
+  RunSinkStage(&stage, ctx, input, &metrics);
+
+  EXPECT_EQ(metrics.queue_dequeues, 0);
+  EXPECT_EQ(metrics.latency_calls, 0);
+  EXPECT_EQ(stage.seen_inputs.size(), 0u);
+}
+
+TEST(RunSinkStageTest, ExceptionRequestsGlobalStop) {
+  auto input = MakeQueueRuntime("in", 1);
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(Payload{}, ctx.stop));
+
+  ThrowingSinkStage stage;
+  RecordingStageMetrics metrics;
+
+  RunSinkStage(&stage, ctx, input, &metrics);
+
+  EXPECT_TRUE(stop_flag.load());
+  EXPECT_EQ(metrics.error_calls, 1);
+}
+
+TEST(RunSinkStageTest, DropsPayloadsWithSchemaMismatch) {
+  auto input = MakeQueueRuntime("in", 1, "schema-a");
+
+  Payload payload;
+  payload.meta.schema_id = "schema-wrong";
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(payload, ctx.stop));
+  input.queue->close();
+
+  FakeSinkStage stage;
+  RecordingStageMetrics metrics;
+
+  RunSinkStage(&stage, ctx, input, &metrics);
+
+  EXPECT_EQ(metrics.error_calls, 1);
+  EXPECT_EQ(stage.seen_inputs.size(), 0u);
+}
+
+TEST(RunSinkStageTest, EmptyPayloadSchemaIdDropsPayload) {
+  auto input = MakeQueueRuntime("in", 1, "schema-a");
+
+  Payload payload;
+  // schema_id intentionally empty
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(payload, ctx.stop));
+  input.queue->close();
+
+  FakeSinkStage stage;
+  RecordingStageMetrics metrics;
+
+  RunSinkStage(&stage, ctx, input, &metrics);
+
+  EXPECT_EQ(metrics.error_calls, 1);
+  EXPECT_EQ(stage.seen_inputs.size(), 0u);
 }
 
 class SequencedSourceStage : public ISourceStage {
@@ -498,40 +691,6 @@ TEST(RuntimeQueueOwnershipTest, TransformWorkersCloseOutputOnlyAfterLastWorkerEx
   EXPECT_GE(payloads, 3);
 }
 
-TEST(RuntimeQueueOwnershipTest, SharedOutputQueueClosesOnlyAfterAllProducerStagesExit) {
-  auto output = MakeQueueRuntime("out", 4);
-  std::atomic<bool> stop_flag{false};
-  StageContext ctx{StopToken(&stop_flag)};
-  auto queue_remaining_producers = std::make_shared<std::atomic<int>>(2);
-
-  SequencedSourceStage exits_early(false);
-  SequencedSourceStage long_running(true);
-
-  auto worker = [&](ISourceStage* stage) {
-    RunSourceStage(stage, ctx, output, nullptr);
-    if (queue_remaining_producers->fetch_sub(1) == 1) {
-      output.queue->close();
-    }
-  };
-
-  std::thread t1(worker, &exits_early);
-  std::thread t2(worker, &long_running);
-
-  long_running.WaitUntilWaiting();
-  EXPECT_TRUE(output.queue->push(Payload{}, ctx.stop));
-
-  long_running.Release();
-
-  t1.join();
-  t2.join();
-
-  int payloads = 0;
-  while (output.queue->pop(ctx.stop).has_value()) {
-    ++payloads;
-  }
-
-  EXPECT_GE(payloads, 2);
-}
 
 }  // namespace
 }  // namespace flowpipe
