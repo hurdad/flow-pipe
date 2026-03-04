@@ -83,10 +83,14 @@ struct PayloadMeta {
       return false;
     }
 
+    if (attrs->find(key) == attrs->end()) {
+      return false;
+    }
+
     auto copy = std::make_shared<MetadataMap>(*attrs);
-    const bool erased = copy->erase(std::string(key)) > 0;
+    copy->erase(std::string(key));
     attrs = copy->empty() ? nullptr : std::shared_ptr<const MetadataMap>(std::move(copy));
-    return erased;
+    return true;
   }
 
   void clear_attrs() noexcept {

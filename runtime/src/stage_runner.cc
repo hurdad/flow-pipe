@@ -183,15 +183,15 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
       break;
     }
 
-    if (metrics) {
-      metrics->RecordStageLatency(stage_name.c_str(), end_ns - start_ns);
-    }
-
     if (!ApplyOutputSchema(output, payload, stage_name.c_str())) {
       if (metrics) {
         metrics->RecordStageError(stage_name.c_str());
       }
       continue;
+    }
+
+    if (metrics) {
+      metrics->RecordStageLatency(stage_name.c_str(), end_ns - start_ns);
     }
 
     payload.meta.enqueue_ts_ns = now_ns();
@@ -219,7 +219,11 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
   while (!ctx.stop.stop_requested()) {
     auto item = input.queue->pop(ctx.stop);
     if (!item.has_value()) {
-      FP_LOG_DEBUG_FMT("transform stage '{}' input queue closed", stage_name);
+      if (ctx.stop.stop_requested()) {
+        FP_LOG_DEBUG_FMT("transform stage '{}' stop requested", stage_name);
+      } else {
+        FP_LOG_DEBUG_FMT("transform stage '{}' input queue closed", stage_name);
+      }
       break;
     }
 
@@ -330,7 +334,11 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
   while (!ctx.stop.stop_requested()) {
     auto item = input.queue->pop(ctx.stop);
     if (!item.has_value()) {
-      FP_LOG_DEBUG_FMT("sink stage '{}' input queue closed", stage_name);
+      if (ctx.stop.stop_requested()) {
+        FP_LOG_DEBUG_FMT("sink stage '{}' stop requested", stage_name);
+      } else {
+        FP_LOG_DEBUG_FMT("sink stage '{}' input queue closed", stage_name);
+      }
       break;
     }
 

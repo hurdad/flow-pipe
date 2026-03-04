@@ -13,6 +13,7 @@ StageFactory::StageFactory(std::string plugin_dir) : plugin_dir_(std::move(plugi
 LoadedPlugin StageFactory::load(const std::string& plugin_name) {
   std::string path = resolve_path(plugin_name);
 
+  dlerror();  // clear any previous error
   void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
   if (!handle) {
     throw std::runtime_error(dlerror());
@@ -40,7 +41,6 @@ void StageFactory::unload(LoadedPlugin& plugin) {
     plugin.handle = nullptr;
   }
 }
-
 
 std::string StageFactory::resolve_path(const std::string& plugin_name) {
   if (!plugin_name.empty() && plugin_name[0] == '/') {

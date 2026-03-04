@@ -46,7 +46,6 @@ class RecordingLoader : public StageLoader {
   std::vector<std::string> load_calls;
 };
 
-
 class ThreadSafeRecordingLoader : public StageLoader {
  public:
   LoadedPlugin load(const std::string& plugin_name) override {
@@ -209,7 +208,6 @@ TEST(StageRegistryTest, DestroyAndShutdownReleaseInstances) {
 
   g_destroy_counter = nullptr;
 }
-
 
 static std::atomic<int>* g_atomic_destroy_counter = nullptr;
 

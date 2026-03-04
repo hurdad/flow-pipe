@@ -5,15 +5,15 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
-#include <future>
 #include <cstdint>
-#include <mutex>
+#include <future>
 #include <memory>
-#include <string>
+#include <mutex>
 #include <stdexcept>
+#include <string>
 #include <thread>
-#include <vector>
 #include <variant>
+#include <vector>
 
 #include "flowpipe/bounded_queue.h"
 #include "flowpipe/payload.h"
@@ -275,7 +275,6 @@ TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
   ASSERT_EQ(stage.seen_inputs.size(), 1u);
   EXPECT_EQ(stage.seen_inputs.back().trace_id[0], 0xAA);
 }
-
 
 class RebuildTransformStage : public ITransformStage {
  public:
@@ -690,7 +689,6 @@ TEST(RuntimeQueueOwnershipTest, TransformWorkersCloseOutputOnlyAfterLastWorkerEx
 
   EXPECT_GE(payloads, 3);
 }
-
 
 }  // namespace
 }  // namespace flowpipe

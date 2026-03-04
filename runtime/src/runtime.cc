@@ -391,35 +391,35 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
           active_workers.fetch_add(1);
           try {
-            threads.emplace_back([&, src, worker_stage, out, i, stage_name, should_pin, pinning_cpus,
-                                  should_set_realtime, realtime_priority,
+            threads.emplace_back([&, src, worker_stage, out, i, stage_name, should_pin,
+                                  pinning_cpus, should_set_realtime, realtime_priority,
                                   queue_remaining_producers]() {
-            if (should_pin) {
-              ApplyCpuPinning(stage_name, i, pinning_cpus);
-            }
-            if (should_set_realtime) {
-              ApplyRealtimePriority(stage_name, i, realtime_priority.value());
-            }
-            FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", stage_name, i);
-
-            RunSourceStage(src, ctx, *out, &metrics);
-
-            if (queue_remaining_producers->fetch_sub(1) == 1) {
-              FP_LOG_DEBUG_FMT("stage '{}' source worker {} closing shared output queue",
-                               stage_name, i);
-              out->queue->close();
-            }
-
-            registry_.destroy_stage(worker_stage);
-
-            FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", stage_name, i);
-            if (auto_shutdown) {
-              if (active_workers.fetch_sub(1) == 1) {
-                stop.request_stop();
+              if (should_pin) {
+                ApplyCpuPinning(stage_name, i, pinning_cpus);
               }
-            } else {
-              active_workers.fetch_sub(1);
-            }
+              if (should_set_realtime) {
+                ApplyRealtimePriority(stage_name, i, realtime_priority.value());
+              }
+              FP_LOG_DEBUG_FMT("stage '{}' source worker {} started", stage_name, i);
+
+              RunSourceStage(src, ctx, *out, &metrics);
+
+              if (queue_remaining_producers->fetch_sub(1) == 1) {
+                FP_LOG_DEBUG_FMT("stage '{}' source worker {} closing shared output queue",
+                                 stage_name, i);
+                out->queue->close();
+              }
+
+              registry_.destroy_stage(worker_stage);
+
+              FP_LOG_DEBUG_FMT("stage '{}' source worker {} stopped", stage_name, i);
+              if (auto_shutdown) {
+                if (active_workers.fetch_sub(1) == 1) {
+                  stop.request_stop();
+                }
+              } else {
+                active_workers.fetch_sub(1);
+              }
             });
           } catch (...) {
             active_workers.fetch_sub(1);
@@ -444,32 +444,32 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
             threads.emplace_back([&, xf, worker_stage, in, out, i, stage_name, should_pin,
                                   pinning_cpus, should_set_realtime, realtime_priority,
                                   queue_remaining_producers]() {
-            if (should_pin) {
-              ApplyCpuPinning(stage_name, i, pinning_cpus);
-            }
-            if (should_set_realtime) {
-              ApplyRealtimePriority(stage_name, i, realtime_priority.value());
-            }
-            FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", stage_name, i);
-
-            RunTransformStage(xf, ctx, *in, *out, &metrics);
-
-            if (queue_remaining_producers->fetch_sub(1) == 1) {
-              FP_LOG_DEBUG_FMT("stage '{}' transform worker {} closing shared output queue",
-                               stage_name, i);
-              out->queue->close();
-            }
-
-            registry_.destroy_stage(worker_stage);
-
-            FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", stage_name, i);
-            if (auto_shutdown) {
-              if (active_workers.fetch_sub(1) == 1) {
-                stop.request_stop();
+              if (should_pin) {
+                ApplyCpuPinning(stage_name, i, pinning_cpus);
               }
-            } else {
-              active_workers.fetch_sub(1);
-            }
+              if (should_set_realtime) {
+                ApplyRealtimePriority(stage_name, i, realtime_priority.value());
+              }
+              FP_LOG_DEBUG_FMT("stage '{}' transform worker {} started", stage_name, i);
+
+              RunTransformStage(xf, ctx, *in, *out, &metrics);
+
+              if (queue_remaining_producers->fetch_sub(1) == 1) {
+                FP_LOG_DEBUG_FMT("stage '{}' transform worker {} closing shared output queue",
+                                 stage_name, i);
+                out->queue->close();
+              }
+
+              registry_.destroy_stage(worker_stage);
+
+              FP_LOG_DEBUG_FMT("stage '{}' transform worker {} stopped", stage_name, i);
+              if (auto_shutdown) {
+                if (active_workers.fetch_sub(1) == 1) {
+                  stop.request_stop();
+                }
+              } else {
+                active_workers.fetch_sub(1);
+              }
             });
           } catch (...) {
             active_workers.fetch_sub(1);
@@ -489,28 +489,28 @@ int Runtime::run(const flowpipe::v1::FlowSpec& spec) {
 
           active_workers.fetch_add(1);
           try {
-            threads.emplace_back([&, sink, worker_stage, in, i, stage_name, should_pin, pinning_cpus,
-                                  should_set_realtime, realtime_priority]() {
-            if (should_pin) {
-              ApplyCpuPinning(stage_name, i, pinning_cpus);
-            }
-            if (should_set_realtime) {
-              ApplyRealtimePriority(stage_name, i, realtime_priority.value());
-            }
-            FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", stage_name, i);
-
-            RunSinkStage(sink, ctx, *in, &metrics);
-
-            registry_.destroy_stage(worker_stage);
-
-            FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", stage_name, i);
-            if (auto_shutdown) {
-              if (active_workers.fetch_sub(1) == 1) {
-                stop.request_stop();
+            threads.emplace_back([&, sink, worker_stage, in, i, stage_name, should_pin,
+                                  pinning_cpus, should_set_realtime, realtime_priority]() {
+              if (should_pin) {
+                ApplyCpuPinning(stage_name, i, pinning_cpus);
               }
-            } else {
-              active_workers.fetch_sub(1);
-            }
+              if (should_set_realtime) {
+                ApplyRealtimePriority(stage_name, i, realtime_priority.value());
+              }
+              FP_LOG_DEBUG_FMT("stage '{}' sink worker {} started", stage_name, i);
+
+              RunSinkStage(sink, ctx, *in, &metrics);
+
+              registry_.destroy_stage(worker_stage);
+
+              FP_LOG_DEBUG_FMT("stage '{}' sink worker {} stopped", stage_name, i);
+              if (auto_shutdown) {
+                if (active_workers.fetch_sub(1) == 1) {
+                  stop.request_stop();
+                }
+              } else {
+                active_workers.fetch_sub(1);
+              }
             });
           } catch (...) {
             active_workers.fetch_sub(1);

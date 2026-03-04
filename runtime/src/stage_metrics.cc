@@ -18,8 +18,8 @@ namespace flowpipe {
 
 // Single meter instance shared by all Record* methods.
 static opentelemetry::nostd::shared_ptr<opentelemetry::metrics::Meter>& GetMeter() {
-  static auto meter = opentelemetry::metrics::Provider::GetMeterProvider()->GetMeter(
-      "flowpipe.runtime", "1.0.0");
+  static auto meter =
+      opentelemetry::metrics::Provider::GetMeterProvider()->GetMeter("flowpipe.runtime", "1.0.0");
   return meter;
 }
 
@@ -37,8 +37,8 @@ void StageMetrics::RecordQueueDequeue(const QueueRuntime& queue, const Payload& 
 
   static const auto counter = GetMeter()->CreateUInt64Counter(
       "flowpipe.queue.dequeue.count", "Number of records dequeued from queue");
-  static const auto dwell = GetMeter()->CreateUInt64Histogram(
-      "flowpipe.queue.dwell_ns", "Time records spent in queue (ns)");
+  static const auto dwell = GetMeter()->CreateUInt64Histogram("flowpipe.queue.dwell_ns",
+                                                              "Time records spent in queue (ns)");
 
   const uint64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
                               std::chrono::steady_clock::now().time_since_epoch())
@@ -97,10 +97,10 @@ void StageMetrics::RecordStageLatency(const char* stage_name, uint64_t latency_n
     return;
   }
 
-  static const auto counter = GetMeter()->CreateUInt64Counter(
-      "flowpipe.stage.process.count", "Number of stage invocations");
-  static const auto latency = GetMeter()->CreateUInt64Histogram(
-      "flowpipe.stage.latency_ns", "Stage processing latency (ns)");
+  static const auto counter = GetMeter()->CreateUInt64Counter("flowpipe.stage.process.count",
+                                                              "Number of stage invocations");
+  static const auto latency = GetMeter()->CreateUInt64Histogram("flowpipe.stage.latency_ns",
+                                                                "Stage processing latency (ns)");
 
   auto labels = std::initializer_list<
       std::pair<opentelemetry::nostd::string_view, opentelemetry::common::AttributeValue>>{
@@ -127,8 +127,8 @@ void StageMetrics::RecordStageError(const char* stage_name) noexcept {
     return;
   }
 
-  static const auto counter = GetMeter()->CreateUInt64Counter(
-      "flowpipe.stage.errors", "Number of stage errors");
+  static const auto counter =
+      GetMeter()->CreateUInt64Counter("flowpipe.stage.errors", "Number of stage errors");
 
   auto labels = std::initializer_list<
       std::pair<opentelemetry::nostd::string_view, opentelemetry::common::AttributeValue>>{

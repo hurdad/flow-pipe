@@ -1,11 +1,11 @@
-#include "flowpipe/payload.h"
-
 #include <gtest/gtest.h>
 
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <variant>
+
+#include "flowpipe/payload.h"
 
 namespace flowpipe {
 namespace {

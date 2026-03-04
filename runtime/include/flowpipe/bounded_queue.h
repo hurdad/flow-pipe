@@ -35,9 +35,8 @@ class BoundedQueue : public IQueue<T> {
   std::optional<T> pop(const StopToken& stop) override {
     std::unique_lock lock(mu_);
     // Block until an item is available, the queue is closed, or stop is requested.
-    not_empty_.wait(lock, [this, &stop] {
-      return stop.stop_requested() || closed_ || !queue_.empty();
-    });
+    not_empty_.wait(lock,
+                    [this, &stop] { return stop.stop_requested() || closed_ || !queue_.empty(); });
 
     if (!queue_.empty()) {
       T item = std::move(queue_.front());

@@ -36,11 +36,21 @@ inline void json_escape_string(const std::string& s, std::ostream& out) {
   out << '"';
   for (unsigned char c : s) {
     switch (c) {
-      case '"':  out << "\\\""; break;
-      case '\\': out << "\\\\"; break;
-      case '\n': out << "\\n";  break;
-      case '\r': out << "\\r";  break;
-      case '\t': out << "\\t";  break;
+      case '"':
+        out << "\\\"";
+        break;
+      case '\\':
+        out << "\\\\";
+        break;
+      case '\n':
+        out << "\\n";
+        break;
+      case '\r':
+        out << "\\r";
+        break;
+      case '\t':
+        out << "\\t";
+        break;
       default:
         if (c < 0x20) {
           char buf[7];
@@ -85,15 +95,13 @@ inline void yaml_scalar_to_json(const YAML::Node& node, std::ostream& out) {
 
   // Emit YAML boolean words as bare JSON true/false.
   // Protobuf JSON does not accept quoted booleans for bool fields.
-  if (val == "true" || val == "True" || val == "TRUE" ||
-      val == "yes"  || val == "Yes"  || val == "YES"  ||
-      val == "on"   || val == "On"   || val == "ON") {
+  if (val == "true" || val == "True" || val == "TRUE" || val == "yes" || val == "Yes" ||
+      val == "YES" || val == "on" || val == "On" || val == "ON") {
     out << "true";
     return;
   }
-  if (val == "false" || val == "False" || val == "FALSE" ||
-      val == "no"    || val == "No"    || val == "NO"    ||
-      val == "off"   || val == "Off"   || val == "OFF") {
+  if (val == "false" || val == "False" || val == "FALSE" || val == "no" || val == "No" ||
+      val == "NO" || val == "off" || val == "Off" || val == "OFF") {
     out << "false";
     return;
   }

@@ -44,7 +44,7 @@ TEST(BoundedQueueTest, StopPlusCloseUnblocksWaitingPushAndPop) {
   stop_push.request_stop();
   push_queue.close();  // close() notifies CVs, waking the blocked push
   stop_pop.request_stop();
-  pop_queue.close();   // close() notifies CVs, waking the blocked pop
+  pop_queue.close();  // close() notifies CVs, waking the blocked pop
 
   EXPECT_EQ(blocked_push.wait_for(std::chrono::seconds(1)), std::future_status::ready);
   EXPECT_EQ(blocked_pop.wait_for(std::chrono::seconds(1)), std::future_status::ready);
