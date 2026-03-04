@@ -10,6 +10,15 @@
 
 namespace flowpipe {
 
+// Transparent hash enabling string_view lookups into unordered_map<string,...>
+// without constructing a temporary std::string.
+struct StringViewHash {
+  using is_transparent = void;
+  std::size_t operator()(std::string_view sv) const noexcept {
+    return std::hash<std::string_view>{}(sv);
+  }
+};
+
 /**
  * Per-record metadata carried with each payload.
  * Small and cheap to copy.
@@ -19,7 +28,7 @@ struct PayloadMeta {
   static constexpr int span_id_size = 8;
 
   using MetaValue = std::variant<int64_t, double, bool, std::string>;
-  using MetadataMap = std::unordered_map<std::string, MetaValue>;
+  using MetadataMap = std::unordered_map<std::string, MetaValue, StringViewHash, std::equal_to<>>;
 
   // Monotonic enqueue timestamp (nanoseconds)
   uint64_t enqueue_ts_ns = 0;
@@ -59,7 +68,7 @@ struct PayloadMeta {
       return nullptr;
     }
 
-    auto it = attrs->find(std::string(key));
+    auto it = attrs->find(key);
     return it == attrs->end() ? nullptr : &it->second;
   }
 

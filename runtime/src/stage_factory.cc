@@ -6,8 +6,6 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "flowpipe/configurable_stage.h"
-
 namespace flowpipe {
 
 StageFactory::StageFactory(std::string plugin_dir) : plugin_dir_(std::move(plugin_dir)) {}
@@ -43,29 +41,6 @@ void StageFactory::unload(LoadedPlugin& plugin) {
   }
 }
 
-// ------------------------------------------------------------
-// Create + configure a stage instance (OPAQUE CONFIG)
-// ------------------------------------------------------------
-std::unique_ptr<IStage> StageFactory::create_stage(const LoadedPlugin& plugin,
-                                                   const google::protobuf::Struct* config) {
-  IStage* stage = plugin.create();
-  if (!stage) {
-    throw std::runtime_error("stage plugin returned null");
-  }
-
-  // 🔒 ALWAYS call configure() if supported
-  if (auto* configurable = dynamic_cast<ConfigurableStage*>(stage)) {
-    google::protobuf::Struct empty;
-    const google::protobuf::Struct& cfg = config ? *config : empty;
-
-    if (!configurable->configure(cfg)) {
-      plugin.destroy(stage);
-      throw std::runtime_error("stage rejected configuration");
-    }
-  }
-
-  return std::unique_ptr<IStage>(stage);
-}
 
 std::string StageFactory::resolve_path(const std::string& plugin_name) {
   if (!plugin_name.empty() && plugin_name[0] == '/') {

@@ -123,7 +123,8 @@ static inline void WriteSpanToPayload(const opentelemetry::trace::SpanContext& c
 // ------------------------------------------------------------
 void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output,
                     StageMetrics* metrics) {
-  FP_LOG_DEBUG_FMT("source stage '{}' runner started", stage->name());
+  const std::string stage_name = stage->name();
+  FP_LOG_DEBUG_FMT("source stage '{}' runner started", stage_name);
 
   while (!ctx.stop.stop_requested()) {
     Payload payload;
@@ -134,7 +135,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 
     if (StageSpansEnabled()) {
       auto tracer = GetTracer();
-      span = tracer->StartSpan(stage->name());
+      span = tracer->StartSpan(stage_name);
       scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
     }
 #endif
@@ -144,9 +145,9 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
     try {
       produced = stage->produce(ctx, payload);
     } catch (const std::exception& ex) {
-      FP_LOG_ERROR_FMT("source stage '{}' threw exception: {}", stage->name(), ex.what());
+      FP_LOG_ERROR_FMT("source stage '{}' threw exception: {}", stage_name, ex.what());
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
@@ -156,9 +157,9 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 #endif
       break;
     } catch (...) {
-      FP_LOG_ERROR_FMT("source stage '{}' threw unknown exception", stage->name());
+      FP_LOG_ERROR_FMT("source stage '{}' threw unknown exception", stage_name);
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
@@ -178,24 +179,24 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 #endif
 
     if (!produced) {
-      FP_LOG_DEBUG_FMT("source stage '{}' returned no payload (terminating)", stage->name());
+      FP_LOG_DEBUG_FMT("source stage '{}' returned no payload (terminating)", stage_name);
       break;
     }
 
     if (metrics) {
-      metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
+      metrics->RecordStageLatency(stage_name.c_str(), end_ns - start_ns);
     }
 
-    if (!ApplyOutputSchema(output, payload, stage->name().c_str())) {
+    if (!ApplyOutputSchema(output, payload, stage_name.c_str())) {
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       continue;
     }
 
     payload.meta.enqueue_ts_ns = now_ns();
     if (!output.queue->push(std::move(payload), ctx.stop)) {
-      FP_LOG_DEBUG_FMT("source stage '{}' output queue closed or stop requested", stage->name());
+      FP_LOG_DEBUG_FMT("source stage '{}' output queue closed or stop requested", stage_name);
       break;
     }
 
@@ -204,7 +205,7 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
     }
   }
 
-  FP_LOG_DEBUG_FMT("source stage '{}' runner exiting", stage->name());
+  FP_LOG_DEBUG_FMT("source stage '{}' runner exiting", stage_name);
 }
 
 // ------------------------------------------------------------
@@ -212,12 +213,13 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
 // ------------------------------------------------------------
 void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& input,
                        QueueRuntime& output, StageMetrics* metrics) {
-  FP_LOG_DEBUG_FMT("transform stage '{}' runner started", stage->name());
+  const std::string stage_name = stage->name();
+  FP_LOG_DEBUG_FMT("transform stage '{}' runner started", stage_name);
 
   while (!ctx.stop.stop_requested()) {
     auto item = input.queue->pop(ctx.stop);
     if (!item.has_value()) {
-      FP_LOG_DEBUG_FMT("transform stage '{}' input queue closed", stage->name());
+      FP_LOG_DEBUG_FMT("transform stage '{}' input queue closed", stage_name);
       break;
     }
 
@@ -227,9 +229,9 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
       metrics->RecordQueueDequeue(input, in_payload);
     }
 
-    if (!ValidateInputSchema(input, in_payload, stage->name().c_str())) {
+    if (!ValidateInputSchema(input, in_payload, stage_name.c_str())) {
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       continue;
     }
@@ -247,7 +249,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
         opts.parent = parent_ctx;
       }
 
-      span = tracer->StartSpan(stage->name(), opts);
+      span = tracer->StartSpan(stage_name, opts);
       scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
     }
 #endif
@@ -259,9 +261,9 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
     try {
       stage->process(ctx, in_payload, out_payload);
     } catch (const std::exception& ex) {
-      FP_LOG_ERROR_FMT("transform stage '{}' threw exception: {}", stage->name(), ex.what());
+      FP_LOG_ERROR_FMT("transform stage '{}' threw exception: {}", stage_name, ex.what());
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
@@ -271,9 +273,9 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 #endif
       break;
     } catch (...) {
-      FP_LOG_ERROR_FMT("transform stage '{}' threw unknown exception", stage->name());
+      FP_LOG_ERROR_FMT("transform stage '{}' threw unknown exception", stage_name);
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
@@ -293,19 +295,19 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 #endif
 
     if (metrics) {
-      metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
+      metrics->RecordStageLatency(stage_name.c_str(), end_ns - start_ns);
     }
 
-    if (!ApplyOutputSchema(output, out_payload, stage->name().c_str())) {
+    if (!ApplyOutputSchema(output, out_payload, stage_name.c_str())) {
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       continue;
     }
 
     out_payload.meta.enqueue_ts_ns = now_ns();
     if (!output.queue->push(std::move(out_payload), ctx.stop)) {
-      FP_LOG_DEBUG_FMT("transform stage '{}' output queue closed or stop requested", stage->name());
+      FP_LOG_DEBUG_FMT("transform stage '{}' output queue closed or stop requested", stage_name);
       break;
     }
 
@@ -314,7 +316,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
     }
   }
 
-  FP_LOG_DEBUG_FMT("transform stage '{}' runner exiting", stage->name());
+  FP_LOG_DEBUG_FMT("transform stage '{}' runner exiting", stage_name);
 }
 
 // ------------------------------------------------------------
@@ -322,12 +324,13 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 // ------------------------------------------------------------
 void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
                   StageMetrics* metrics) {
-  FP_LOG_DEBUG_FMT("sink stage '{}' runner started", stage->name());
+  const std::string stage_name = stage->name();
+  FP_LOG_DEBUG_FMT("sink stage '{}' runner started", stage_name);
 
   while (!ctx.stop.stop_requested()) {
     auto item = input.queue->pop(ctx.stop);
     if (!item.has_value()) {
-      FP_LOG_DEBUG_FMT("sink stage '{}' input queue closed", stage->name());
+      FP_LOG_DEBUG_FMT("sink stage '{}' input queue closed", stage_name);
       break;
     }
 
@@ -337,9 +340,9 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
       metrics->RecordQueueDequeue(input, payload);
     }
 
-    if (!ValidateInputSchema(input, payload, stage->name().c_str())) {
+    if (!ValidateInputSchema(input, payload, stage_name.c_str())) {
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       continue;
     }
@@ -357,7 +360,7 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
         opts.parent = parent_ctx;
       }
 
-      span = tracer->StartSpan(stage->name(), opts);
+      span = tracer->StartSpan(stage_name, opts);
       scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
     }
 #endif
@@ -366,9 +369,9 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
     try {
       stage->consume(ctx, payload);
     } catch (const std::exception& ex) {
-      FP_LOG_ERROR_FMT("sink stage '{}' threw exception: {}", stage->name(), ex.what());
+      FP_LOG_ERROR_FMT("sink stage '{}' threw exception: {}", stage_name, ex.what());
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
@@ -378,9 +381,9 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
 #endif
       break;
     } catch (...) {
-      FP_LOG_ERROR_FMT("sink stage '{}' threw unknown exception", stage->name());
+      FP_LOG_ERROR_FMT("sink stage '{}' threw unknown exception", stage_name);
       if (metrics) {
-        metrics->RecordStageError(stage->name().c_str());
+        metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
 #if FLOWPIPE_ENABLE_OTEL
@@ -399,11 +402,11 @@ void RunSinkStage(ISinkStage* stage, StageContext& ctx, QueueRuntime& input,
 #endif
 
     if (metrics) {
-      metrics->RecordStageLatency(stage->name().c_str(), end_ns - start_ns);
+      metrics->RecordStageLatency(stage_name.c_str(), end_ns - start_ns);
     }
   }
 
-  FP_LOG_DEBUG_FMT("sink stage '{}' runner exiting", stage->name());
+  FP_LOG_DEBUG_FMT("sink stage '{}' runner exiting", stage_name);
 }
 
 }  // namespace flowpipe

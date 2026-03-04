@@ -20,8 +20,10 @@
  *   - null
  *
  * NOTE:
- *   Scalars are emitted as strings.
- *   This is intentional and safe for protobuf JSON parsing.
+ *   YAML boolean words (true/false/yes/no/on/off) are emitted as JSON
+ *   true/false — protobuf JSON rejects quoted booleans for bool fields.
+ *   All other scalars are emitted as strings; protobuf JSON accepts
+ *   quoted integers/floats for numeric fields.
  */
 
 namespace flowpipe::util {
@@ -79,7 +81,24 @@ inline void yaml_seq_to_json(const YAML::Node& node, std::ostream& out) {
 }
 
 inline void yaml_scalar_to_json(const YAML::Node& node, std::ostream& out) {
-  json_escape_string(node.as<std::string>(), out);
+  const std::string val = node.as<std::string>();
+
+  // Emit YAML boolean words as bare JSON true/false.
+  // Protobuf JSON does not accept quoted booleans for bool fields.
+  if (val == "true" || val == "True" || val == "TRUE" ||
+      val == "yes"  || val == "Yes"  || val == "YES"  ||
+      val == "on"   || val == "On"   || val == "ON") {
+    out << "true";
+    return;
+  }
+  if (val == "false" || val == "False" || val == "FALSE" ||
+      val == "no"    || val == "No"    || val == "NO"    ||
+      val == "off"   || val == "Off"   || val == "OFF") {
+    out << "false";
+    return;
+  }
+
+  json_escape_string(val, out);
 }
 
 inline void yaml_to_json(const YAML::Node& node, std::ostream& out) {

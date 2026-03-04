@@ -23,37 +23,6 @@ static opentelemetry::nostd::shared_ptr<opentelemetry::metrics::Meter>& GetMeter
   return meter;
 }
 
-static auto& dequeue_counter = *[] {
-  static auto c = GetMeter()->CreateUInt64Counter("flowpipe.queue.dequeue.count",
-                                                  "Number of records dequeued from queue");
-  return &c;
-}();
-static auto& dwell_histogram = *[] {
-  static auto h = GetMeter()->CreateUInt64Histogram("flowpipe.queue.dwell_ns",
-                                                    "Time records spent in queue (ns)");
-  return &h;
-}();
-static auto& enqueue_counter = *[] {
-  static auto c = GetMeter()->CreateUInt64Counter("flowpipe.queue.enqueue.count",
-                                                  "Number of records enqueued to queue");
-  return &c;
-}();
-static auto& process_counter = *[] {
-  static auto c = GetMeter()->CreateUInt64Counter("flowpipe.stage.process.count",
-                                                  "Number of stage invocations");
-  return &c;
-}();
-static auto& latency_histogram = *[] {
-  static auto h = GetMeter()->CreateUInt64Histogram("flowpipe.stage.latency_ns",
-                                                    "Stage processing latency (ns)");
-  return &h;
-}();
-static auto& error_counter = *[] {
-  static auto c = GetMeter()->CreateUInt64Counter("flowpipe.stage.errors",
-                                                  "Number of stage errors");
-  return &c;
-}();
-
 #endif  // FLOWPIPE_ENABLE_OTEL
 
 // ------------------------------------------------------------
@@ -65,6 +34,11 @@ void StageMetrics::RecordQueueDequeue(const QueueRuntime& queue, const Payload& 
   if (!state.queue_metrics_enabled) {
     return;
   }
+
+  static const auto counter = GetMeter()->CreateUInt64Counter(
+      "flowpipe.queue.dequeue.count", "Number of records dequeued from queue");
+  static const auto dwell = GetMeter()->CreateUInt64Histogram(
+      "flowpipe.queue.dwell_ns", "Time records spent in queue (ns)");
 
   const uint64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
                               std::chrono::steady_clock::now().time_since_epoch())
@@ -79,10 +53,10 @@ void StageMetrics::RecordQueueDequeue(const QueueRuntime& queue, const Payload& 
 
   auto ctx = opentelemetry::context::RuntimeContext::GetCurrent();
 
-  dequeue_counter->Add(1, labels, ctx);
+  counter->Add(1, labels, ctx);
 
   if (state.latency_histograms && dwell_ns > 0) {
-    dwell_histogram->Record(dwell_ns, labels, ctx);
+    dwell->Record(dwell_ns, labels, ctx);
   }
 
 #else
@@ -98,12 +72,15 @@ void StageMetrics::RecordQueueEnqueue(const QueueRuntime& queue) noexcept {
     return;
   }
 
+  static const auto counter = GetMeter()->CreateUInt64Counter(
+      "flowpipe.queue.enqueue.count", "Number of records enqueued to queue");
+
   auto labels = std::initializer_list<
       std::pair<opentelemetry::nostd::string_view, opentelemetry::common::AttributeValue>>{
       {"queue", queue.name}};
 
   auto ctx = opentelemetry::context::RuntimeContext::GetCurrent();
-  enqueue_counter->Add(1, labels, ctx);
+  counter->Add(1, labels, ctx);
 
 #else
   (void)queue;
@@ -120,16 +97,21 @@ void StageMetrics::RecordStageLatency(const char* stage_name, uint64_t latency_n
     return;
   }
 
+  static const auto counter = GetMeter()->CreateUInt64Counter(
+      "flowpipe.stage.process.count", "Number of stage invocations");
+  static const auto latency = GetMeter()->CreateUInt64Histogram(
+      "flowpipe.stage.latency_ns", "Stage processing latency (ns)");
+
   auto labels = std::initializer_list<
       std::pair<opentelemetry::nostd::string_view, opentelemetry::common::AttributeValue>>{
       {"stage", stage_name}};
 
   auto ctx = opentelemetry::context::RuntimeContext::GetCurrent();
 
-  process_counter->Add(1, labels, ctx);
+  counter->Add(1, labels, ctx);
 
   if (state.latency_histograms) {
-    latency_histogram->Record(latency_ns, labels, ctx);
+    latency->Record(latency_ns, labels, ctx);
   }
 
 #else
@@ -145,12 +127,15 @@ void StageMetrics::RecordStageError(const char* stage_name) noexcept {
     return;
   }
 
+  static const auto counter = GetMeter()->CreateUInt64Counter(
+      "flowpipe.stage.errors", "Number of stage errors");
+
   auto labels = std::initializer_list<
       std::pair<opentelemetry::nostd::string_view, opentelemetry::common::AttributeValue>>{
       {"stage", stage_name}};
 
   auto ctx = opentelemetry::context::RuntimeContext::GetCurrent();
-  error_counter->Add(1, labels, ctx);
+  counter->Add(1, labels, ctx);
 
 #else
   (void)stage_name;

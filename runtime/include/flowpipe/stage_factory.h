@@ -32,10 +32,6 @@ class StageFactory : public StageLoader {
   LoadedPlugin load(const std::string& plugin_name) override;
   void unload(LoadedPlugin& plugin) override;
 
-  // Create a stage instance and pass opaque config to the plugin
-  std::unique_ptr<IStage> create_stage(const LoadedPlugin& plugin,
-                                       const google::protobuf::Struct* config);
-
  private:
   std::string resolve_path(const std::string& plugin_name);
 
