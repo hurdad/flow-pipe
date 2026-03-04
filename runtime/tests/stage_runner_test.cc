@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <thread>
 #include <vector>
+#include <variant>
 
 #include "flowpipe/bounded_queue.h"
 #include "flowpipe/payload.h"
@@ -194,6 +195,53 @@ TEST(RunTransformStageTest, DequeuesTransformsAndRecordsMetrics) {
   EXPECT_GT(out_payload->meta.enqueue_ts_ns, 0u);
   ASSERT_EQ(stage.seen_inputs.size(), 1u);
   EXPECT_EQ(stage.seen_inputs.back().trace_id[0], 0xAA);
+}
+
+
+class RebuildTransformStage : public ITransformStage {
+ public:
+  std::string name() const override {
+    return "rebuild_transform";
+  }
+
+  void process(StageContext&, const Payload& input, Payload& output) override {
+    output.buffer = input.buffer;
+    output.size = input.size;
+  }
+};
+
+TEST(RunTransformStageTest, PreservesInputMetadataWhenStageRebuildsPayload) {
+  auto input = MakeQueueRuntime("in", 1);
+  auto output = MakeQueueRuntime("out", 1);
+
+  Payload input_payload;
+  input_payload.meta.trace_id[0] = 0xCD;
+  input_payload.meta.flags = 7;
+  input_payload.meta.schema_id = "schema-1";
+  input_payload.meta.set_attr("pipeline.partition", int64_t{5});
+
+  std::atomic<bool> stop_flag{false};
+  StageContext ctx{StopToken(&stop_flag)};
+
+  ASSERT_TRUE(input.queue->push(input_payload, ctx.stop));
+  input.queue->close();
+
+  RebuildTransformStage stage;
+  RecordingStageMetrics metrics;
+
+  RunTransformStage(&stage, ctx, input, output, &metrics);
+  output.queue->close();
+
+  auto out_payload = output.queue->pop(ctx.stop);
+  ASSERT_TRUE(out_payload.has_value());
+  EXPECT_EQ(out_payload->meta.trace_id[0], 0xCD);
+  EXPECT_EQ(out_payload->meta.flags, 7u);
+  EXPECT_EQ(out_payload->meta.schema_id, "schema-1");
+  ASSERT_TRUE(out_payload->meta.has_attrs());
+  const auto* attr = out_payload->meta.get_attr("pipeline.partition");
+  ASSERT_NE(attr, nullptr);
+  ASSERT_TRUE(std::holds_alternative<int64_t>(*attr));
+  EXPECT_EQ(std::get<int64_t>(*attr), 5);
 }
 
 TEST(RunTransformStageTest, DropsPayloadsWithSchemaMismatch) {

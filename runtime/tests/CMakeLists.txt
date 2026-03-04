@@ -52,3 +52,15 @@ target_link_libraries(queue_test
         ${GTEST_MAIN_TARGET}
 )
 gtest_discover_tests(queue_test)
+
+
+add_executable(payload_meta_test
+    payload_meta_test.cc
+)
+target_link_libraries(payload_meta_test
+    PRIVATE
+        flowpipe_runtime
+        flowpipe_proto
+        ${GTEST_MAIN_TARGET}
+)
+gtest_discover_tests(payload_meta_test)

@@ -253,6 +253,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
 #endif
 
     Payload out_payload;
+    out_payload.meta = in_payload.meta;
 
     const uint64_t start_ns = now_ns();
     try {
