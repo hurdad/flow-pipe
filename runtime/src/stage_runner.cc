@@ -270,6 +270,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
         metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
+      input.queue->close();  // wake peer workers blocked on pop()
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
@@ -282,6 +283,7 @@ void RunTransformStage(ITransformStage* stage, StageContext& ctx, QueueRuntime& 
         metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
+      input.queue->close();  // wake peer workers blocked on pop()
 #if FLOWPIPE_ENABLE_OTEL
       if (span) {
         span->End();
