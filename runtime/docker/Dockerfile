@@ -31,7 +31,6 @@ RUN apt-get update && apt-get install -y \
     libgrpc++-dev \
     libcurl4-openssl-dev \
     libspdlog-dev \
-
     libjemalloc-dev \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
