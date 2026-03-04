@@ -1,5 +1,6 @@
 #include "flowpipe/observability/tracing.h"
 
+#include "flowpipe/observability/logging.h"
 #include "flowpipe/observability/observability_state.h"
 
 #if FLOWPIPE_ENABLE_OTEL
@@ -66,8 +67,13 @@ void InitTracing(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
                  bool debug) {
   auto& state = GetOtelState();
 
-  if (!cfg || state.tracer_provider)
+  if (state.tracer_provider)
     return;
+
+  if (!cfg) {
+    FP_LOG_WARN("observability: tracing enabled but no config provided; skipping init");
+    return;
+  }
 
   const auto& tracing_cfg = cfg->tracing();
 
@@ -118,6 +124,13 @@ void InitTracing(const flowpipe::v1::ObservabilityConfig* cfg, const GlobalDefau
   state.tracer_provider = trace_sdk::TracerProviderFactory::Create(std::move(processor));
   std::shared_ptr<opentelemetry::trace::TracerProvider> api_provider = state.tracer_provider;
   opentelemetry::trace::Provider::SetTracerProvider(api_provider);
+
+  // ----------------------------------------------------------
+  // Cache runtime flags (mirrors metrics.cc pattern)
+  // ----------------------------------------------------------
+  state.stage_spans_enabled = tracing_cfg.stage_spans_enabled();
+  state.queue_spans_enabled = tracing_cfg.queue_spans_enabled();
+  state.record_spans_enabled = tracing_cfg.record_spans_enabled();
 }
 
 }  // namespace flowpipe::observability

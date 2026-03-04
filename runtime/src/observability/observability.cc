@@ -64,7 +64,7 @@ void InitFromProto(const flowpipe::v1::ObservabilityConfig* cfg) {
 
   FP_LOG_DEBUG_FMT(
       "observability: effective enablement "
-      "(tracing=%d, logs=%d, metrics=%d, debug=%d)",
+      "(tracing={}, logs={}, metrics={}, debug={})",
       tracing, logs, metrics, debug);
 
   // ----------------------------------------------------------
