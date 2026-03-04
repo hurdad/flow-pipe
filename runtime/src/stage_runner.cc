@@ -129,17 +129,6 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
   while (!ctx.stop.stop_requested()) {
     Payload payload;
 
-#if FLOWPIPE_ENABLE_OTEL
-    opentelemetry::nostd::shared_ptr<opentelemetry::trace::Span> span;
-    std::unique_ptr<opentelemetry::trace::Scope> scope;
-
-    if (StageSpansEnabled()) {
-      auto tracer = GetTracer();
-      span = tracer->StartSpan(stage_name);
-      scope = std::make_unique<opentelemetry::trace::Scope>(tracer->WithActiveSpan(span));
-    }
-#endif
-
     const uint64_t start_ns = now_ns();
     bool produced = false;
     try {
@@ -150,11 +139,6 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
         metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
-#if FLOWPIPE_ENABLE_OTEL
-      if (span) {
-        span->End();
-      }
-#endif
       break;
     } catch (...) {
       FP_LOG_ERROR_FMT("source stage '{}' threw unknown exception", stage_name);
@@ -162,17 +146,26 @@ void RunSourceStage(ISourceStage* stage, StageContext& ctx, QueueRuntime& output
         metrics->RecordStageError(stage_name.c_str());
       }
       ctx.request_stop();
-#if FLOWPIPE_ENABLE_OTEL
-      if (span) {
-        span->End();
-      }
-#endif
       break;
     }
     const uint64_t end_ns = now_ns();
 
 #if FLOWPIPE_ENABLE_OTEL
-    if (span) {
+    // Create the span AFTER produce() so we can use the trace context that
+    // produce() extracted from the incoming message (e.g. W3C traceparent from
+    // NATS headers) as the parent.  Creating the span before produce() would
+    // start it with no parent and WriteSpanToPayload would overwrite the
+    // incoming context, breaking the link to the gateway/client trace.
+    if (StageSpansEnabled() && produced) {
+      auto tracer = GetTracer();
+      auto parent_ctx = SpanContextFromPayload(payload.meta);
+
+      opentelemetry::trace::StartSpanOptions opts;
+      if (parent_ctx.IsValid()) {
+        opts.parent = parent_ctx;
+      }
+
+      auto span = tracer->StartSpan(stage_name, opts);
       WriteSpanToPayload(span->GetContext(), payload.meta);
       span->End();
     }
